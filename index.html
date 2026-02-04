@@ -2,227 +2,153 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Oltin Tanga</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://alwingulla.com/88/p.js"></script>
     <style>
-        :root {
-            --primary-bg: #000;
-            --accent: #f1c40f;
-            --purple: #8e44ad;
-        }
-        body {
-            background-color: var(--primary-bg);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0; padding: 0;
-            overflow: hidden;
-            display: flex; flex-direction: column; height: 100vh;
-        }
-        /* Top Status Bar */
-        .top-stats {
-            display: flex; justify-content: space-around;
-            padding: 10px; background: rgba(255,255,255,0.05);
-            font-size: 12px; text-align: center;
-        }
-        .stat-box { border: 1px solid var(--purple); border-radius: 8px; padding: 5px 15px; flex: 1; margin: 0 5px; }
-        .stat-box span { display: block; color: var(--accent); font-weight: bold; }
-
-        /* Main Game Area */
-        .game-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .balance-display { font-size: 48px; font-weight: bold; margin-bottom: 10px; color: var(--accent); }
-        .diamond-display { font-size: 18px; color: #3498db; margin-bottom: 20px; }
-        
-        .coin-wrapper { position: relative; cursor: pointer; }
-        .main-coin { width: 220px; border-radius: 50%; border: 5px solid var(--accent); filter: drop-shadow(0 0 20px var(--accent)); transition: transform 0.1s; }
-        .main-coin:active { transform: scale(0.9); }
-
-        /* Side Buttons */
-        .side-btn { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid gold; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); font-size: 24px; cursor: pointer; }
-        #daily-btn { left: 20px; top: 50%; transform: translateY(-50%); }
-        #spin-btn { right: 20px; top: 50%; transform: translateY(-50%); }
-
-        /* Bottom Navigation */
-        .nav-bar { display: flex; background: #111; padding: 10px 0; border-top: 2px solid var(--purple); }
-        .nav-item { flex: 1; text-align: center; font-size: 10px; cursor: pointer; filter: grayscale(1); }
-        .nav-item.active { filter: grayscale(0); color: var(--accent); }
-        .nav-item img { width: 30px; display: block; margin: 0 auto 5px; }
-
-        /* Progress Bar */
-        .energy-bar { width: 90%; height: 10px; background: #333; border-radius: 5px; margin: 10px auto; overflow: hidden; }
-        #energy-fill { width: 100%; height: 100%; background: linear-gradient(to right, #00f2fe, #4facfe); }
-
-        /* Modal / Sections */
-        .section-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; display: none; padding-top: 50px; text-align: center; overflow-y: auto; }
-        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 24px; color: white; cursor: pointer; }
-        .card { background: #222; margin: 10px; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* Notification */
-        #notify { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); color: black; padding: 15px 30px; border-radius: 10px; z-index: 1000; display: none; font-weight: bold; }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #f59e0b; --text: #f8fafc; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; }
+        .header { padding: 20px; background: var(--card); border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 10; }
+        .coin-display { font-size: 32px; font-weight: bold; color: var(--accent); margin: 10px 0; }
+        .click-area { height: 50vh; display: flex; align-items: center; justify-content: center; }
+        .main-coin { width: 200px; height: 200px; cursor: pointer; transition: transform 0.1s; }
+        .main-coin:active { transform: scale(0.95); }
+        .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); padding: 10px 0; border-top: 1px solid #334155; }
+        .menu-item { flex: 1; font-size: 12px; cursor: pointer; opacity: 0.7; }
+        .menu-item.active { opacity: 1; color: var(--accent); }
+        .section { display: none; padding: 20px; padding-bottom: 80px; }
+        .section.active { display: block; }
+        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="notify">Habar!</div>
-
-    <div class="top-stats">
-        <div class="stat-box">STATUS <span id="status">Bronza</span></div>
-        <div class="stat-box">SOATIGA FOYDA <span id="p-hour">0</span></div>
-        <div class="stat-box">TAP KUCHI <span id="p-tap">1</span></div>
+    <div class="header">
+        <div id="username">Yuklanmoqda...</div>
+        <div class="coin-display">💰 <span id="coin-count">0</span></div>
+        <div style="font-size: 14px;">💎 <span id="diamond-count">0</span></div>
     </div>
 
-    <div class="game-main">
-        <div class="balance-display" id="balance">0</div>
-        <div class="diamond-display">💎 <span id="diamonds">0</span></div>
-        
-        <div id="daily-btn" class="side-btn" onclick="openSection('daily')">🎁</div>
-        <div id="spin-btn" class="side-btn" onclick="openSection('spin')">🎡</div>
-
-        <div class="coin-wrapper" onclick="handleTap(event)">
-            <img src="https://cdn-icons-png.flaticon.com/512/5406/5406692.png" id="coin-img" class="main-coin">
+    <div id="game-section" class="section active">
+        <div class="click-area" onclick="handleTap(event)">
+            <img src="https://cdn-icons-png.flaticon.com/512/5406/5406695.png" class="main-coin">
         </div>
-
-        <div class="energy-bar"><div id="energy-fill"></div></div>
-        <p><span id="energy-val">500</span> / 500</p>
+        <div class="card">
+            <span>⚡ Energiya: <span id="energy-count">500</span>/500</span>
+        </div>
     </div>
 
-    <div id="daily" class="section-modal">
-        <span class="close-btn" onclick="closeModals()">✕</span>
-        <h2>Kunlik Bonus</h2>
-        <div id="daily-days"></div>
+    <div id="leaderboard-section" class="section">
+        <h3>🏆 TOP O'YINCHILAR</h3>
+        <div id="leaderboard-list">Yuklanmoqda...</div>
     </div>
 
-    <div id="spin" class="section-modal">
-        <span class="close-btn" onclick="closeModals()">✕</span>
-        <h2>Omad G'ildiragi</h2>
-        <div id="wheel-result" style="font-size: 40px; margin: 20px;">?</div>
-        <button onclick="spinWheel()" style="padding: 15px 30px; background: gold; border:none; border-radius: 10px;">AYLANTIRISH</button>
+    <div id="friends-section" class="section">
+        <h3>👥 TAKLIF QILISH</h3>
+        <div class="card" style="flex-direction: column; gap: 10px;">
+            <p>Har bir do'st uchun 25,000 tanga!</p>
+            <button class="btn" onclick="copyRefLink()">Havolani nusxalash</button>
+        </div>
     </div>
 
-    <div id="market" class="section-modal">
-        <span class="close-btn" onclick="closeModals()">✕</span>
-        <h2>Bozor (Olmosga)</h2>
-        <button onclick="exchangeDiamonds()" style="background: green; color:white; border:none; padding:10px; margin-bottom:10px;">1000 Tanga -> 1 Olmos</button>
-        <div class="card"><span>Qizil Tanga</span> <button onclick="buySkin('red', 500)">500 💎</button></div>
-        <div class="card"><span>Yashil Tanga</span> <button onclick="buySkin('green', 750)">750 💎</button></div>
-        <div class="card"><span>Ko'k Tanga</span> <button onclick="buySkin('blue', 1000)">1000 💎</button></div>
+    <div class="menu">
+        <div class="menu-item active" id="m-game" onclick="showSection('game')">🎮 O'yin</div>
+        <div class="menu-item" id="m-leaderboard" onclick="showSection('leaderboard')">🏆 Reyting</div>
+        <div class="menu-item" id="m-friends" onclick="showSection('friends')">👥 Do'stlar</div>
     </div>
 
-    <div id="airdrop" class="section-modal">
-        <span class="close-btn" onclick="closeModals()">✕</span>
-        <h2>Airdrop</h2>
-        <p style="padding: 20px;">Tez kunda tanga va olmoslar Tonga almashtiriladi. Ton narxi sizning o'yindagi daraja ko'rsatkichlaringga qarab belgilanadi.</p>
-        <hr>
-        <p>Yaratuvchi: <b>GANIYEV DIYORBEK</b></p>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    <div class="nav-bar">
-        <div class="nav-item" onclick="openSection('market')"><img src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">BOZOR</div>
-        <div class="nav-item" onclick="openSection('friends')"><img src="https://cdn-icons-png.flaticon.com/512/2583/2583158.png">DO'STLAR</div>
-        <div class="nav-item active" onclick="closeModals()"><img src="https://cdn-icons-png.flaticon.com/512/5406/5406692.png">ASOSIY</div>
-        <div class="nav-item" onclick="openSection('boost')"><img src="https://cdn-icons-png.flaticon.com/512/1055/1055644.png">BOOST</div>
-        <div class="nav-item" onclick="openSection('airdrop')"><img src="https://cdn-icons-png.flaticon.com/512/616/616430.png">UYIM</div>
-    </div>
+        // 1. FIREBASE KONFIGURATSIYASI (O'zingiznikini qo'ying)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbttlr-oGJeDbjMbru...", 
+            authDomain: "oltin-tanga-d2c80.firebaseapp.com",
+            databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
+            projectId: "oltin-tanga-d2c80",
+            storageBucket: "oltin-tanga-d2c80.appspot.com",
+            messagingSenderId: "956382024760",
+            appId: "1:956382024760:web:..."
+        };
 
-    <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
-
-    <script>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
         const tg = window.Telegram.WebApp;
-        tg.ready();
         tg.expand();
 
-        // Game State
-        let state = JSON.parse(localStorage.getItem('oltin_tanga_state')) || {
-            coins: 0, diamonds: 0, tapPower: 1, energy: 500, maxEnergy: 500,
-            hourlyIncome: 0, lastCheck: Date.now(), status: 'Bronza',
-            tapCost: 1000, incomeCost: 1000
+        const userId = tg.initDataUnsafe.user.id;
+        const userName = tg.initDataUnsafe.user.first_name || "O'yinchi";
+
+        let state = { coins: 0, diamonds: 0, energy: 500, name: userName };
+
+        async function initGame() {
+            const userRef = ref(db, 'users/' + userId);
+            const snapshot = await get(userRef);
+            
+            if (snapshot.exists()) {
+                state = snapshot.val();
+            } else {
+                await set(userRef, state);
+                await checkReferral();
+            }
+            updateUI();
+            setupLeaderboard();
+        }
+
+        async function checkReferral() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referrerId = urlParams.get('start');
+            if (referrerId && referrerId != userId) {
+                const refUserRef = ref(db, 'users/' + referrerId);
+                const snap = await get(refUserRef);
+                if (snap.exists()) {
+                    await update(refUserRef, { coins: snap.val().coins + 25000 });
+                }
+            }
+        }
+
+        window.handleTap = () => {
+            if (state.energy > 0) {
+                state.coins += 1;
+                state.energy -= 1;
+                updateUI();
+                update(ref(db, 'users/' + userId), { coins: state.coins, energy: state.energy });
+            }
         };
-
-        const bgMusic = document.getElementById('bg-music');
-        let musicStarted = false;
-
-        function save() { localStorage.setItem('oltin_tanga_state', JSON.stringify(state)); updateUI(); }
 
         function updateUI() {
-            document.getElementById('balance').innerText = Math.floor(state.coins);
-            document.getElementById('diamonds').innerText = state.diamonds;
-            document.getElementById('p-tap').innerText = state.tapPower;
-            document.getElementById('p-hour').innerText = state.hourlyIncome;
-            document.getElementById('status').innerText = state.status;
-            document.getElementById('energy-val').innerText = state.energy;
-            document.getElementById('energy-fill').style.width = (state.energy/state.maxEnergy*100) + '%';
+            document.getElementById('coin-count').innerText = Math.floor(state.coins);
+            document.getElementById('energy-count').innerText = state.energy;
+            document.getElementById('username').innerText = state.name;
         }
 
-        function showNotify(text) {
-            const n = document.getElementById('notify');
-            n.innerText = text; n.style.display = 'block';
-            setTimeout(() => n.style.display = 'none', 2000);
+        function setupLeaderboard() {
+            onValue(ref(db, 'users/'), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                const players = Object.values(data).sort((a, b) => b.coins - a.coins).slice(0, 10);
+                document.getElementById('leaderboard-list').innerHTML = players.map((p, i) => `
+                    <div class="card"><span>${i+1}. ${p.name}</span><span>💰 ${Math.floor(p.coins)}</span></div>
+                `).join('');
+            });
         }
 
-        function handleTap(e) {
-            if (!musicStarted) { bgMusic.play(); musicStarted = true; }
-            if (state.energy >= state.tapPower) {
-                state.coins += state.tapPower;
-                state.energy -= state.tapPower;
-                save();
-                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            } else {
-                showNotify("Mablag' (Energiya) yetarli emas!");
-            }
-        }
-
-        function openSection(id) {
-            document.querySelectorAll('.section-modal').forEach(m => m.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-        }
-
-        function closeModals() {
-            document.querySelectorAll('.section-modal').forEach(m => m.style.display = 'none');
-        }
-
-        function exchangeDiamonds() {
-            if (state.coins >= 1000) {
-                state.coins -= 1000;
-                state.diamonds += 1;
-                showNotify("+1 Olmos sotib olindi!");
-                save();
-            } else { showNotify("Tangalar yetarli emas!"); }
-        }
-
-        // Monetag Integration for Spin/Bonus
-        function spinWheel() {
-            // SIZNING ZONE ID: 10558007 (Rewarded)
-            if (typeof show_10558007 === 'function') {
-                show_10558007().then(() => {
-                    let prizes = [0, 500, 1000, 2000, 3000, 5000, 7500, 10000, 25000, 50000];
-                    let win = prizes[Math.floor(Math.random()*prizes.length)];
-                    state.coins += win;
-                    document.getElementById('wheel-result').innerText = win + " 💰";
-                    showNotify("Yutuq: " + win);
-                    save();
-                });
-            } else {
-                showNotify("Reklama yuklanmoqda...");
-            }
-        }
-
-        // Auto Income Calculation
-        setInterval(() => {
-            if (state.energy < state.maxEnergy) {
-                state.energy = Math.min(state.maxEnergy, state.energy + 1);
-            }
-            state.coins += (state.hourlyIncome / 3600);
-            updateUI();
-        }, 1000);
-
-        window.onload = () => {
-            updateUI();
-            let offlineIncome = Math.floor(((Date.now() - state.lastCheck) / 1000 / 3600) * state.hourlyIncome);
-            if (offlineIncome > 0) showNotify("Siz yo'qligingizda " + offlineIncome + " tanga yig'ildi!");
-            state.lastCheck = Date.now();
+        window.showSection = (id) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(id + '-section').classList.add('active');
+            document.getElementById('m-' + id).classList.add('active');
         };
+
+        window.copyRefLink = () => {
+            const link = `https://t.me/OltinTanga1_bot?start=${userId}`;
+            navigator.clipboard.writeText(link);
+            alert("Referal link nusxalandi! Do'stlaringizga yuboring.");
+        };
+
+        initGame();
     </script>
 </body>
-                                                           </html>
-      
+    </html>
