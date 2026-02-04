@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga</title>
+    <title>Oltin Tanga - Rasmiy</title>
+    
+    <script src="https://alwingulla.com/tag.min.js" data-zone="10558007" async></script>
+    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #f59e0b; --text: #f8fafc; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
-        .header { padding: 20px; background: var(--card); border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 10; }
-        .coin-display { font-size: 32px; font-weight: bold; color: var(--accent); margin: 10px 0; }
-        .click-area { height: 50vh; display: flex; align-items: center; justify-content: center; }
-        .main-coin { width: 200px; height: 200px; cursor: pointer; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
+        .header { padding: 15px; background: var(--card); border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 10; }
+        .coin-display { font-size: 32px; font-weight: bold; color: var(--accent); margin: 5px 0; }
+        .click-area { height: 45vh; display: flex; align-items: center; justify-content: center; }
+        .main-coin { width: 180px; height: 180px; cursor: pointer; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
         .main-coin:active { transform: scale(0.92); }
         .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); padding: 10px 0; border-top: 1px solid #334155; }
         .menu-item { flex: 1; font-size: 12px; cursor: pointer; opacity: 0.7; }
@@ -19,7 +23,8 @@
         .section { display: none; padding: 20px; padding-bottom: 80px; }
         .section.active { display: block; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .ad-btn { background: #10b981; margin-top: 10px; width: 100%; }
     </style>
 </head>
 <body>
@@ -32,23 +37,24 @@
 
     <div id="game-section" class="section active">
         <div class="click-area" onclick="handleTap(event)">
-            <img src="https://cdn-icons-png.flaticon.com/512/5406/5406695.png" class="main-coin" alt="tanga">
+            <img src="https://cdn-icons-png.flaticon.com/512/5406/5406695.png" class="main-coin">
         </div>
         <div class="card">
             <span>⚡ Energiya: <span id="energy-count">500</span>/500</span>
         </div>
+        <button class="btn ad-btn" onclick="showRewardAd()">🎁 Video ko'rish (+50,000 tanga)</button>
     </div>
 
     <div id="leaderboard-section" class="section">
         <h3>🏆 TOP O'YINCHILAR</h3>
-        <div id="leaderboard-list">Reyting yuklanmoqda...</div>
+        <div id="leaderboard-list">Yuklanmoqda...</div>
     </div>
 
     <div id="friends-section" class="section">
         <h3>👥 DO'STLARNI TAKLIF QILISH</h3>
-        <div class="card" style="flex-direction: column; gap: 10px; text-align: center;">
-            <p>Har bir taklif qilingan do'st uchun sizga <b>25,000 tanga</b> beriladi!</p>
-            <button class="btn" onclick="copyRefLink()">Havolani nusxalash</button>
+        <div class="card" style="flex-direction: column; gap: 10px;">
+            <p>Har bir do'st uchun <b>25,000 tanga</b>!</p>
+            <button class="btn" style="width: 100%;" onclick="copyRefLink()">Havolani nusxalash</button>
         </div>
     </div>
 
@@ -62,7 +68,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // FIREBASE KONFIGURATSIYASI (Sizning skrinshotingizdan olindi)
+        // 2. FIREBASE SOZLAMALARI
         const firebaseConfig = {
             apiKey: "AIzaSyDbttlr-oGJeDbjMbrudVzR-L2R8Q1m3Xo", 
             authDomain: "oltin-tanga-d2c80.firebaseapp.com",
@@ -78,7 +84,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const userId = tg.initDataUnsafe.user?.id || 12345; // Test uchun
+        const userId = tg.initDataUnsafe.user?.id || "test_user";
         const userName = tg.initDataUnsafe.user?.first_name || "O'yinchi";
 
         let state = { coins: 0, diamonds: 0, energy: 500, name: userName };
@@ -89,7 +95,7 @@
             
             if (snapshot.exists()) {
                 state = snapshot.val();
-                state.name = userName; // Ismni har doim yangilab turish
+                state.name = userName; 
             } else {
                 await set(userRef, state);
                 await checkReferral();
@@ -100,28 +106,41 @@
 
         async function checkReferral() {
             const urlParams = new URLSearchParams(window.location.search);
-            const referrerId = urlParams.get('start');
-            if (referrerId && referrerId != userId) {
-                const refUserRef = ref(db, 'users/' + referrerId);
-                const snap = await get(refUserRef);
-                if (snap.exists()) {
-                    await update(refUserRef, { coins: (snap.val().coins || 0) + 25000 });
+            const refId = urlParams.get('start');
+            if (refId && refId != userId) {
+                const rRef = ref(db, 'users/' + refId);
+                const s = await get(rRef);
+                if (s.exists()) {
+                    await update(rRef, { coins: (s.val().coins || 0) + 25000 });
                 }
             }
         }
 
-        window.handleTap = (event) => {
+        // 3. MONETAG REKLAMA FUNKSIYASI
+        window.showRewardAd = () => {
+            if (typeof show_10558007 === 'function') {
+                show_10558007().then(() => {
+                    state.coins += 50000;
+                    updateUI();
+                    update(ref(db, 'users/' + userId), { coins: state.coins });
+                    tg.showAlert("Tabriklaymiz! Reklama ko'rganingiz uchun 50,000 tanga berildi!");
+                });
+            } else {
+                tg.showAlert("Reklama yuklanmoqda, iltimos 5 soniya kuting...");
+            }
+        };
+
+        window.handleTap = () => {
             if (state.energy > 0) {
                 state.coins += 1;
                 state.energy -= 1;
                 updateUI();
-                // Ma'lumotni bazaga yozish
                 update(ref(db, 'users/' + userId), { coins: state.coins, energy: state.energy });
             }
         };
 
         function updateUI() {
-            document.getElementById('coin-count').innerText = Math.floor(state.coins);
+            document.getElementById('coin-count').innerText = Math.floor(state.coins).toLocaleString();
             document.getElementById('energy-count').innerText = state.energy;
             document.getElementById('username').innerText = state.name;
             document.getElementById('diamond-count').innerText = state.diamonds || 0;
@@ -131,15 +150,9 @@
             onValue(ref(db, 'users/'), (snapshot) => {
                 const data = snapshot.val();
                 if (!data) return;
-                const players = Object.values(data)
-                    .sort((a, b) => (b.coins || 0) - (a.coins || 0))
-                    .slice(0, 10);
-                
+                const players = Object.values(data).sort((a, b) => b.coins - a.coins).slice(0, 10);
                 document.getElementById('leaderboard-list').innerHTML = players.map((p, i) => `
-                    <div class="card">
-                        <span>${i+1}. ${p.name || 'Noma'lum'}</span>
-                        <span>💰 ${Math.floor(p.coins || 0)}</span>
-                    </div>
+                    <div class="card"><span>${i+1}. ${p.name}</span><span>💰 ${Math.floor(p.coins).toLocaleString()}</span></div>
                 `).join('');
             });
         }
@@ -154,19 +167,14 @@
         window.copyRefLink = () => {
             const link = `https://t.me/OltinTanga1_bot?start=${userId}`;
             navigator.clipboard.writeText(link);
-            alert("Havola nusxalandi! Endi do'stlaringizga yuboring.");
+            tg.showAlert("Havola nusxalandi! Do'stlarga yuboring.");
         };
 
-        // Energiyani vaqt o'tishi bilan tiklash
-        setInterval(() => {
-            if (state.energy < 500) {
-                state.energy += 1;
-                updateUI();
-            }
-        }, 3000); // Har 3 soniyada 1 energiya
+        setInterval(() => { if (state.energy < 500) { state.energy += 1; updateUI(); } }, 3000);
 
         initGame();
     </script>
 </body>
-    </html>
+                </html>
+                
 
