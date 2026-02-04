@@ -1,106 +1,211 @@
-<div id="spin-sec" class="section">
-    <h2 style="color:var(--accent)">🎁 Tasodifiy Tanga Olish</h2>
-    <div id="spin-result" style="font-size:30px; font-weight:bold; margin:30px; color:#facc15;">🎁 Omadingizni sinang!</div>
-    
-    <div id="spin-info" style="font-size:12px; margin-bottom:15px; opacity:0.8;">
-        Bugungi reklamali urinishlar: <span id="ads-count">0</span> / 3
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oltin Tanga - Ganiyev Diyorbek</title>
+    <script src="https://alwingulla.com/tag.min.js" data-zone="10558007" async></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { --bg: #050810; --accent: #f59e0b; --card: #111827; --purple: #7c3aed; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; }
+        .header-stats { display: flex; justify-content: space-around; padding: 10px; margin-top: 10px; gap: 8px; }
+        .stat-box { background: rgba(124, 58, 237, 0.1); border: 1px solid var(--purple); border-radius: 12px; flex: 1; padding: 10px 5px; }
+        .stat-label { font-size: 8px; color: #888; display: block; }
+        .stat-value { font-size: 14px; font-weight: bold; color: var(--accent); }
+        .total-coins { font-size: 55px; font-weight: 900; color: #facc15; margin: 25px 0 10px 0; }
+        .tanga-container { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .main-coin { width: 230px; height: 230px; background: radial-gradient(circle, #facc15 0%, #ca8a04 100%); border-radius: 50%; border: 8px solid #854d0e; box-shadow: 0 0 50px rgba(250, 204, 21, 0.4); display: flex; align-items: center; justify-content: center; font-size: 80px; font-weight: 900; cursor: pointer; transition: transform 0.05s; z-index: 5; touch-action: manipulation; }
+        .main-coin:active { transform: scale(0.92); }
+        .side-circle { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--accent); background: #000; display: flex; align-items: center; justify-content: center; font-size: 22px; z-index: 10; cursor: pointer; }
+        .btn-left { left: 10px; } .btn-right { right: 10px; background: conic-gradient(red, yellow, green, blue, red); }
+        .energy-section { width: 90%; margin: 20px auto; }
+        .energy-bar { height: 12px; background: #1e293b; border-radius: 10px; overflow: hidden; border: 1px solid #334155; }
+        .energy-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #a855f7, #3b82f6); transition: width 0.2s; }
+        .nav-footer { position: fixed; bottom: 0; width: 100%; background: #0a0e1a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 1000; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; opacity: 0.5; }
+        .nav-item.active { opacity: 1; }
+        .nav-icon { width: 44px; height: 44px; background: #1e293b; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; font-size: 20px; }
+        .nav-item.active .nav-icon { background: var(--purple); border: 1px solid white; }
+        .section { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .section.active { display: block; }
+        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
+    <audio id="tap-sound" src="https://www.myinstants.com/media/sounds/click-button-140381.mp3"></audio>
+
+    <div class="header-stats">
+        <div class="stat-box"><span class="stat-label">STATUS</span><span class="stat-value">Bronza</span></div>
+        <div class="stat-box"><span class="stat-label">SOATIGA FOYDA</span><span class="stat-value" id="h-inc">0</span></div>
+        <div class="stat-box"><span class="stat-label">TAP KUCHI</span><span class="stat-value" id="t-pwr">1</span></div>
     </div>
 
-    <button class="btn" id="spin-btn" style="width:100%; height:60px;" onclick="startSpin()">
-        TEKIN IMKONIYAT
-    </button>
-    
-    <button class="btn" style="width:100%; margin-top:20px; background:#555; color:white;" onclick="closeSec()">YOPISH</button>
-</div>
+    <div id="main-ui">
+        <div class="total-coins" id="total-coins">0</div>
+        <div class="tanga-container">
+            <div class="side-circle btn-left" onclick="openSec('daily')">🎁</div>
+            <div class="main-coin" id="coin-ui" onclick="handleTap(event)" ontouchstart="handleTap(event)">1</div>
+            <div class="side-circle btn-right" onclick="openSec('spin')">🎡</div>
+        </div>
+        <div class="energy-section">
+            <div style="font-size:14px; margin-bottom:8px;">⚡ <span id="e-text">500 / 500</span></div>
+            <div class="energy-bar"><div class="energy-fill" id="e-fill"></div></div>
+        </div>
+    </div>
 
-<script type="module">
-    // ... (Firebase va boshqa sozlamalar o'zgarishsiz qoladi)
+    <div id="spin-sec" class="section">
+        <h2 style="color:var(--accent)">🎡 Tasodifiy Tanga</h2>
+        <div id="spin-result" style="font-size:28px; margin:40px 0; color:gold; font-weight:bold;">Omadingizni sinang!</div>
+        <p>Reklama limiti: <span id="ads-count">0</span> / 3</p>
+        <button class="btn" id="spin-btn" style="height:60px;" onclick="startSpin()">TEKIN OLISH</button>
+        <button class="btn" style="margin-top:20px; background:#334155; color:white;" onclick="closeSec()">YOPISH</button>
+    </div>
 
-    // Yangi state o'zgaruvchilari (Buni state obyektiga qo'shing)
-    if (!state.adsUsed) state.adsUsed = 0; // Reklama ko'rilgan soni
-    if (!state.lastResetDate) state.lastResetDate = new Date().toDateString();
+    <div id="reyting-sec" class="section">
+        <h2 style="color:var(--accent)">🏆 TOP O'yinchilar</h2>
+        <div id="leader-list">Yuklanmoqda...</div>
+        <button class="btn" style="margin-top:20px" onclick="closeSec()">YOPISH</button>
+    </div>
 
-    // Har kuni urinishlarni yangilash (Reset)
-    function checkDailyReset() {
-        const today = new Date().toDateString();
-        if (state.lastResetDate !== today) {
-            state.adsUsed = 0;
-            state.lastResetDate = today;
-            state.lastSpin = 0; // Tekin urinishni ham tiklash
+    <div id="home-sec" class="section">
+        <h1 style="color:var(--accent)">GANIYEV DIYORBEK</h1>
+        <div class="card"><span>💰 Tangalar:</span><b id="u-c">0</b></div>
+        <button class="btn" style="margin-top:20px; background:#334155; color:white;" onclick="closeSec()">YOPISH</button>
+    </div>
+
+    <div class="nav-footer">
+        <div class="nav-item" onclick="openSec('market')"><div class="nav-icon">🛒</div><span>BOZOR</span></div>
+        <div class="nav-item active" onclick="closeSec()"><div class="nav-icon">🏆</div><span>O'YIN</span></div>
+        <div class="nav-item" onclick="openSec('reyting')"><div class="nav-icon">📊</div><span>REYTING</span></div>
+        <div class="nav-item" onclick="openSec('home')"><div class="nav-icon">🏠</div><span>UYIM</span></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbttlr-oGJeDbjMbrudVzR-L2R8Q1m3Xo",
+            authDomain: "oltin-tanga-d2c80.firebaseapp.com",
+            databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
+            projectId: "oltin-tanga-d2c80",
+            storageBucket: "oltin-tanga-d2c80.appspot.com",
+            messagingSenderId: "956382024760",
+            appId: "1:956382024760:web:d263309605d39e34e9e30a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const tg = window.Telegram.WebApp;
+        const userId = tg.initDataUnsafe.user?.id || "dev_user";
+
+        let state = { coins: 0, energy: 500, maxE: 500, power: 1, lastSpin: 0, adsUsed: 0 };
+
+        async function init() {
+            const snap = await get(ref(db, 'users/' + userId));
+            if(snap.exists()) state = {...state, ...snap.val()};
+            updateUI();
+            setInterval(() => {
+                if(state.energy < state.maxE) state.energy += 1;
+                updateUI();
+                save();
+            }, 1000);
+        }
+
+        // 100% ISHLAYDIGAN TANGA BOSISH
+        window.handleTap = (e) => {
+            if(e) e.preventDefault();
+            if(state.energy >= state.power) {
+                state.coins += state.power;
+                state.energy -= state.power;
+                document.getElementById('tap-sound').currentTime = 0;
+                document.getElementById('tap-sound').play().catch(()=>{});
+                const bg = document.getElementById('bg-music');
+                if(bg.paused) bg.play().catch(()=>{});
+                updateUI();
+            }
+        };
+
+        // REKLAMA FUNKSIYASI
+        async function playAds() {
+            if (typeof show_10558007 === 'function') {
+                try {
+                    await show_10558007();
+                    return true;
+                } catch { return false; }
+            }
+            return true; // Test uchun
+        }
+
+        window.startSpin = async () => {
+            const now = Date.now();
+            const isFree = now >= (state.lastSpin || 0) + 86400000;
+
+            if (isFree) {
+                executeSpin(true);
+            } else if (state.adsUsed < 3) {
+                const adDone = await playAds();
+                if(adDone) {
+                    state.adsUsed++;
+                    executeSpin(false);
+                }
+            } else {
+                alert("Bugungi limit tugadi!");
+            }
+        };
+
+        function executeSpin(free) {
+            const rewards = [0, 500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 25000, 30000, 50000];
+            const win = rewards[Math.floor(Math.random() * rewards.length)];
+            state.coins += win;
+            if(free) state.lastSpin = Date.now();
+            document.getElementById('spin-result').innerText = `YUTUQ: +${win.toLocaleString()} 💰`;
+            updateUI();
             save();
         }
-    }
 
-    window.startSpin = () => {
-        checkDailyReset();
-        const now = Date.now();
-        const oneDay = 24 * 60 * 60 * 1000;
+        window.openSec = (id) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id + '-sec').classList.add('active');
+            if(id === 'reyting') loadLeaders();
+        };
 
-        // 1. Tekin urinishni tekshirish
-        if (now >= (state.lastSpin || 0) + oneDay) {
-            executeSpin(true);
-        } 
-        // 2. Reklamali urinishni tekshirish (maksimum 3 marta)
-        else if (state.adsUsed < 3) {
-            show_10558007().then(() => {
-                state.adsUsed++;
-                executeSpin(false);
-            }).catch(() => {
-                showNotify("Reklama yuklanmadi!");
+        window.closeSec = () => document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+        function loadLeaders() {
+            onValue(ref(db, 'users/'), (snap) => {
+                const list = Object.values(snap.val() || {}).sort((a,b) => b.coins - a.coins).slice(0,10);
+                document.getElementById('leader-list').innerHTML = list.map((p, i) => `
+                    <div class="card"><span>${i+1}. ${p.name || 'O'yinchi'}</span><b>${Math.floor(p.coins).toLocaleString()}</b></div>
+                `).join('');
             });
-        } 
-        else {
-            showNotify("Bugungi barcha imkoniyatlar tugadi!");
         }
-    };
 
-    function executeSpin(isFree) {
-        // Siz aytgan tasodifiy summalar
-        const rewards = [0, 500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 25000, 30000, 50000];
-        const win = rewards[Math.floor(Math.random() * rewards.length)];
-        
-        state.coins += win;
-        if (isFree) state.lastSpin = Date.now();
-        
-        // UI yangilash
-        document.getElementById('spin-result').innerText = `Tabriklaymiz! +${win.toLocaleString()} 💰`;
-        updateUI();
-        save();
-        
-        if (win > 0) {
-            document.getElementById('buy-sound').play().catch(()=>{});
+        function updateUI() {
+            document.getElementById('total-coins').innerText = Math.floor(state.coins).toLocaleString();
+            document.getElementById('coin-ui').innerText = state.power;
+            document.getElementById('e-text').innerText = `${state.energy} / ${state.maxE}`;
+            document.getElementById('e-fill').style.width = (state.energy/state.maxE*100) + "%";
+            document.getElementById('ads-count').innerText = state.adsUsed;
+            document.getElementById('u-c').innerText = Math.floor(state.coins).toLocaleString();
+            
+            const now = Date.now();
+            const btn = document.getElementById('spin-btn');
+            if(now < (state.lastSpin || 0) + 86400000) {
+                btn.innerText = state.adsUsed < 3 ? "📺 REKLAMA KO'RIB OLISH" : "ERTAGA QAYTING";
+            } else { btn.innerText = "TEKIN OLISH"; }
         }
-        updateSpinUI();
-    }
 
-    function updateSpinUI() {
-        checkDailyReset();
-        const now = Date.now();
-        const nextFree = (state.lastSpin || 0) + (24 * 60 * 60 * 1000);
-        const btn = document.getElementById('spin-btn');
-        const adsText = document.getElementById('ads-count');
-
-        adsText.innerText = state.adsUsed;
-
-        if (now < nextFree) {
-            if (state.adsUsed < 3) {
-                btn.innerText = "📺 REKLAMA KO'RIB OLISH";
-                btn.style.background = "linear-gradient(to right, #facc15, #ff8c00)";
-            } else {
-                btn.innerText = "ERTAGA QAYTING";
-                btn.style.background = "#334155";
-                btn.disabled = true;
-            }
-        } else {
-            btn.innerText = "TEKIN IMKONIYAT";
-            btn.style.background = "var(--accent)";
-            btn.disabled = false;
-        }
-    }
-
-    // Buni setInterval ichiga yoki init ga qo'shing
-    setInterval(updateSpinUI, 1000);
-        </script>
+        function save() { update(ref(db, 'users/' + userId), state); }
+        init();
+    </script>
+</body>
+    </html>
+                
 
     
                                                         
