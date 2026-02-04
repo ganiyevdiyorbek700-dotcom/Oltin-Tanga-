@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Oltin Tanga</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script async src="https://monetag.com/sdk.js" data-zone="10558007" data-sdk="show_REWARDED_INTERSTITIAL"></script>
   <style>
     body { margin:0; background:#000; color:#ffd700; font-family:Arial,sans-serif; height:100vh; overflow:hidden; background:radial-gradient(circle at center,#1a0033,#000); }
     #status-bar { position:fixed; top:0; width:100%; padding:12px; background:rgba(75,0,130,0.8); font-size:14px; text-align:center; z-index:10; border-radius:0 0 15px 15px; box-shadow:0 4px 10px rgba(0,0,0,0.5); }
     #status-bar span { font-weight:bold; margin:0 8px; }
     #center-coin { position:absolute; top:45%; left:50%; transform:translate(-50%,-50%); text-align:center; width:100%; }
-    #big-coin { width:320px; height:320px; background:radial-gradient(circle,#ffd700,#ffcc00,#d4a017); border-radius:50%; box-shadow:0 0 100px #ffd700; animation:pulse 3s infinite; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:140px; color:#000; font-weight:bold; margin:0 auto; position:relative; }
-    @keyframes pulse { 0%,100% {transform:scale(1);} 50% {transform:scale(1.08);} }
-    #coin-count { font-size:80px; margin:10px 0; color:#ffd700; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); }
+    #big-coin { width:280px; height:280px; background:radial-gradient(circle,#ffd700,#ffcc00,#d4a017); border-radius:50%; box-shadow:0 0 80px #ffd700; animation:pulse 3s infinite; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:100px; color:#000; font-weight:bold; margin:0 auto; position:relative; }
+    @keyframes pulse { 0%,100% {transform:scale(1);} 50% {transform:scale(1.05);} }
+    #coin-count { font-size:70px; margin:10px 0; color:#ffd700; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); }
     #energy-bar { position:fixed; bottom:80px; width:90%; height:25px; background:#222; border-radius:12px; margin:0 auto; overflow:hidden; left:5%; right:5%; box-shadow:0 0 15px #00ff00; }
     #energy-fill { height:100%; background:linear-gradient(to right,#00ff00,#00cc00); width:100%; transition:width 0.5s; }
     #bonus-bar { position:fixed; top:60px; width:100%; padding:10px; background:rgba(0,0,0,0.7); font-size:14px; display:flex; justify-content:space-between; align-items:center; z-index:5; }
@@ -20,9 +21,16 @@
     .tab { text-align:center; color:white; font-size:12px; cursor:pointer; padding:8px; width:60px; border-radius:50%; background:radial-gradient(circle,#4b0082,#2f004f); margin:0 5px; box-shadow:0 0 15px #4b0082; }
     .tab img { width:32px; height:32px; display:block; margin:0 auto 4px; }
     .tab span { display:block; font-size:10px; color:#ffd700; }
+    .section { display:none; padding:20px; background:rgba(0,0,0,0.8); border-radius:15px; margin:10px; overflow-y:auto; height:60vh; }
+    .section.active { display:block; }
+    #notification { position:fixed; bottom:100px; left:50%; transform:translate(-50%,0); padding:10px 20px; background:rgba(0,0,0,0.8); border-radius:10px; font-size:14px; color:#fff; z-index:20; display:none; }
+    #medal { position:fixed; top:20px; left:10px; width:50px; height:50px; border-radius:50%; background:radial-gradient(circle,#cd7f32,#a0522d); box-shadow:0 0 20px #cd7f32; animation:spin 5s infinite linear; }
+    @keyframes spin { 0% {transform:rotate(0deg);} 100% {transform:rotate(360deg);} }
   </style>
 </head>
 <body>
+  <div id="medal"></div>
+
   <div id="status-bar">
     <div>STATUS: <span id="status">Bronze</span> SOATIGA FOYDA: <span id="perHour">0</span> TAP KU CHI: <span id="tapPower">1</span></div>
   </div>
@@ -65,30 +73,151 @@
     </div>
   </div>
 
+  <div id="notification" style="display:none;">Bildirishnoma!</div>
+
   <script>
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
 
     let tanga = 0;
+    let olmos = 0;
     let energy = 500;
     let tapPower = 1;
     let perHour = 0;
+    let level = 1;
+    let streakDay = 0;
+    let barabanFree = true;
+    let dailyTimer = 86400;
+    let boughtTangalar = [];
+
+    let medalColors = ['#cd7f32', '#c0c0c0', '#ffd700', '#e5e4e2', '#ff4500', '#00ff00', '#00bfff', '#8b4513', '#4b0082', '#ff0000']; // 1-10 daraja
+
+    document.getElementById('bgMusic').volume = 0.3;
+    document.getElementById('bgMusic').play().catch(() => {});
+
+    async function yukla() {
+      const saved = await Telegram.WebApp.DeviceStorage.getItem('oltinTanga');
+      if (saved) {
+        const data = JSON.parse(saved);
+        tanga = data.tanga || 0;
+        olmos = data.olmos || 0;
+        energy = data.energy || 500;
+        tapPower = data.tapPower || 1;
+        perHour = data.perHour || 0;
+        level = data.level || 1;
+        streakDay = data.streakDay || 0;
+        barabanFree = data.barabanFree || true;
+        dailyTimer = data.dailyTimer || 86400;
+        boughtTangalar = data.boughtTangalar || [];
+      }
+      updateUI();
+      setInterval(energyTick, 10000);
+      setInterval(updateTimer, 1000);
+    }
+
+    async function saqla() {
+      const data = { tanga, olmos, energy, tapPower, perHour, level, streakDay, barabanFree, dailyTimer, boughtTangalar };
+      await Telegram.WebApp.DeviceStorage.setItem('oltinTanga', JSON.stringify(data));
+    }
+
+    function updateUI() {
+      document.getElementById('coin-count').innerText = tanga;
+      document.getElementById('big-coin').innerText = tanga;
+      document.getElementById('tapPower').innerText = tapPower;
+      document.getElementById('perHour').innerText = perHour;
+      document.getElementById('energy-fill').style.width = (energy / 500 * 100) + '%';
+      document.getElementById('medal').style.background = 'radial-gradient(circle, ' + medalColors[level-1] + ', ' + medalColors[level-1] + ')';
+      document.getElementById('status').innerText = level + ' Daraja';
+    }
 
     function tap() {
       if (energy > 0) {
         tanga += tapPower;
         energy -= 1;
-        document.getElementById('coin-count').innerText = tanga;
-        document.getElementById('big-coin').innerText = tanga;
-        document.getElementById('energy-fill').style.width = (energy / 500 * 100) + '%';
+        updateUI();
+        saqla();
+        showNotification('+' + tapPower);
       } else {
-        alert("Energiya tugadi! Booster oling yoki kutib turing.");
+        showNotification("Energiya tugadi!");
       }
     }
 
-    function showSection(id) {
-      alert(id + " bo'limi ochildi! (Tez orada to'liq funksiya qo'shiladi)");
+    function energyTick() {
+      if (energy < 500) {
+        energy += 1;
+        updateUI();
+        saqla();
+      }
     }
+
+    function getDailyBonus() {
+      const bonuses = [500, 1000, 2000, 3000, 5000, 7500, 10000];
+      if (dailyTimer <= 0) {
+        tanga += bonuses[streakDay % 7];
+        streakDay += 1;
+        dailyTimer = 86400;
+        updateUI();
+        saqla();
+        showNotification("Kunlik bonus oldingiz! + " + bonuses[streakDay % 7] + " tanga");
+      } else {
+        showNotification("Kunlik bonus uchun kutish kerak!");
+      }
+    }
+
+    function doubleBonus() {
+      if (typeof show_REWARDED_INTERSTITIAL === 'function') {
+        show_REWARDED_INTERSTITIAL().then(() => {
+          tanga += 200;
+          updateUI();
+          saqla();
+          showNotification("2x Bonus! +200 tanga");
+        }).catch(() => showNotification("Reklama bekor."));
+      } else {
+        showNotification("Reklama yuklanmadi.");
+      }
+    }
+
+    function spinBaraban() {
+      const yutuqlar = [0, 500, 1000, 3000, 5000, 7000, 10000, 12000, 15000, 25000];
+      if (barabanFree) {
+        let yutuq = yutuqlar[Math.floor(Math.random() * yutuqlar.length)];
+        tanga += yutuq;
+        barabanFree = false;
+        updateUI();
+        saqla();
+        showNotification("Baraban! + " + yutuq + " tanga");
+      } else {
+        if (typeof show_REWARDED_INTERSTITIAL === 'function') {
+          show_REWARDED_INTERSTITIAL().then(() => {
+            let yutuq = yutuqlar[Math.floor(Math.random() * yutuqlar.length)];
+            tanga += yutuq;
+            updateUI();
+            saqla();
+            showNotification("Reklama baraban! + " + yutuq + " tanga");
+          }).catch(() => showNotification("Reklama bekor."));
+        } else {
+          showNotification("Reklama yuklanmadi.");
+        }
+      }
+    }
+
+    function showNotification(matn) {
+      const notif = document.getElementById('notification');
+      notif.innerText = matn;
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.display = 'none', 3000);
+    }
+
+    function updateTimer() {
+      dailyTimer--;
+      let hours = Math.floor(dailyTimer / 3600);
+      let mins = Math.floor((dailyTimer % 3600) / 60);
+      let secs = dailyTimer % 60;
+      document.getElementById('timer').innerText = `\( {hours}: \){mins}:${secs}`;
+      if (dailyTimer <= 0) dailyTimer = 86400;
+    }
+
+    yukla();
   </script>
 </body>
-</html>
+        </html>
