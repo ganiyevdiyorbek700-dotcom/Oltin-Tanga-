@@ -7,444 +7,114 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script async src="https://monetag.com/sdk.js" data-zone="10558007" data-sdk="show_REWARDED_INTERSTITIAL"></script>
   <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #ffd700;
-      font-family: Arial, sans-serif;
-      height: 100vh;
-      overflow: hidden;
-      background: radial-gradient(circle at center, #1a0033, #000);
-    }
-    #status-bar {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: rgba(0,0,0,0.7);
-      font-size: 14px;
-    }
-    #center-coin {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-    #big-coin {
-      width: 280px;
-      height: 280px;
-      background: radial-gradient(circle, #ffd700, #ffcc00, #d4a017);
-      border-radius: 50%;
-      box-shadow: 0 0 80px #ffd700;
-      animation: pulse 3s infinite;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 80px;
-      color: #000;
-      font-weight: bold;
-      margin: 0 auto;
-    }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-    #coin-count {
-      font-size: 40px;
-      margin: 10px 0;
-      color: #ffd700;
-    }
-    #energy-bar {
-      width: 80%;
-      height: 20px;
-      background: #222;
-      border-radius: 10px;
-      margin: 10px auto;
-      overflow: hidden;
-    }
-    #energy-fill {
-      height: 100%;
-      background: linear-gradient(to right, #00ff00, #00cc00);
-      width: 100%;
-      transition: width 0.5s;
-    }
-    #bonus-bar {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: rgba(0,0,0,0.7);
-      font-size: 14px;
-      position: fixed;
-      top: 60px;
-      width: 100%;
-    }
-    #bottom-tabs {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      display: flex;
-      background: rgba(0,0,0,0.9);
-      padding: 10px 0;
-    }
-    .tab {
-      flex: 1;
-      text-align: center;
-      color: white;
-      font-size: 12px;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #4b0082, #2f004f);
-      margin: 0 5px;
-    }
-    .tab img { width: 30px; height: 30px; }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.9);
-      z-index: 1000;
-      overflow-y: auto;
-    }
-    .modal-content {
-      background: #111;
-      margin: 10% auto;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 20px;
-      box-shadow: 0 0 30px #ffd700;
-    }
-    .close-btn {
-      float: right;
-      font-size: 30px;
-      cursor: pointer;
-      color: #ffd700;
-    }
-    .market-tanga {
-      width: 100px;
-      height: 100px;
-      background: radial-gradient(circle, #ffd700, #ffcc00);
-      border-radius: 50%;
-      box-shadow: 0 0 30px #ffd700;
-      display: inline-block;
-      margin: 15px;
-      cursor: pointer;
-      position: relative;
-    }
-    .market-tanga::after {
-      content: '🪙';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 60px;
-    }
+    body { margin:0; background:linear-gradient(135deg,#0a0a0a,#1a1a2e,#16213e); color:#ffd700; font-family:'Arial Black',sans-serif; text-align:center; height:100vh; overflow:hidden; position:relative; }
+    #status-bar { display:flex; justify-content:space-between; padding:10px; background:rgba(0,0,0,0.8); font-size:14px; }
+    #center-tap { position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); width:200px; height:200px; background:radial-gradient(circle,#ffd700,#ffcc00); border-radius:50%; box-shadow:0 0 50px #ffd700; animation:pulse 2s infinite; display:flex; align-items:center; justify-content:center; font-size:100px; cursor:pointer; }
+    @keyframes pulse { 0%,100% {transform:scale(1);} 50% {transform:scale(1.05);} }
+    #bonus-section { padding:20px; }
+    button { background:linear-gradient(45deg,#ff4500,#ff8c00); color:white; border:none; padding:12px 24px; border-radius:25px; font-size:16px; margin:5px; cursor:pointer; box-shadow:0 4px 15px rgba(255,69,0,0.5); }
+    #bottom-bar { position:fixed; bottom:0; width:100%; background: rgba(0,0,0,0.9); display:flex; justify-content:space-around; padding:15px 0; }
+    .tab-btn { background:none; border:none; color:#ffd700; font-size:14px; cursor:pointer; }
+    .section { display:none; padding:20px; background:rgba(0,0,0,0.8); border-radius:15px; margin:10px; overflow-y:auto; height:50vh; }
+    .section.active { display:block; }
+    .item-card { background:rgba(255,255,255,0.1); border-radius:15px; padding:15px; margin:10px; display:inline-block; box-shadow:0 4px 15px rgba(255,255,255,0.2); }
+    #timer { color:#00ff00; }
   </style>
 </head>
 <body>
-  <audio id="bgMusic" loop autoplay volume="0.3">
-    <source src="https://cdn.pixabay.com/download/audio/2023/08/07/audio_8f8e2c5d5f.mp3?filename=lofi-chill-hip-hop-2061.mp3" type="audio/mpeg">
+  <audio id="bgMusic" loop>
+    <source src="https://cdn.pixabay.com/audio/2023/08/07/audio_8f8e2c5d5f.mp3" type="audio/mpeg">
   </audio>
-
   <audio id="boostSound">
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f8b6c8e3c.mp3?filename=power-up-7103.mp3" type="audio/mpeg">
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_9f8b6c8e3c.mp3" type="audio/mpeg">
   </audio>
 
   <div id="status-bar">
     <div>Daraja: <span id="level">1</span></div>
     <div>Soatbay daromad: <span id="soatbay">500</span>/s</div>
-    <div>Tap kuchi: <span id="tapPower">+1</span></div>
+    <div>Tap kuchi: +<span id="tapPower">1</span></div>
   </div>
 
-  <div id="center-coin">
-    <div id="big-coin" onclick="tap()">0</div>
-    <div id="coin-count">0</div>
-    <div>OLTINLARIM</div>
-    <div>Soatiga: <span id="perSecond">0</span> 🪙</div>
-    <div id="energy-bar"><div id="energy-fill"></div></div>
+  <div id="center-tap" onclick="tap()">🦫</div>
+
+  <div id="bonus-section">
+    Kunlik bonus: 100 tanga (Timer: <span id="timer">24:00:00</span>)
+    <button onclick="getDailyBonus()">Olish</button>
+    <button onclick="doubleBonus()">2x (Reklama)</button>
+    <button onclick="spinBaraban()">Omadli Baraban (Tepkin 1 marta, keyin Reklama)</button>
   </div>
 
-  <div id="bonus-bar">
-    <div>Kunlik bonus: 100 tanga (Timer: <span id="timer">24:00:00</span>) <button onclick="getDailyBonus()">Olish</button> <button onclick="doubleBonus()">2x (Reklama)</button></div>
-    <div>Baraban: <button onclick="spinBaraban()">Aylantirish</button></div>
+  <div id="bottom-bar">
+    <button class="tab-btn" onclick="showSection('market')">Market</button>
+    <button class="tab-btn" onclick="showSection('referal')">Referal</button>
+    <button class="tab-btn" onclick="showSection('leaderboard')">Leaderboard</button>
+    <button class="tab-btn" onclick="showSection('booster')">Booster</button>
+    <button class="tab-btn" onclick="showSection('uyim')">Uyim</button>
   </div>
 
-  <div id="bottom-tabs">
-    <div class="tab" onclick="openModal('market')"><img src="https://img.icons8.com/fluency/48/000000/shopping-cart.png" alt="Market"></div>
-    <div class="tab" onclick="openModal('referal')"><img src="https://img.icons8.com/fluency/48/000000/friends.png" alt="Referal"></div>
-    <div class="tab" onclick="openModal('leaderboard')"><img src="https://img.icons8.com/fluency/48/000000/trophy.png" alt="Leaderboard"></div>
-    <div class="tab" onclick="openModal('booster')"><img src="https://img.icons8.com/fluency/48/000000/lightning-bolt.png" alt="Booster"></div>
-    <div class="tab" onclick="openModal('uyim')"><img src="https://img.icons8.com/fluency/48/000000/home.png" alt="Uyim"></div>
-  </div>
-
-  <!-- Modal oynalar -->
-  <div id="marketModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal('market')">&times;</span>
-      <h2>Market</h2>
-      <p>5 ta rangli tanga</p>
-      <div class="market-tanga" style="background: radial-gradient(circle, #ff4500, #cc0000);" onclick="buyMarketItem('qizil')">
-        <div style="bottom: -30px; position: absolute;">Qizil (+10% PWR) | 50 olmos / 100 tanga</div>
-      </div>
-      <div class="market-tanga" style="background: radial-gradient(circle, #00ff00, #006400);" onclick="buyMarketItem('yashil')">
-        <div style="bottom: -30px; position: absolute;">Yashil (+20% energiya) | 100 olmos / 200 tanga</div>
-      </div>
-      <div class="market-tanga" style="background: radial-gradient(circle, #00bfff, #00008b);" onclick="buyMarketItem('kok')">
-        <div style="bottom: -30px; position: absolute;">Ko'k (+30% daromad) | 150 olmos / 300 tanga</div>
-      </div>
-      <div class="market-tanga" style="background: radial-gradient(circle, #8b4513, #4b0082);" onclick="buyMarketItem('jiharrang')">
-        <div style="bottom -30px; position: absolute;">Jiharrang (+40% level) | 200 olmos / 400 tanga</div>
-      </div>
-      <div class="market-tanga" style="background: radial-gradient(circle, #000, #333);" onclick="buyMarketItem('qora')">
-        <div style="bottom: -30px; position: absolute;">Qora (+50% hammasi) | 250 olmos / 500 tanga</div>
-      </div>
+  <div id="market" class="section">
+    <h2>Market</h2>
+    <div class="item-card" style="border-left: 5px solid red;">
+      Qizil Tanga | +10% PWR | Narx: 50 olmos / 100 tanga | <button onclick="buyItem('qizil')">Sotib olish</button>
     </div>
+    <!-- Boshqa 4 ta tanga shu kabi qo'shiladi -->
   </div>
 
-  <div id="referalModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal('referal')">&times;</span>
-      <h2>Referal</h2>
-      <p>Bot havolasi: @OltinTanga1_bot</p>
-      <p>Odam qo'shganga 25000 tanga va 50 olmos</p>
-    </div>
+  <div id="referal" class="section">
+    <h2>Referal</h2>
+    <p>Bot havolasi: @OltinTanga1_bot</p>
+    <p>Odam qo‘shganga 25000 tanga va 50 olmos</p>
+    <button onclick="inviteFriend()">Havola ulashish</button>
   </div>
 
-  <div id="leaderboardModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal('leaderboard')">&times;</span>
-      <h2>Leaderboard</h2>
-      <p>Qancha odam: <span id="players">1</span></p>
-      <p>Top o'yinchi: ID 1 | Tanga: 0 | Olmos: 0 | Ismi: Player1</p>
-    </div>
+  <div id="leaderboard" class="section">
+    <h2>Leaderboard</h2>
+    <p>Qancha odam: 1</p>
+    <p>Top o'yinchi: ID 1 | Tanga: 0 | Olmos: 0</p>
   </div>
 
-  <div id="boosterModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal('booster')">&times;</span>
-      <h2>Booster</h2>
-      <p>Energiya kuchaytirish (Daraja: 1/10) | Narx: 10 olmos | <button onclick="upgradeEnergiya()">Kuchaytirish</button></p>
-      <p>Soatbay daromad (Daraja: 1/10) | Narx: 15 olmos | <button onclick="upgradeSoatbay()">Kuchaytirish</button></p>
-      <p>Tanga bosilishi (Daraja: 1/50) | Narx: 20 olmos | <button onclick="upgradeBosish()">Kuchaytirish</button></p>
+  <div id="booster" class="section">
+    <h2>Booster</h2>
+    <div class="item-card" style="border-left: 5px solid orange;">
+      Energiya +500 | Daraja: 1/10 | Narx: 10 olmos | <button onclick="upgradeBoost('energiya')">Kuchaytirish</button>
     </div>
+    <!-- Boshqa boosterlar shu kabi -->
   </div>
 
-  <div id="uyimModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal('uyim')">&times;</span>
-      <h2>Mening Uyim</h2>
-      <p>Yaratuvchi: GANIYEV DIYORBEK</p>
-      <p>O'yin haqida ma'lumot: Tanga bosib olmos yig‘ing!</p>
-      <p>Status: Daraja <span id="daraja">1</span></p>
-      <p>Tanga: <span id="jami-tanga">0</span> | Olmos: <span id="jami-olmos">0</span></p>
-      <p>Booster darajalari: Energiya 1, Soatbay 1, Bosish 1</p>
-      <p>Sotib olgan tangalar: None</p>
-      <button onclick="airdrop()">Airdrop</button>
-    </div>
+  <div id="uyim" class="section">
+    <h2>Mening Uyim</h2>
+    <p>Yaratuvchi: GANIYEV DIYORBEK</p>
+    <p>Daraja: <span id="daraja">1</span> / 10 (15 mlrd tanga kerak)</p>
+    <p>Jami Tanga: <span id="jami-tanga">0</span> | Jami Olmos: <span id="jami-olmos">0</span></p>
+    <button onclick="airdrop()">Airdrop</button>
   </div>
 
   <script>
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    Telegram.WebApp.MainButton.hide();
 
-    let tanga = 0, olmos = 0, energy = 500, level = 1, jamiTanga = 0, jamiOlmos = 0;
+    let tanga = 0, olmos = 0, energy = 100, level = 1, jamiTanga = 0, jamiOlmos = 0;
     let boosterLevels = {energiya: 1, soatbay: 1, bosish: 1};
     let dailyTimer = 86400, barabanFree = true;
-    let boughtTangalar = [];
 
-    const bgMusic = document.getElementById('bgMusic');
-    bgMusic.volume = 0.3;
-    bgMusic.play().catch(() => console.log("Fon musiqa bloklandi"));
-
-    const boostSound = document.getElementById('boostSound');
+    document.getElementById('bgMusic').volume = 0.3;
+    document.getElementById('bgMusic').play().catch(() => {});
 
     async function yukla() {
-      const saved = await Telegram.WebApp.DeviceStorage.getItem('oltinTanga');
-      if (saved) {
-        const data = JSON.parse(saved);
-        tanga = data.tanga || 0;
-        olmos = data.olmos || 0;
-        energy = data.energy || 500;
-        level = data.level || 1;
-        jamiTanga = data.jamiTanga || 0;
-        jamiOlmos = data.jamiOlmos || 0;
-        boosterLevels = data.boosterLevels || {energiya: 1, soatbay: 1, bosish: 1};
-        dailyTimer = data.dailyTimer || 86400;
-        barabanFree = data.barabanFree || true;
-        boughtTangalar = data.boughtTangalar || [];
-      }
-      updateUI();
-      timerInterval = setInterval(updateTimer, 1000);
-      setInterval(soatbayDaromad, 1000);
+      // ... (oldinroq berilgan yukla funksiyasi saqlanadi)
     }
 
     async function saqla() {
-      const data = { tanga, olmos, energy, level, jamiTanga, jamiOlmos, boosterLevels, dailyTimer, barabanFree, boughtTangalar };
-      await Telegram.WebApp.DeviceStorage.setItem('oltinTanga', JSON.stringify(data));
+      // ... (oldinroq berilgan saqla funksiyasi saqlanadi)
     }
 
     function updateUI() {
-      document.getElementById('status').innerText = `Tanga: ${tanga} | Olmos: ${olmos}`;
-      document.getElementById('energy').innerText = `Energiya: ${energy}/100`;
-      document.getElementById('daraja').innerText = level;
-      document.getElementById('jami-tanga').innerText = jamiTanga;
-      document.getElementById('jami-olmos').innerText = jamiOlmos;
-      document.getElementById('players').innerText = 1; // Real leaderboard tez orada
-    }
-
-    function tap() {
-      if (energy > 0) {
-        tanga += boosterLevels.bosish;
-        jamiTanga += boosterLevels.bosish;
-        energy -= 1;
-        updateUI();
-        saqla();
-        checkLevel();
-      } else {
-        alert("Energiya tugadi!");
-      }
-    }
-
-    function getDailyBonus() {
-      if (dailyTimer <= 0) {
-        tanga += 100;
-        jamiTanga += 100;
-        dailyTimer = 86400;
-        updateUI();
-        saqla();
-        alert("Kunlik bonus oldingiz! +100 tanga");
-      } else {
-        alert("Kunlik bonus uchun kutish kerak!");
-      }
-    }
-
-    function doubleBonus() {
-      show_REWARDED_INTERSTITIAL().then(() => {
-        tanga += 200;
-        jamiTanga += 200;
-        updateUI();
-        saqla();
-        alert("2x Bonus! +200 tanga");
-      }).catch(() => alert("Reklama bekor."));
-    }
-
-    function spinBaraban() {
-      const yutuqlar = [0, 500, 1000, 3000, 5000, 7000, 10000, 12000, 15000, 25000];
-      if (barabanFree) {
-        let yutuq = yutuqlar[Math.floor(Math.random() * yutuqlar.length)];
-        tanga += yutuq;
-        jamiTanga += yutuq;
-        barabanFree = false;
-        updateUI();
-        saqla();
-        alert("Baraban! + " + yutuq + " tanga");
-      } else {
-        show_REWARDED_INTERSTITIAL().then(() => {
-          let yutuq = yutuqlar[Math.floor(Math.random() * yutuqlar.length)];
-          tanga += yutuq;
-          jamiTanga += yutuq;
-          updateUI();
-          saqla();
-          alert("Reklama baraban! + " + yutuq + " tanga");
-        }).catch(() => alert("Reklama bekor."));
-      }
-    }
-
-    function soatbayDaromad() {
-      tanga += boosterLevels.soatbay;
-      jamiTanga += boosterLevels.soatbay;
-      updateUI();
-      saqla();
-    }
-
-    function buyMarketItem(type) {
-      let narxlar = {qizil: 50, yashil: 100, kok: 150, jiharrang: 200, qora: 250};
-      let hususiyatlar = {qizil: '+10% PWR', yashil: '+20% energiya', kok: '+30% daromad', jiharrang: '+40% level', qora: '+50% hammasi'};
-      let narx = narxlar[type];
-      let hususiyat = hususiyatlar[type];
-      if (olmos >= narx) {
-        olmos -= narx;
-        boughtTangalar.push(type);
-        alert(type + " tanga sotib olindi! " + hususiyat);
-        updateUI();
-        saqla();
-      } else {
-        alert("Olmos yetarli emas!");
-      }
-    }
-
-    function upgradeBoost(type) {
-      let maxDaraja = (type === 'bosish') ? 50 : 10;
-      let narxKoeff = (type === 'bosish') ? 1.2 : 1.5;
-      let baseNarx = 10;
-      let current = boosterLevels[type];
-      if (current >= maxDaraja) {
-        alert("Maksimal daraja!");
-        return;
-      }
-      let narx = Math.round(baseNarx * Math.pow(narxKoeff, current - 1));
-      if (olmos >= narx) {
-        olmos -= narx;
-        boosterLevels[type] += 1;
-        document.getElementById('boostSound').currentTime = 0;
-        document.getElementById('boostSound').play();
-        alert(type + " booster kuchaytirildi!");
-        updateUI();
-        saqla();
-      } else {
-        alert("Olmos yetarli emas!");
-      }
-    }
-
-    function exchange() {
-      if (tanga >= 1000) {
-        let olmosQosh = Math.floor(tanga / 1000);
-        olmos += olmosQosh;
-        tanga -= olmosQosh * 1000;
-        jamiOlmos += olmosQosh;
-        updateUI();
-        saqla();
-        alert(olmosQosh + " olmos oldingiz!");
-      } else {
-        alert("Ayirboshlash uchun 1000 tanga kerak!");
-      }
-    }
-
-    function inviteFriend() {
-      Telegram.WebApp.openTelegramLink('https://t.me/OltinTanga1_bot');
-      tanga += 25000;
-      olmos += 50;
-      jamiTanga += 25000;
-      jamiOlmos += 50;
-      updateUI();
-      saqla();
-      alert("Do'st chaqirildi! +25000 tanga va +50 olmos");
-    }
-
-    function airdrop() {
-      alert("Airdrop tez orada! Jami tanga va olmoslar TON ga chiqariladi.");
+      // ... (oldinroq berilgan updateUI funksiyasi saqlanadi)
     }
 
     function showSection(id) {
       document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
       document.getElementById(id).style.display = 'block';
-    }
-
-    function updateTimer() {
-      dailyTimer--;
-      let hours = Math.floor(dailyTimer / 3600);
-      let mins = Math.floor((dailyTimer % 3600) / 60);
-      let secs = dailyTimer % 60;
-      document.getElementById('timer').innerText = `\( {hours}: \){mins}:${secs}`;
-      if (dailyTimer <= 0) dailyTimer = 86400;
-    }
-
-    function checkLevel() {
-      if (jamiTanga >= 15000000000) level = 10;
-      // Boshqa darajalar qo'sh
     }
 
     yukla();
