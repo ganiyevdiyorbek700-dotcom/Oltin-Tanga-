@@ -3,180 +3,267 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tanga Hamster</title>
+  <title>Oltin Tanga</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- Monetag Rewarded Interstitial SDK – sizning zone ID bilan -->
-  <script src="https://monetag-sdk.com/sdk.js" data-zone="10558007" data-sdk="show_REWARDED_INTERSTITIAL"></script>
-
+  <script async src="https://monetag-sdk.com/sdk.js" data-zone="10558007" data-sdk="show_REWARDED_INTERSTITIAL"></script>
   <style>
     body {
       margin: 0;
-      background: linear-gradient(#0A0E17, #00D4FF);
-      color: #FFD700;
-      font-family: Arial Black, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+      color: #ffd700;
+      font-family: 'Arial Black', sans-serif;
       text-align: center;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       overflow: hidden;
+      position: relative;
     }
-    #header { padding: 10px; font-size: 18px; background: rgba(0,0,0,0.4); }
-    #hamster {
-      width: 220px;
-      height: 220px;
-      background: #39FF14;
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: rgba(0,0,0,0.8);
+      font-size: 16px;
+    }
+    #center-tap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, #ffd700, #ffed4e);
       border-radius: 50%;
-      margin: 20px auto;
       cursor: pointer;
-      box-shadow: 0 0 30px #39FF14;
-      animation: glow 2s infinite;
+      box-shadow: 0 0 50px #ffd700;
+      animation: pulse 2s infinite;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 80px;
+      font-size: 120px;
     }
-    @keyframes glow { 0%,100% {box-shadow:0 0 20px #39FF14;} 50% {box-shadow:0 0 60px #39FF14;} }
-    #bonus, #baraban { margin: 15px; font-size: 20px; }
+    @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.05); } }
+    #bonus-section { padding: 20px; }
     button {
-      background: #FF4500;
+      background: linear-gradient(45deg, #ff4500, #ff8c00);
       color: white;
       border: none;
       padding: 12px 24px;
-      border-radius: 30px;
-      font-size: 18px;
-      margin: 8px;
+      border-radius: 25px;
+      font-size: 16px;
+      margin: 5px;
       cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255,69,0,0.5);
     }
-    #energy { font-size: 18px; margin: 10px; }
-    .tab-bar {
+    #bottom-bar {
       position: fixed;
       bottom: 0;
       width: 100%;
-      background: rgba(0,0,0,0.7);
-      padding: 12px 0;
+      background: rgba(0,0,0,0.9);
       display: flex;
       justify-content: space-around;
+      padding: 15px 0;
     }
-    .tab-btn { background: none; border: none; color: #00D4FF; font-size: 16px; cursor: pointer; }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #ffd700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .section { display: none; padding: 20px; }
+    .section.active { display: block; }
+    .item-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 15px;
+      margin: 10px;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
-  <div id="header">
-    <div id="status">Daraja: 1 | Tanga: 0 | Olmos: 0</div>
+  <div id="top-bar">
+    <div>Lvl 1</div>
+    <div>PWR 1 | 500/s</div>
     <div id="energy">Energiya: 100/100</div>
   </div>
 
-  <div id="hamster" onclick="bosish()">🦫</div>
-
-  <div id="bonus">
-    Kunlik bonus: <span id="bonusAmount">100</span> tanga
-    <button onclick="doubleDailyBonus()">2x (reklama)</button>
+  <div id="center-tap" onclick="tap()">
+    🦫
   </div>
 
-  <div id="baraban">
-    <button onclick="spinBaraban()">Omadli Baraban aylantir (2 reklama)</button>
+  <div id="bonus-section">
+    <div id="status">Tanga: 0 | Olmos: 0</div>
+    <button onclick="doubleBonus()">2x Bonus (Reklama)</button>
+    <button onclick="spinWheel()">Omadli Baraban (2 Reklama)</button>
   </div>
 
-  <div class="tab-bar">
-    <button class="tab-btn">Market</button>
-    <button class="tab-btn">Referral</button>
-    <button class="tab-btn">Leaderboard</button>
-    <button class="tab-btn">Booster</button>
-    <button class="tab-btn">Uyim</button>
+  <div id="bottom-bar">
+    <button class="tab-btn" onclick="showSection('market')">Bozor</button>
+    <button class="tab-btn" onclick="showSection('boost')">Boost</button>
+    <button class="tab-btn" onclick="showSection('home')">Uyim</button>
+  </div>
+
+  <!-- Market bo'limi -->
+  <div id="market" class="section">
+    <h2>Market (5 ta rangli tanga)</h2>
+    <div class="item-card" style="border-left: 5px solid green;">
+      Yashil Tanga | +10% tezlik | Narx: 10 olmos | <button onclick="buyItem('yashil')">Sotib olish</button>
+    </div>
+    <div class="item-card" style="border-left: 5px solid blue;">
+      Ko'k Tanga | +20% energiya | Narx: 20 olmos | <button onclick="buyItem('ko'k')">Sotib olish</button>
+    </div>
+    <div class="item-card" style="border-left: 5px solid purple;">
+      Binafsha Tanga | +30% daromad | Narx: 30 olmos | <button onclick="buyItem('binafsha')">Sotib olish</button>
+    </div>
+    <div class="item-card" style="border-left: 5px solid red;">
+      Qizil Tanga | +50% PWR | Narx: 50 olmos | <button onclick="buyItem('qizil')">Sotib olish</button>
+    </div>
+    <div class="item-card" style="border-left: 5px solid gold;">
+      Oltin Tanga | +100% hammasi | Narx: 100 olmos | <button onclick="buyItem('oltin')">Sotib olish</button>
+    </div>
+    <button onclick="exchange()">Tanga → Olmos ayirboshlash (1 tanga = 0.001 olmos)</button>
+  </div>
+
+  <!-- Boost bo'limi -->
+  <div id="boost" class="section">
+    <h2>Boosterlar</h2>
+    <div class="item-card" style="border-left: 5px solid orange;">
+      Soatbay +50% | 1 soat | 20 olmos | <button onclick="buyBoost('soatbay')">Sotib olish</button>
+    </div>
+    <div class="item-card" style="border-left: 5px solid cyan;">
+      Tanga bosish +2x | 30 daqiqa | 15 olmos | <button onclick="buyBoost('bosish')">Sotib olish</button>
+    </div>
+    <div class="item-card" style="border-left: 5px solid lime;">
+      Energiya +100% | 1 soat | 25 olmos | <button onclick="buyBoost('energiya')">Sotib olish</button>
+    </div>
+  </div>
+
+  <!-- Uyim bo'limi -->
+  <div id="home" class="section">
+    <h2>Mening Uyim</h2>
+    <p>O'yin haqida: Tanga bosib olmos yig'ing, airdrop oling!</p>
+    <p>Airdrop: TON wallet ga chiqarish (keyinroq ulanadi)</p>
+    <p>Jami Tanga: <span id="total-tanga">0</span> | Olmos: <span id="total-olmos">0</span></p>
   </div>
 
   <script>
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    Telegram.WebApp.MainButton.setText("Saqlash").show();
-    Telegram.WebApp.MainButton.onClick(saqla);
+    Telegram.WebApp.MainButton.hide(); // Saqlash tugmasini yashirish
 
-    let tanga = 0;
-    let olmos = 0;
-    let level = 1;
-    let energy = 100;
+    let tanga = 0, olmos = 0, energy = 100, level = 1, totalTanga = 0, totalOlmos = 0;
 
-    // Progress yuklash (app ochilganda)
-    async function yuklaProgress() {
-      const saved = await Telegram.WebApp.DeviceStorage.getItem('tangaHamsterProgress');
+    async function yukla() {
+      const saved = await Telegram.WebApp.DeviceStorage.getItem('oltinTanga');
       if (saved) {
         const data = JSON.parse(saved);
         tanga = data.tanga || 0;
         olmos = data.olmos || 0;
-        level = data.level || 1;
         energy = data.energy || 100;
-        updateUI();
+        totalTanga = data.totalTanga || 0;
+        totalOlmos = data.totalOlmos || 0;
       }
+      updateUI();
     }
 
-    // Progress saqlash
     async function saqla() {
-      const data = { tanga, olmos, level, energy };
-      await Telegram.WebApp.DeviceStorage.setItem('tangaHamsterProgress', JSON.stringify(data));
+      const data = { tanga, olmos, energy, totalTanga, totalOlmos };
+      await Telegram.WebApp.DeviceStorage.setItem('oltinTanga', JSON.stringify(data));
     }
 
     function updateUI() {
-      document.getElementById('status').innerText = `Daraja: ${level} | Tanga: ${tanga} | Olmos: ${olmos}`;
+      document.getElementById('status').innerText = `Tanga: ${tanga} | Olmos: ${olmos}`;
       document.getElementById('energy').innerText = `Energiya: ${energy}/100`;
+      document.getElementById('total-tanga').innerText = totalTanga;
+      document.getElementById('total-olmos').innerText = totalOlmos;
     }
 
-    // Hamster bosish
-    function bosish() {
+    function tap() {
       if (energy > 0) {
-        tanga += 1;  // keyinchalik darajaga qarab ko'paytirsa bo'ladi
+        tanga += 1;
+        totalTanga += 1;
         energy -= 1;
         updateUI();
         saqla();
       } else {
-        alert("Energiya tugadi! Reklama ko'rib yoki kutib tiklang.");
+        alert("Energiya tugadi! Booster oling yoki kutib turing.");
       }
     }
 
-    // Kunlik bonus 2x (bitta reklama)
-    function doubleDailyBonus() {
-      show_10558007()
-        .then(() => {
-          let bonus = 200;  // oddiy 100 → 2x = 200
-          tanga += bonus;
+    function doubleBonus() {
+      if (typeof show_10558007 === 'function') {
+        show_10558007().then(() => {
+          tanga += 200;
+          totalTanga += 200;
           updateUI();
           saqla();
-          alert(`Kunlik bonus 2x oldingiz! +${bonus} tanga qo'shildi! 🎉`);
-        })
-        .catch(() => {
-          alert("Reklama bekor qilindi yoki yuklanmadi.");
-        });
+          alert("2x Bonus! +200 tanga 🎉");
+        }).catch(() => alert("Reklama bekor qilindi."));
+      } else {
+        alert("Reklama yuklanmadi.");
+      }
     }
 
-    // Baraban – 2 marta reklama ko'rib aylantirish
-    function spinBaraban() {
-      show_10558007()
-        .then(() => {
-          // Birinchi reklama muvaffaqiyatli
-          show_10558007()
-            .then(() => {
-              // Ikkinchi reklama ham muvaffaqiyatli
-              let yutuq = Math.floor(Math.random() * 2000) + 100; // 100–2100 tanga
-              tanga += yutuq;
-              updateUI();
-              saqla();
-              alert(`Baraban 2 marta aylandi! Katta yutuq: +${yutuq} tanga! 🔥`);
-            })
-            .catch(() => {
-              alert("Ikkinchi reklama bekor qilindi. Birinchi uchun +50 tanga.");
-              tanga += 50;
-              updateUI();
-              saqla();
-            });
-        })
-        .catch(() => {
-          alert("Birinchi reklama yuklanmadi. Baraban bekor.");
-        });
+    function spinWheel() {
+      if (typeof show_10558007 === 'function') {
+        show_10558007().then(() => {
+          show_10558007().then(() => {
+            let yutuq = Math.floor(Math.random() * 2000) + 100;
+            tanga += yutuq;
+            totalTanga += yutuq;
+            updateUI();
+            saqla();
+            alert("Baraban! + " + yutuq + " tanga 🔥");
+          }).catch(() => alert("Ikkinchi reklama bekor."));
+        }).catch(() => alert("Birinchi reklama bekor."));
+      } else {
+        alert("Reklama yuklanmadi.");
+      }
     }
 
-    // App ochilganda progress yuklash
-    yuklaProgress();
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function buyItem(type) {
+      if (olmos >= 10) {
+        olmos -= 10;
+        alert(type + " sotib olindi!");
+        updateUI();
+        saqla();
+      } else {
+        alert("Olmos yetarli emas!");
+      }
+    }
+
+    function buyBoost(type) {
+      if (olmos >= 15) {
+        olmos -= 15;
+        alert(type + " booster sotib olindi!");
+        updateUI();
+        saqla();
+      } else {
+        alert("Olmos yetarli emas!");
+      }
+    }
+
+    function exchange() {
+      let ayir = Math.floor(tanga * 0.001); // 1 tanga = 0.001 olmos
+      if (ayir > 0) {
+        olmos += ayir;
+        tanga -= ayir * 1000;
+        totalOlmos += ayir;
+        updateUI();
+        saqla();
+        alert(ayir + " olmos oldingiz!");
+      } else {
+        alert("Ayirboshlash uchun 1000 tanga kerak!");
+      }
+    }
+
+    yukla();
   </script>
 </body>
   </html>
