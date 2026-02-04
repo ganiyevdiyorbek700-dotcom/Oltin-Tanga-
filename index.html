@@ -5,51 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Oltin Tanga</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script async src="https://monetag.com/sdk.js" data-zone="10558007" data-sdk="show_REWARDED_INTERSTITIAL"></script>
   <style>
     body { margin:0; background:#000; color:#ffd700; font-family:Arial,sans-serif; height:100vh; overflow:hidden; background:radial-gradient(circle at center,#1a0033,#000); }
-    #status-bar { display:flex; justify-content:space-around; padding:10px; background:rgba(75,0,130,0.8); border-radius:10px; margin:10px; font-size:14px; }
-    #center-coin { position:absolute; top:45%; left:50%; transform:translate(-50%,-50%); text-align:center; }
-    #big-coin { width:300px; height:300px; background:radial-gradient(circle,#ffd700,#ffcc00,#d4a017); border-radius:50%; box-shadow:0 0 80px #ffd700; animation:pulse 3s infinite; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:120px; color:#000; font-weight:bold; margin:0 auto; }
+    #status-bar { position:fixed; top:0; width:100%; padding:12px; background:rgba(75,0,130,0.8); font-size:14px; text-align:center; z-index:10; border-radius:0 0 15px 15px; box-shadow:0 4px 10px rgba(0,0,0,0.5); }
+    #status-bar span { font-weight:bold; margin:0 8px; }
+    #center-coin { position:absolute; top:45%; left:50%; transform:translate(-50%,-50%); text-align:center; width:100%; }
+    #big-coin { width:320px; height:320px; background:radial-gradient(circle,#ffd700,#ffcc00,#d4a017); border-radius:50%; box-shadow:0 0 100px #ffd700; animation:pulse 3s infinite; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:140px; color:#000; font-weight:bold; margin:0 auto; position:relative; }
     @keyframes pulse { 0%,100% {transform:scale(1);} 50% {transform:scale(1.08);} }
-    #coin-count { font-size:60px; margin:10px 0; color:#ffd700; }
-    #energy-bar { width:80%; height:20px; background:#222; border-radius:10px; margin:10px auto; overflow:hidden; }
+    #coin-count { font-size:80px; margin:10px 0; color:#ffd700; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); }
+    #energy-bar { position:fixed; bottom:80px; width:90%; height:25px; background:#222; border-radius:12px; margin:0 auto; overflow:hidden; left:5%; right:5%; box-shadow:0 0 15px #00ff00; }
     #energy-fill { height:100%; background:linear-gradient(to right,#00ff00,#00cc00); width:100%; transition:width 0.5s; }
-    #bonus-bar { position:fixed; top:80px; width:100%; padding:10px; background:rgba(0,0,0,0.7); font-size:14px; display:flex; justify-content:space-between; align-items:center; }
+    #bonus-bar { position:fixed; top:60px; width:100%; padding:10px; background:rgba(0,0,0,0.7); font-size:14px; display:flex; justify-content:space-between; align-items:center; z-index:5; }
     #bottom-tabs { position:fixed; bottom:0; width:100%; display:flex; justify-content:space-around; background:rgba(0,0,0,0.9); padding:10px 0; }
-    .tab { text-align:center; color:white; font-size:12px; cursor:pointer; padding:8px; width:60px; }
-    .tab img { width:30px; height:30px; display:block; margin:0 auto 4px; }
+    .tab { text-align:center; color:white; font-size:12px; cursor:pointer; padding:8px; width:60px; border-radius:50%; background:radial-gradient(circle,#4b0082,#2f004f); margin:0 5px; box-shadow:0 0 15px #4b0082; }
+    .tab img { width:32px; height:32px; display:block; margin:0 auto 4px; }
     .tab span { display:block; font-size:10px; color:#ffd700; }
-    .section { display:none; padding:20px; background:rgba(0,0,0,0.8); border-radius:15px; margin:10px; overflow-y:auto; height:60vh; }
-    .section.active { display:block; }
   </style>
 </head>
 <body>
-  <audio id="bgMusic" loop>
-    <source src="https://cdn.pixabay.com/audio/2023/08/07/audio_8f8e2c5d5f.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="boostSound">
-    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_9f8b6c8e3c.mp3" type="audio/mpeg">
-  </audio>
-
   <div id="status-bar">
-    <div>STATUS: <span id="status">Bronze</span></div>
-    <div>SOATIGA FOYDA: <span id="perHour">0</span></div>
-    <div>TAP KU CHI: <span id="tapPower">1</span></div>
+    <div>STATUS: <span id="status">Bronze</span> SOATIGA FOYDA: <span id="perHour">0</span> TAP KU CHI: <span id="tapPower">1</span></div>
   </div>
 
   <div id="center-coin">
-    <div id="big-coin" onclick="tap()">0</div>
-    <div id="coin-count">0</div>
+    <div id="big-coin" onclick="tap()">
+      <div id="coin-count">0</div>
+    </div>
     <div>OLTINLARIM</div>
     <div>Soatiga: <span id="perSecond">0</span> 🪙</div>
-    <div id="energy-bar"><div id="energy-fill" style="width:100%"></div></div>
   </div>
 
   <div id="bonus-bar">
     <div>Kunlik bonus: 100 tanga (Timer: <span id="timer">24:00:00</span>)</div>
     <div>Baraban: <button onclick="spinBaraban()">Aylantirish</button></div>
   </div>
+
+  <div id="energy-bar"><div id="energy-fill" style="width:100%"></div></div>
 
   <div id="bottom-tabs">
     <div class="tab" onclick="showSection('bozor')">
@@ -82,10 +73,6 @@
     let energy = 500;
     let tapPower = 1;
     let perHour = 0;
-    let dailyTimer = 86400;
-
-    document.getElementById('bgMusic').volume = 0.3;
-    document.getElementById('bgMusic').play().catch(() => {});
 
     function tap() {
       if (energy > 0) {
@@ -100,11 +87,8 @@
     }
 
     function showSection(id) {
-      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-      document.getElementById(id).style.display = 'block';
+      alert(id + " bo'limi ochildi! (Tez orada to'liq funksiya qo'shiladi)");
     }
-
-    // Keyingi funksiyalar (kunlik bonus, baraban, booster) tez orada qo'shiladi
   </script>
 </body>
-                           </html>
+</html>
