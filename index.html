@@ -1,294 +1,107 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga - Ganiyev Diyorbek</title>
-    <script src="https://alwingulla.com/tag.min.js" data-zone="10558007" async></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root { --bg: #050810; --accent: #f59e0b; --card: #111827; --purple: #7c3aed; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; }
-
-        /* Status Paneli (Skrinshotdagidek 3ta bo'lim) */
-        .header-stats { display: flex; justify-content: space-around; padding: 10px; margin-top: 10px; gap: 8px; }
-        .stat-box { background: rgba(124, 58, 237, 0.1); border: 1px solid var(--purple); border-radius: 12px; flex: 1; padding: 10px 5px; }
-        .stat-label { font-size: 8px; color: #888; display: block; text-transform: uppercase; margin-bottom: 2px; }
-        .stat-value { font-size: 14px; font-weight: bold; color: var(--accent); }
-
-        /* Game Area */
-        .total-coins { font-size: 55px; font-weight: 900; color: #facc15; margin: 20px 0 10px 0; text-shadow: 0 0 20px rgba(250, 204, 21, 0.4); }
-        .tanga-container { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-        .main-coin { width: 230px; height: 230px; background: radial-gradient(circle, #facc15 0%, #ca8a04 100%); border-radius: 50%; border: 8px solid #854d0e; box-shadow: 0 0 50px rgba(250, 204, 21, 0.4); display: flex; align-items: center; justify-content: center; font-size: 70px; font-weight: 900; cursor: pointer; transition: transform 0.05s; z-index: 5; }
-        .main-coin:active { transform: scale(0.95); }
-
-        .side-circle { position: absolute; width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); background: #000; display: flex; align-items: center; justify-content: center; font-size: 25px; z-index: 10; cursor: pointer; }
-        .btn-left { left: 5px; } .btn-right { right: 5px; background: conic-gradient(red, yellow, green, blue, red); }
-
-        /* Energy Bar */
-        .energy-section { width: 90%; margin: 25px auto; }
-        .energy-bar { height: 14px; background: #1e293b; border-radius: 10px; overflow: hidden; border: 1px solid #334155; }
-        .energy-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #a855f7, #3b82f6); transition: width 0.3s; }
-
-        /* Nav Footer (Skrinshotdagidek tartibda) */
-        .nav-footer { position: fixed; bottom: 0; width: 100%; background: #0a0e1a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 1000; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; opacity: 0.6; }
-        .nav-icon { width: 48px; height: 48px; background: #1e293b; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: 22px; }
-        .nav-item span { font-size: 10px; color: #888; text-transform: uppercase; font-weight: bold; }
-        .nav-item.active { opacity: 1; color: white; }
-        .nav-item.active .nav-icon { background: var(--purple); border: 2px solid white; }
-        .nav-item.active span { color: var(--accent); }
-
-        /* Section Modals */
-        .section { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto; padding-bottom: 100px; }
-        .section.active { display: block; }
-        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-        .btn { background: var(--accent); color: black; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        #notify { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 5000; display: none; }
-    </style>
-</head>
-<body>
-
-    <div id="notify"></div>
-    <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
-
-    <div class="header-stats">
-        <div class="stat-box"><span class="stat-label">STATUS</span><span class="stat-value">Bronza</span></div>
-        <div class="stat-box"><span class="stat-label">SOATIGA FOYDA</span><span class="stat-value" id="h-inc">0</span></div>
-        <div class="stat-box"><span class="stat-label">TAP KUCHI</span><span class="stat-value" id="t-pwr">1</span></div>
+<div id="spin-sec" class="section">
+    <h2 style="color:var(--accent)">🎁 Tasodifiy Tanga Olish</h2>
+    <div id="spin-result" style="font-size:30px; font-weight:bold; margin:30px; color:#facc15;">🎁 Omadingizni sinang!</div>
+    
+    <div id="spin-info" style="font-size:12px; margin-bottom:15px; opacity:0.8;">
+        Bugungi reklamali urinishlar: <span id="ads-count">0</span> / 3
     </div>
 
-    <div id="game-container">
-        <div class="total-coins" id="total-coins">0</div>
-        <div class="tanga-container">
-            <div class="side-circle btn-left" onclick="openSec('daily')">🎁</div>
-            <div class="main-coin" id="coin-ui" onclick="handleTap(event)">1</div>
-            <div class="side-circle btn-right" onclick="openSec('spin')">🎡</div>
-        </div>
-        <div class="energy-section">
-            <div style="font-size:14px; font-weight:bold; margin-bottom:5px;">⚡ <span id="e-text">500 / 500</span></div>
-            <div class="energy-bar"><div class="energy-fill" id="e-fill"></div></div>
-        </div>
-    </div>
+    <button class="btn" id="spin-btn" style="width:100%; height:60px;" onclick="startSpin()">
+        TEKIN IMKONIYAT
+    </button>
+    
+    <button class="btn" style="width:100%; margin-top:20px; background:#555; color:white;" onclick="closeSec()">YOPISH</button>
+</div>
 
-    <div id="market-sec" class="section">
-        <h2 style="color:var(--accent)">🛒 Tanga Bozori</h2>
-        <div class="card"><span>🔴 Qizil Tanga</span><button class="btn" onclick="buySkin('Red', 500)">500 💎</button></div>
-        <div class="card"><span>🟢 Yashil Tanga</span><button class="btn" onclick="buySkin('Green', 1000)">1000 💎</button></div>
-        <div class="card"><span>🔵 Ko'k Tanga</span><button class="btn" onclick="buySkin('Blue', 2500)">2500 💎</button></div>
-        <div class="card"><span>🟤 Jigarrang Tanga</span><button class="btn" onclick="buySkin('Brown', 5000)">5000 💎</button></div>
-        <div class="card"><span>⚫ Qora Tanga</span><button class="btn" onclick="buySkin('Black', 10000)">10000 💎</button></div>
-        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
-    </div>
+<script type="module">
+    // ... (Firebase va boshqa sozlamalar o'zgarishsiz qoladi)
 
-    <div id="ref-sec" class="section">
-        <h2 style="color:var(--accent)">👥 Do'stlarni Taklif Qiling</h2>
-        <div class="card" style="flex-direction:column; gap:10px;">
-            <p style="font-size:12px;">Sizning referal ssilkangiz:</p>
-            <input type="text" id="ref-link" readonly style="width:100%; padding:10px; background:#000; color:var(--accent); border:1px solid var(--purple); border-radius:8px;">
-            <button class="btn" onclick="copyRef()">Nusxalash</button>
-        </div>
-        <div class="card"><span>Bonus: <b id="p-bonus">0</b> 💰</span><button class="btn" onclick="claimRef()">OLISH</button></div>
-        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
-    </div>
+    // Yangi state o'zgaruvchilari (Buni state obyektiga qo'shing)
+    if (!state.adsUsed) state.adsUsed = 0; // Reklama ko'rilgan soni
+    if (!state.lastResetDate) state.lastResetDate = new Date().toDateString();
 
-    <div id="rank-sec" class="section">
-        <h2 style="color:var(--accent)">🏆 TOP 10 O'yinchilar</h2>
-        <div id="leaderboard-list">Yuklanmoqda...</div>
-        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
-    </div>
-
-    <div id="booster-sec" class="section">
-        <h2 style="color:var(--accent)">🚀 Kuchaytirish</h2>
-        <div class="card"><div>Tap Kuchi<br><small id="p-cost">1000</small> 💰</div><button class="btn" onclick="upgrade('power')">UP</button></div>
-        <div class="card"><div>Energiya Limiti<br><small id="e-cost">1000</small> 💰</div><button class="btn" onclick="upgrade('energy')">UP</button></div>
-        <div class="card"><div>Soatbay Foyda<br><small id="i-cost">2000</small> 💰</div><button class="btn" onclick="upgrade('income')">UP</button></div>
-        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
-    </div>
-
-    <div id="home-sec" class="section">
-        <h1 style="color:var(--accent)">GANIYEV DIYORBEK</h1>
-        <div class="card"><span>💰 Tangalar:</span><b id="u-c">0</b></div>
-        <div class="card"><span>💎 Olmoslar:</span><b id="u-d">0</b></div>
-        <button class="btn" style="width:100%; padding:20px; font-size:20px;" onclick="airdrop()">💰 AIRDROP</button>
-        <button class="btn" style="width:100%; margin-top:20px; background:#555; color:white;" onclick="closeSec()">Yopish</button>
-    </div>
-
-    <div id="daily-sec" class="section">
-        <h2>🎁 Kunlik Bonus</h2>
-        <button class="btn" id="daily-btn" style="width:100%; height:50px;" onclick="claimDaily(false)">OLISH (5,000)</button>
-        <button class="btn" style="width:100%; height:50px; margin-top:10px; background:gold;" onclick="claimDaily(true)">📺 2X BONUS (REKLAMA)</button>
-    </div>
-
-    <div id="spin-sec" class="section">
-        <h2 style="color:var(--accent)">🎡 Omad Barabani</h2>
-        <div style="font-size:100px; margin:40px;">🎡</div>
-        <button class="btn" id="spin-btn" style="width:100%; height:60px;" onclick="startSpin()">TEKIN AYLANTIRISH</button>
-    </div>
-
-    <div class="nav-footer">
-        <div class="nav-item" onclick="openSec('market')"><div class="nav-icon">📈</div><span>Bozor</span></div>
-        <div class="nav-item" onclick="openSec('ref')"><div class="nav-icon">👥</div><span>Do'stlar</span></div>
-        <div class="nav-item active" id="nav-main" onclick="closeSec()"><div class="nav-icon">🏆</div><span>Reyting</span></div>
-        <div class="nav-item" onclick="openSec('booster')"><div class="nav-icon">⚡</div><span>Boost</span></div>
-        <div class="nav-item" onclick="openSec('home')"><div class="nav-icon">🏠</div><span>Uyim</span></div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDbttlr-oGJeDbjMbrudVzR-L2R8Q1m3Xo",
-            authDomain: "oltin-tanga-d2c80.firebaseapp.com",
-            databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
-            projectId: "oltin-tanga-d2c80",
-            storageBucket: "oltin-tanga-d2c80.appspot.com",
-            messagingSenderId: "956382024760",
-            appId: "1:956382024760:web:d263309605d39e34e9e30a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        const userId = tg.initDataUnsafe.user?.id || "dev_test";
-        const userName = tg.initDataUnsafe.user?.first_name || "O'yinchi";
-        
-        let state = { 
-            coins: 0, diamonds: 0, energy: 500, maxE: 500, power: 1, 
-            hourlyIncome: 0, pCost: 1000, eCost: 1000, iCost: 2000, 
-            lastDaily: 0, lastSpin: 0, pBonus: 0, name: userName
-        };
-
-        async function init() {
-            const snap = await get(ref(db, 'users/' + userId));
-            if(snap.exists()) state = snap.val();
-            
-            document.getElementById('ref-link').value = `https://t.me/OltinTanga_bot?start=${userId}`;
-            updateUI();
-            loadLeaderboard();
-            setInterval(gameLoop, 1000);
+    // Har kuni urinishlarni yangilash (Reset)
+    function checkDailyReset() {
+        const today = new Date().toDateString();
+        if (state.lastResetDate !== today) {
+            state.adsUsed = 0;
+            state.lastResetDate = today;
+            state.lastSpin = 0; // Tekin urinishni ham tiklash
+            save();
         }
+    }
 
-        window.handleTap = (e) => {
-            if(state.energy >= state.power) {
-                state.coins += state.power;
-                state.energy -= state.power;
-                updateUI(); save();
-                document.getElementById('bg-music').play().catch(()=>{});
-            } else showNotify("Energiya kam!");
-        };
+    window.startSpin = () => {
+        checkDailyReset();
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
 
-        window.upgrade = (type) => {
-            let cost = type === 'power' ? state.pCost : (type === 'energy' ? state.eCost : state.iCost);
-            if(state.coins >= cost) {
-                state.coins -= cost;
-                if(type === 'power') { state.power++; state.pCost = Math.floor(state.pCost * 1.4); }
-                if(type === 'energy') { state.maxE += 500; state.eCost = Math.floor(state.eCost * 1.6); }
-                if(type === 'income') { state.hourlyIncome += 500; state.iCost = Math.floor(state.iCost * 1.8); }
-                showNotify("Muvaffaqiyatli oshirildi!"); updateUI(); save();
-            } else showNotify("Mablag' yetarli emas!");
-        };
-
-        window.claimDaily = (isDouble) => {
-            const now = Date.now();
-            if(now < state.lastDaily + 86400000) return;
-            if(isDouble) {
-                show_10558007().then(() => { state.coins += 10000; finishDaily(now); });
-            } else {
-                state.coins += 5000; finishDaily(now);
-            }
-        };
-
-        function finishDaily(t) { state.lastDaily = t; showNotify("Bonus olindi!"); updateUI(); save(); }
-
-        window.startSpin = () => {
-            const now = Date.now();
-            if(now >= state.lastSpin + 86400000) {
-                executeSpin(); state.lastSpin = now;
-            } else {
-                show_10558007().then(() => executeSpin());
-            }
-        };
-
-        function executeSpin() {
-            const win = [1000, 5000, 20000][Math.floor(Math.random()*3)];
-            state.coins += win; showNotify(`${win} tanga yutdingiz!`); updateUI(); save();
-        }
-
-        function loadLeaderboard() {
-            onValue(ref(db, 'users/'), (snap) => {
-                const data = snap.val();
-                const players = Object.values(data).sort((a,b) => b.coins - a.coins).slice(0, 10);
-                document.getElementById('leaderboard-list').innerHTML = players.map((p, i) => `
-                    <div class="card"><span>${i+1}. ${p.name || 'Noma'lum'}</span><b>💰 ${Math.floor(p.coins).toLocaleString()}</b></div>
-                `).join('');
+        // 1. Tekin urinishni tekshirish
+        if (now >= (state.lastSpin || 0) + oneDay) {
+            executeSpin(true);
+        } 
+        // 2. Reklamali urinishni tekshirish (maksimum 3 marta)
+        else if (state.adsUsed < 3) {
+            show_10558007().then(() => {
+                state.adsUsed++;
+                executeSpin(false);
+            }).catch(() => {
+                showNotify("Reklama yuklanmadi!");
             });
+        } 
+        else {
+            showNotify("Bugungi barcha imkoniyatlar tugadi!");
         }
+    };
 
-        function gameLoop() {
-            if(state.hourlyIncome > 0) state.coins += (state.hourlyIncome / 3600);
-            if(state.energy < state.maxE) state.energy += 1;
-            
-            const now = Date.now();
-            const dBtn = document.getElementById('daily-btn');
-            if(now < state.lastDaily + 86400000) {
-                const diff = (state.lastDaily + 86400000) - now;
-                dBtn.disabled = true; dBtn.innerText = formatTime(diff);
-            } else { dBtn.disabled = false; dBtn.innerText = "OLISH (5,000)"; }
-
-            const sBtn = document.getElementById('spin-btn');
-            if(now < state.lastSpin + 86400000) sBtn.innerText = "📺 REKLAMA BILAN SPIN";
-            else sBtn.innerText = "TEKIN AYLANTIRISH";
-            
-            updateUI();
+    function executeSpin(isFree) {
+        // Siz aytgan tasodifiy summalar
+        const rewards = [0, 500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 25000, 30000, 50000];
+        const win = rewards[Math.floor(Math.random() * rewards.length)];
+        
+        state.coins += win;
+        if (isFree) state.lastSpin = Date.now();
+        
+        // UI yangilash
+        document.getElementById('spin-result').innerText = `Tabriklaymiz! +${win.toLocaleString()} 💰`;
+        updateUI();
+        save();
+        
+        if (win > 0) {
+            document.getElementById('buy-sound').play().catch(()=>{});
         }
+        updateSpinUI();
+    }
 
-        function formatTime(ms) {
-            const h = Math.floor(ms/3600000); const m = Math.floor((ms%3600000)/60000); const s = Math.floor((ms%60000)/1000);
-            return `${h}s ${m}m ${s}s`;
+    function updateSpinUI() {
+        checkDailyReset();
+        const now = Date.now();
+        const nextFree = (state.lastSpin || 0) + (24 * 60 * 60 * 1000);
+        const btn = document.getElementById('spin-btn');
+        const adsText = document.getElementById('ads-count');
+
+        adsText.innerText = state.adsUsed;
+
+        if (now < nextFree) {
+            if (state.adsUsed < 3) {
+                btn.innerText = "📺 REKLAMA KO'RIB OLISH";
+                btn.style.background = "linear-gradient(to right, #facc15, #ff8c00)";
+            } else {
+                btn.innerText = "ERTAGA QAYTING";
+                btn.style.background = "#334155";
+                btn.disabled = true;
+            }
+        } else {
+            btn.innerText = "TEKIN IMKONIYAT";
+            btn.style.background = "var(--accent)";
+            btn.disabled = false;
         }
+    }
 
-        function updateUI() {
-            document.getElementById('total-coins').innerText = Math.floor(state.coins || 0).toLocaleString();
-            document.getElementById('h-inc').innerText = state.hourlyIncome || 0;
-            document.getElementById('t-pwr').innerText = state.power || 1;
-            document.getElementById('coin-ui').innerText = state.power || 1;
-            document.getElementById('e-text').innerText = `${Math.floor(state.energy || 0)} / ${state.maxE || 500}`;
-            document.getElementById('e-fill').style.width = ((state.energy/state.maxE)*100) + "%";
-            document.getElementById('u-c').innerText = Math.floor(state.coins).toLocaleString();
-            document.getElementById('u-d').innerText = state.diamonds || 0;
-            document.getElementById('p-cost').innerText = state.pCost || 1000;
-            document.getElementById('e-cost').innerText = state.eCost || 1000;
-            document.getElementById('i-cost').innerText = state.iCost || 2000;
-            document.getElementById('p-bonus').innerText = (state.pBonus || 0).toLocaleString();
-        }
+    // Buni setInterval ichiga yoki init ga qo'shing
+    setInterval(updateSpinUI, 1000);
+        </script>
 
-        window.openSec = (id) => {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id + '-sec').classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        };
-        window.closeSec = () => {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById('nav-main').classList.add('active');
-        };
-        window.copyRef = () => {
-            const link = document.getElementById('ref-link');
-            link.select(); document.execCommand('copy'); showNotify("Ssilka nusxalandi!");
-        };
-        window.showNotify = (msg) => {
-            const n = document.getElementById('notify'); n.innerText = msg; n.style.display = 'block';
-            setTimeout(() => n.style.display = 'none', 2500);
-        };
-        window.save = () => update(ref(db, 'users/' + userId), state);
-
-        init();
-    </script>
-</body>
-            </html>
     
                                                         
                                                                 </html>
