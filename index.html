@@ -7,15 +7,15 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #f59e0b; --text: #f8fafc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
         .header { padding: 20px; background: var(--card); border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 10; }
         .coin-display { font-size: 32px; font-weight: bold; color: var(--accent); margin: 10px 0; }
         .click-area { height: 50vh; display: flex; align-items: center; justify-content: center; }
-        .main-coin { width: 200px; height: 200px; cursor: pointer; transition: transform 0.1s; }
-        .main-coin:active { transform: scale(0.95); }
+        .main-coin { width: 200px; height: 200px; cursor: pointer; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
+        .main-coin:active { transform: scale(0.92); }
         .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); padding: 10px 0; border-top: 1px solid #334155; }
         .menu-item { flex: 1; font-size: 12px; cursor: pointer; opacity: 0.7; }
-        .menu-item.active { opacity: 1; color: var(--accent); }
+        .menu-item.active { opacity: 1; color: var(--accent); font-weight: bold; }
         .section { display: none; padding: 20px; padding-bottom: 80px; }
         .section.active { display: block; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -27,12 +27,12 @@
     <div class="header">
         <div id="username">Yuklanmoqda...</div>
         <div class="coin-display">💰 <span id="coin-count">0</span></div>
-        <div style="font-size: 14px;">💎 <span id="diamond-count">0</span></div>
+        <div style="font-size: 14px; color: #38bdf8;">💎 <span id="diamond-count">0</span></div>
     </div>
 
     <div id="game-section" class="section active">
         <div class="click-area" onclick="handleTap(event)">
-            <img src="https://cdn-icons-png.flaticon.com/512/5406/5406695.png" class="main-coin">
+            <img src="https://cdn-icons-png.flaticon.com/512/5406/5406695.png" class="main-coin" alt="tanga">
         </div>
         <div class="card">
             <span>⚡ Energiya: <span id="energy-count">500</span>/500</span>
@@ -41,13 +41,13 @@
 
     <div id="leaderboard-section" class="section">
         <h3>🏆 TOP O'YINCHILAR</h3>
-        <div id="leaderboard-list">Yuklanmoqda...</div>
+        <div id="leaderboard-list">Reyting yuklanmoqda...</div>
     </div>
 
     <div id="friends-section" class="section">
-        <h3>👥 TAKLIF QILISH</h3>
-        <div class="card" style="flex-direction: column; gap: 10px;">
-            <p>Har bir do'st uchun 25,000 tanga!</p>
+        <h3>👥 DO'STLARNI TAKLIF QILISH</h3>
+        <div class="card" style="flex-direction: column; gap: 10px; text-align: center;">
+            <p>Har bir taklif qilingan do'st uchun sizga <b>25,000 tanga</b> beriladi!</p>
             <button class="btn" onclick="copyRefLink()">Havolani nusxalash</button>
         </div>
     </div>
@@ -62,15 +62,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 1. FIREBASE KONFIGURATSIYASI (O'zingiznikini qo'ying)
+        // FIREBASE KONFIGURATSIYASI (Sizning skrinshotingizdan olindi)
         const firebaseConfig = {
-            apiKey: "AIzaSyDbttlr-oGJeDbjMbru...", 
+            apiKey: "AIzaSyDbttlr-oGJeDbjMbrudVzR-L2R8Q1m3Xo", 
             authDomain: "oltin-tanga-d2c80.firebaseapp.com",
             databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
             projectId: "oltin-tanga-d2c80",
             storageBucket: "oltin-tanga-d2c80.appspot.com",
             messagingSenderId: "956382024760",
-            appId: "1:956382024760:web:..."
+            appId: "1:956382024760:web:d263309605d39e34e9e30a"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -78,8 +78,8 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const userId = tg.initDataUnsafe.user.id;
-        const userName = tg.initDataUnsafe.user.first_name || "O'yinchi";
+        const userId = tg.initDataUnsafe.user?.id || 12345; // Test uchun
+        const userName = tg.initDataUnsafe.user?.first_name || "O'yinchi";
 
         let state = { coins: 0, diamonds: 0, energy: 500, name: userName };
 
@@ -89,6 +89,7 @@
             
             if (snapshot.exists()) {
                 state = snapshot.val();
+                state.name = userName; // Ismni har doim yangilab turish
             } else {
                 await set(userRef, state);
                 await checkReferral();
@@ -104,16 +105,17 @@
                 const refUserRef = ref(db, 'users/' + referrerId);
                 const snap = await get(refUserRef);
                 if (snap.exists()) {
-                    await update(refUserRef, { coins: snap.val().coins + 25000 });
+                    await update(refUserRef, { coins: (snap.val().coins || 0) + 25000 });
                 }
             }
         }
 
-        window.handleTap = () => {
+        window.handleTap = (event) => {
             if (state.energy > 0) {
                 state.coins += 1;
                 state.energy -= 1;
                 updateUI();
+                // Ma'lumotni bazaga yozish
                 update(ref(db, 'users/' + userId), { coins: state.coins, energy: state.energy });
             }
         };
@@ -122,15 +124,22 @@
             document.getElementById('coin-count').innerText = Math.floor(state.coins);
             document.getElementById('energy-count').innerText = state.energy;
             document.getElementById('username').innerText = state.name;
+            document.getElementById('diamond-count').innerText = state.diamonds || 0;
         }
 
         function setupLeaderboard() {
             onValue(ref(db, 'users/'), (snapshot) => {
                 const data = snapshot.val();
                 if (!data) return;
-                const players = Object.values(data).sort((a, b) => b.coins - a.coins).slice(0, 10);
+                const players = Object.values(data)
+                    .sort((a, b) => (b.coins || 0) - (a.coins || 0))
+                    .slice(0, 10);
+                
                 document.getElementById('leaderboard-list').innerHTML = players.map((p, i) => `
-                    <div class="card"><span>${i+1}. ${p.name}</span><span>💰 ${Math.floor(p.coins)}</span></div>
+                    <div class="card">
+                        <span>${i+1}. ${p.name || 'Noma'lum'}</span>
+                        <span>💰 ${Math.floor(p.coins || 0)}</span>
+                    </div>
                 `).join('');
             });
         }
@@ -145,10 +154,19 @@
         window.copyRefLink = () => {
             const link = `https://t.me/OltinTanga1_bot?start=${userId}`;
             navigator.clipboard.writeText(link);
-            alert("Referal link nusxalandi! Do'stlaringizga yuboring.");
+            alert("Havola nusxalandi! Endi do'stlaringizga yuboring.");
         };
+
+        // Energiyani vaqt o'tishi bilan tiklash
+        setInterval(() => {
+            if (state.energy < 500) {
+                state.energy += 1;
+                updateUI();
+            }
+        }, 3000); // Har 3 soniyada 1 energiya
 
         initGame();
     </script>
 </body>
     </html>
+
