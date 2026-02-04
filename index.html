@@ -8,55 +8,49 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --bg: #050810; --accent: #f59e0b; --card: #111827; --purple: #7c3aed; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; }
 
-        /* Header Stats - Skrinshotga muvofiq */
-        .header-stats { display: flex; justify-content: space-around; padding: 10px; margin-top: 5px; gap: 8px; }
-        .stat-box { background: rgba(124, 58, 237, 0.1); border: 1px solid var(--purple); border-radius: 10px; flex: 1; padding: 8px 5px; }
-        .stat-label { font-size: 9px; color: #aaa; display: block; margin-bottom: 3px; }
-        .stat-value { font-size: 13px; font-weight: bold; color: var(--accent); }
+        /* Status Paneli (Skrinshotdagidek 3ta bo'lim) */
+        .header-stats { display: flex; justify-content: space-around; padding: 10px; margin-top: 10px; gap: 8px; }
+        .stat-box { background: rgba(124, 58, 237, 0.1); border: 1px solid var(--purple); border-radius: 12px; flex: 1; padding: 10px 5px; }
+        .stat-label { font-size: 8px; color: #888; display: block; text-transform: uppercase; margin-bottom: 2px; }
+        .stat-value { font-size: 14px; font-weight: bold; color: var(--accent); }
 
-        /* Game Core */
-        .game-main { height: 55vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .total-coins { font-size: 55px; font-weight: 900; color: #facc15; text-shadow: 0 0 20px rgba(250, 204, 21, 0.5); margin-bottom: 15px; }
-        
-        .tanga-container { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; }
-        .main-coin { width: 230px; height: 230px; background: radial-gradient(circle, #facc15 0%, #ca8a04 100%); border-radius: 50%; border: 8px solid #854d0e; box-shadow: 0 0 50px rgba(250, 204, 21, 0.4); display: flex; align-items: center; justify-content: center; font-size: 80px; font-weight: 900; cursor: pointer; transition: transform 0.05s; z-index: 5; }
-        .main-coin:active { transform: scale(0.92); }
+        /* Game Area */
+        .total-coins { font-size: 55px; font-weight: 900; color: #facc15; margin: 20px 0 10px 0; text-shadow: 0 0 20px rgba(250, 204, 21, 0.4); }
+        .tanga-container { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .main-coin { width: 230px; height: 230px; background: radial-gradient(circle, #facc15 0%, #ca8a04 100%); border-radius: 50%; border: 8px solid #854d0e; box-shadow: 0 0 50px rgba(250, 204, 21, 0.4); display: flex; align-items: center; justify-content: center; font-size: 70px; font-weight: 900; cursor: pointer; transition: transform 0.05s; z-index: 5; }
+        .main-coin:active { transform: scale(0.95); }
 
-        .side-btn { position: absolute; width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); background: #000; display: flex; align-items: center; justify-content: center; font-size: 28px; z-index: 10; cursor: pointer; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .side-circle { position: absolute; width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); background: #000; display: flex; align-items: center; justify-content: center; font-size: 25px; z-index: 10; cursor: pointer; }
         .btn-left { left: 5px; } .btn-right { right: 5px; background: conic-gradient(red, yellow, green, blue, red); }
 
         /* Energy Bar */
-        .energy-section { width: 85%; margin: 10px auto; }
-        .energy-info { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; margin-bottom: 8px; }
-        .energy-bar { height: 14px; background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid #334155; position: relative; }
-        .energy-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #a855f7, #3b82f6); transition: width 0.3s ease; }
+        .energy-section { width: 90%; margin: 25px auto; }
+        .energy-bar { height: 14px; background: #1e293b; border-radius: 10px; overflow: hidden; border: 1px solid #334155; }
+        .energy-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #a855f7, #3b82f6); transition: width 0.3s; }
 
-        /* Nav Footer */
-        .nav-footer { position: fixed; bottom: 0; width: 100%; background: #0a0e1a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--purple); z-index: 1000; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; opacity: 0.6; }
+        /* Nav Footer (Skrinshotdagidek tartibda) */
+        .nav-footer { position: fixed; bottom: 0; width: 100%; background: #0a0e1a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 1000; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; opacity: 0.6; }
         .nav-icon { width: 48px; height: 48px; background: #1e293b; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: 22px; }
-        .nav-item span { font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        .nav-item.active { opacity: 1; color: var(--accent); }
-        .nav-item.active .nav-icon { border: 2px solid white; background: var(--purple); }
+        .nav-item span { font-size: 10px; color: #888; text-transform: uppercase; font-weight: bold; }
+        .nav-item.active { opacity: 1; color: white; }
+        .nav-item.active .nav-icon { background: var(--purple); border: 2px solid white; }
+        .nav-item.active span { color: var(--accent); }
 
         /* Section Modals */
-        .section { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
-        .section.active { display: block; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .btn { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
-        #notify { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 5000; display: none; box-shadow: 0 0 20px var(--accent); }
+        .section { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto; padding-bottom: 100px; }
+        .section.active { display: block; }
+        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background: var(--accent); color: black; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #notify { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 5000; display: none; }
     </style>
 </head>
 <body>
 
     <div id="notify"></div>
-
     <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
-    <audio id="tap-sound" src="https://www.myinstants.com/media/sounds/click-button-140381.mp3"></audio>
-    <audio id="buy-sound" src="https://www.myinstants.com/media/sounds/coin-collect.mp3"></audio>
 
     <div class="header-stats">
         <div class="stat-box"><span class="stat-label">STATUS</span><span class="stat-value">Bronza</span></div>
@@ -64,75 +58,80 @@
         <div class="stat-box"><span class="stat-label">TAP KUCHI</span><span class="stat-value" id="t-pwr">1</span></div>
     </div>
 
-    <div id="game-sec">
-        <div class="game-main">
-            <div class="total-coins" id="total-coins">0</div>
-            <div class="tanga-container">
-                <div class="side-btn btn-left" onclick="openSec('daily')">🎁</div>
-                <div class="main-coin" id="main-coin" onclick="handleTap(event)">1</div>
-                <div class="side-btn btn-right" onclick="openSec('spin')">🎡</div>
-            </div>
+    <div id="game-container">
+        <div class="total-coins" id="total-coins">0</div>
+        <div class="tanga-container">
+            <div class="side-circle btn-left" onclick="openSec('daily')">🎁</div>
+            <div class="main-coin" id="coin-ui" onclick="handleTap(event)">1</div>
+            <div class="side-circle btn-right" onclick="openSec('spin')">🎡</div>
         </div>
         <div class="energy-section">
-            <div class="energy-info">⚡ <span id="e-text">500 / 500</span></div>
+            <div style="font-size:14px; font-weight:bold; margin-bottom:5px;">⚡ <span id="e-text">500 / 500</span></div>
             <div class="energy-bar"><div class="energy-fill" id="e-fill"></div></div>
         </div>
     </div>
 
     <div id="market-sec" class="section">
-        <h2>🛒 Bozor</h2>
-        <div class="card"><span>🔴 Qizil Tanga</span><button class="btn" onclick="buySkin('red', 500)">500 💎</button></div>
-        <div class="card"><span>1000 💰 ➡️ 1 💎</span><button class="btn" onclick="exchange()">AYIRBOSHLASH</button></div>
-        <button class="btn" style="background:#555; color:white;" onclick="closeSec()">YOPISH</button>
+        <h2 style="color:var(--accent)">🛒 Tanga Bozori</h2>
+        <div class="card"><span>🔴 Qizil Tanga</span><button class="btn" onclick="buySkin('Red', 500)">500 💎</button></div>
+        <div class="card"><span>🟢 Yashil Tanga</span><button class="btn" onclick="buySkin('Green', 1000)">1000 💎</button></div>
+        <div class="card"><span>🔵 Ko'k Tanga</span><button class="btn" onclick="buySkin('Blue', 2500)">2500 💎</button></div>
+        <div class="card"><span>🟤 Jigarrang Tanga</span><button class="btn" onclick="buySkin('Brown', 5000)">5000 💎</button></div>
+        <div class="card"><span>⚫ Qora Tanga</span><button class="btn" onclick="buySkin('Black', 10000)">10000 💎</button></div>
+        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
     </div>
 
     <div id="ref-sec" class="section">
-        <h2>👥 Do'stlar</h2>
+        <h2 style="color:var(--accent)">👥 Do'stlarni Taklif Qiling</h2>
         <div class="card" style="flex-direction:column; gap:10px;">
-            <p>Do'stlar uchun bonus: <b id="p-bonus">0</b> 💰</p>
-            <button class="btn" onclick="claimRef()">BONUSNI OLISH</button>
+            <p style="font-size:12px;">Sizning referal ssilkangiz:</p>
+            <input type="text" id="ref-link" readonly style="width:100%; padding:10px; background:#000; color:var(--accent); border:1px solid var(--purple); border-radius:8px;">
+            <button class="btn" onclick="copyRef()">Nusxalash</button>
         </div>
-        <button class="btn" style="background:#555; color:white; margin-top:10px;" onclick="closeSec()">YOPISH</button>
+        <div class="card"><span>Bonus: <b id="p-bonus">0</b> 💰</span><button class="btn" onclick="claimRef()">OLISH</button></div>
+        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
+    </div>
+
+    <div id="rank-sec" class="section">
+        <h2 style="color:var(--accent)">🏆 TOP 10 O'yinchilar</h2>
+        <div id="leaderboard-list">Yuklanmoqda...</div>
+        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
     </div>
 
     <div id="booster-sec" class="section">
-        <h2>🚀 Bosterlar</h2>
-        <div class="card"><div>Tap Kuchi<br><small id="p-cost">1000</small></div><button class="btn" onclick="upgrade('power')">UP</button></div>
-        <div class="card"><div>Soatbay Foyda<br><small id="i-cost">2000</small></div><button class="btn" onclick="upgrade('income')">UP</button></div>
-        <div class="card"><div>Energiya Limiti<br><small id="e-cost">1000</small></div><button class="btn" onclick="upgrade('energy')">UP</button></div>
-        <button class="btn" style="background:#555; color:white;" onclick="closeSec()">YOPISH</button>
+        <h2 style="color:var(--accent)">🚀 Kuchaytirish</h2>
+        <div class="card"><div>Tap Kuchi<br><small id="p-cost">1000</small> 💰</div><button class="btn" onclick="upgrade('power')">UP</button></div>
+        <div class="card"><div>Energiya Limiti<br><small id="e-cost">1000</small> 💰</div><button class="btn" onclick="upgrade('energy')">UP</button></div>
+        <div class="card"><div>Soatbay Foyda<br><small id="i-cost">2000</small> 💰</div><button class="btn" onclick="upgrade('income')">UP</button></div>
+        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeSec()">Yopish</button>
     </div>
 
-    <div id="uy-sec" class="section">
-        <h1 style="color:var(--accent); margin-bottom:5px;">GANIYEV DIYORBEK</h1>
-        <p style="opacity:0.7; font-size:12px;">Loyiha Asoschisi</p>
+    <div id="home-sec" class="section">
+        <h1 style="color:var(--accent)">GANIYEV DIYORBEK</h1>
         <div class="card"><span>💰 Tangalar:</span><b id="u-c">0</b></div>
         <div class="card"><span>💎 Olmoslar:</span><b id="u-d">0</b></div>
-        <button class="btn" style="background:#0088cc; color:white; padding:18px; font-size:18px;" onclick="airdrop()">💰 AIRDROP</button>
-        <button class="btn" style="background:#555; color:white; margin-top:20px;" onclick="closeSec()">YOPISH</button>
+        <button class="btn" style="width:100%; padding:20px; font-size:20px;" onclick="airdrop()">💰 AIRDROP</button>
+        <button class="btn" style="width:100%; margin-top:20px; background:#555; color:white;" onclick="closeSec()">Yopish</button>
     </div>
 
     <div id="daily-sec" class="section">
         <h2>🎁 Kunlik Bonus</h2>
-        <p>Har 24 soatda sovg'a oling!</p>
-        <button class="btn" id="daily-btn" onclick="claimDaily(false)">OLISH (5,000)</button>
-        <button class="btn" style="background:gold; margin-top:10px;" onclick="claimDaily(true)">📺 REKLAMA BILAN 2X (10,000)</button>
-        <button class="btn" style="background:#555; color:white; margin-top:20px;" onclick="closeSec()">YOPISH</button>
+        <button class="btn" id="daily-btn" style="width:100%; height:50px;" onclick="claimDaily(false)">OLISH (5,000)</button>
+        <button class="btn" style="width:100%; height:50px; margin-top:10px; background:gold;" onclick="claimDaily(true)">📺 2X BONUS (REKLAMA)</button>
     </div>
 
     <div id="spin-sec" class="section">
-        <h2>🎡 Omad Barabani</h2>
-        <div style="font-size:80px; margin:30px;">🎡</div>
-        <button class="btn" id="spin-btn" onclick="startSpin()">TEKIN AYLANTIRISH</button>
-        <button class="btn" style="background:#555; color:white; margin-top:20px;" onclick="closeSec()">YOPISH</button>
+        <h2 style="color:var(--accent)">🎡 Omad Barabani</h2>
+        <div style="font-size:100px; margin:40px;">🎡</div>
+        <button class="btn" id="spin-btn" style="width:100%; height:60px;" onclick="startSpin()">TEKIN AYLANTIRISH</button>
     </div>
 
     <div class="nav-footer">
         <div class="nav-item" onclick="openSec('market')"><div class="nav-icon">📈</div><span>Bozor</span></div>
         <div class="nav-item" onclick="openSec('ref')"><div class="nav-icon">👥</div><span>Do'stlar</span></div>
-        <div class="nav-item active" id="nav-game" onclick="closeSec()"><div class="nav-icon">🏆</div><span>O'yin</span></div>
+        <div class="nav-item active" id="nav-main" onclick="closeSec()"><div class="nav-icon">🏆</div><span>Reyting</span></div>
         <div class="nav-item" onclick="openSec('booster')"><div class="nav-icon">⚡</div><span>Boost</span></div>
-        <div class="nav-item" onclick="openSec('uy')"><div class="nav-icon">🏠</div><span>Uyim</span></div>
+        <div class="nav-item" onclick="openSec('home')"><div class="nav-icon">🏠</div><span>Uyim</span></div>
     </div>
 
     <script type="module">
@@ -154,60 +153,48 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const userId = tg.initDataUnsafe.user?.id || "dev_user";
+        const userId = tg.initDataUnsafe.user?.id || "dev_test";
+        const userName = tg.initDataUnsafe.user?.first_name || "O'yinchi";
+        
         let state = { 
             coins: 0, diamonds: 0, energy: 500, maxE: 500, power: 1, 
             hourlyIncome: 0, pCost: 1000, eCost: 1000, iCost: 2000, 
-            lastDaily: 0, lastSpin: 0, lastActive: Date.now() 
+            lastDaily: 0, lastSpin: 0, pBonus: 0, name: userName
         };
 
         async function init() {
             const snap = await get(ref(db, 'users/' + userId));
-            if(snap.exists()) {
-                state = snap.val();
-                calculateOffline();
-            }
+            if(snap.exists()) state = snap.val();
+            
+            document.getElementById('ref-link').value = `https://t.me/OltinTanga_bot?start=${userId}`;
             updateUI();
-            setInterval(gameTick, 1000);
-        }
-
-        function calculateOffline() {
-            const now = Date.now();
-            const diff = Math.floor((now - state.lastActive) / 1000);
-            if(state.hourlyIncome > 0 && diff > 60) {
-                const earned = Math.floor((state.hourlyIncome / 3600) * diff);
-                state.coins += earned;
-                showNotify(`Siz yo'qligingizda ${earned.toLocaleString()} 💰 yig'ildi!`);
-            }
+            loadLeaderboard();
+            setInterval(gameLoop, 1000);
         }
 
         window.handleTap = (e) => {
             if(state.energy >= state.power) {
                 state.coins += state.power;
                 state.energy -= state.power;
-                document.getElementById('tap-sound').play();
                 updateUI(); save();
+                document.getElementById('bg-music').play().catch(()=>{});
             } else showNotify("Energiya kam!");
-            document.getElementById('bg-music').play().catch(()=>{});
         };
 
         window.upgrade = (type) => {
-            let cost = (type==='power') ? state.pCost : (type==='energy' ? state.eCost : state.iCost);
+            let cost = type === 'power' ? state.pCost : (type === 'energy' ? state.eCost : state.iCost);
             if(state.coins >= cost) {
                 state.coins -= cost;
-                if(type==='power') { state.power++; state.pCost = Math.floor(state.pCost * 1.3); }
-                if(type==='energy') { state.maxE += 500; state.eCost = Math.floor(state.eCost * 1.5); }
-                if(type==='income') { state.hourlyIncome += 500; state.iCost = Math.floor(state.iCost * 1.6); }
-                document.getElementById('buy-sound').play();
-                updateUI(); save();
+                if(type === 'power') { state.power++; state.pCost = Math.floor(state.pCost * 1.4); }
+                if(type === 'energy') { state.maxE += 500; state.eCost = Math.floor(state.eCost * 1.6); }
+                if(type === 'income') { state.hourlyIncome += 500; state.iCost = Math.floor(state.iCost * 1.8); }
+                showNotify("Muvaffaqiyatli oshirildi!"); updateUI(); save();
             } else showNotify("Mablag' yetarli emas!");
         };
 
-        // Taymerli Bonus
         window.claimDaily = (isDouble) => {
             const now = Date.now();
-            if (now < state.lastDaily + 86400000) return;
-
+            if(now < state.lastDaily + 86400000) return;
             if(isDouble) {
                 show_10558007().then(() => { state.coins += 10000; finishDaily(now); });
             } else {
@@ -219,7 +206,7 @@
 
         window.startSpin = () => {
             const now = Date.now();
-            if (now >= state.lastSpin + 86400000) {
+            if(now >= state.lastSpin + 86400000) {
                 executeSpin(); state.lastSpin = now;
             } else {
                 show_10558007().then(() => executeSpin());
@@ -227,25 +214,34 @@
         };
 
         function executeSpin() {
-            const win = [1000, 5000, 10000][Math.floor(Math.random()*3)];
-            state.coins += win; showNotify(`${win} 💰 yutdingiz!`); updateUI(); save();
+            const win = [1000, 5000, 20000][Math.floor(Math.random()*3)];
+            state.coins += win; showNotify(`${win} tanga yutdingiz!`); updateUI(); save();
         }
 
-        function gameTick() {
+        function loadLeaderboard() {
+            onValue(ref(db, 'users/'), (snap) => {
+                const data = snap.val();
+                const players = Object.values(data).sort((a,b) => b.coins - a.coins).slice(0, 10);
+                document.getElementById('leaderboard-list').innerHTML = players.map((p, i) => `
+                    <div class="card"><span>${i+1}. ${p.name || 'Noma'lum'}</span><b>💰 ${Math.floor(p.coins).toLocaleString()}</b></div>
+                `).join('');
+            });
+        }
+
+        function gameLoop() {
             if(state.hourlyIncome > 0) state.coins += (state.hourlyIncome / 3600);
             if(state.energy < state.maxE) state.energy += 1;
             
-            // Taymerlarni UI da yangilash
             const now = Date.now();
-            const dailyBtn = document.getElementById('daily-btn');
+            const dBtn = document.getElementById('daily-btn');
             if(now < state.lastDaily + 86400000) {
-                dailyBtn.disabled = true;
-                dailyBtn.innerText = "Kutish: " + formatTime((state.lastDaily + 86400000) - now);
-            } else { dailyBtn.disabled = false; dailyBtn.innerText = "OLISH (5,000)"; }
+                const diff = (state.lastDaily + 86400000) - now;
+                dBtn.disabled = true; dBtn.innerText = formatTime(diff);
+            } else { dBtn.disabled = false; dBtn.innerText = "OLISH (5,000)"; }
 
-            const spinBtn = document.getElementById('spin-btn');
-            if(now < state.lastSpin + 86400000) spinBtn.innerText = "📺 REKLAMA BILAN SPIN";
-            else spinBtn.innerText = "TEKIN AYLANTIRISH";
+            const sBtn = document.getElementById('spin-btn');
+            if(now < state.lastSpin + 86400000) sBtn.innerText = "📺 REKLAMA BILAN SPIN";
+            else sBtn.innerText = "TEKIN AYLANTIRISH";
             
             updateUI();
         }
@@ -256,34 +252,44 @@
         }
 
         function updateUI() {
-            document.getElementById('total-coins').innerText = Math.floor(state.coins).toLocaleString();
-            document.getElementById('h-inc').innerText = state.hourlyIncome;
-            document.getElementById('t-pwr').innerText = state.power;
-            document.getElementById('main-coin').innerText = state.power;
-            document.getElementById('e-text').innerText = `${state.energy} / ${state.maxE}`;
-            document.getElementById('e-fill').style.width = (state.energy/state.maxE*100) + "%";
+            document.getElementById('total-coins').innerText = Math.floor(state.coins || 0).toLocaleString();
+            document.getElementById('h-inc').innerText = state.hourlyIncome || 0;
+            document.getElementById('t-pwr').innerText = state.power || 1;
+            document.getElementById('coin-ui').innerText = state.power || 1;
+            document.getElementById('e-text').innerText = `${Math.floor(state.energy || 0)} / ${state.maxE || 500}`;
+            document.getElementById('e-fill').style.width = ((state.energy/state.maxE)*100) + "%";
             document.getElementById('u-c').innerText = Math.floor(state.coins).toLocaleString();
-            document.getElementById('p-cost').innerText = state.pCost;
-            document.getElementById('i-cost').innerText = state.iCost;
-            document.getElementById('e-cost').innerText = state.eCost;
+            document.getElementById('u-d').innerText = state.diamonds || 0;
+            document.getElementById('p-cost').innerText = state.pCost || 1000;
+            document.getElementById('e-cost').innerText = state.eCost || 1000;
+            document.getElementById('i-cost').innerText = state.iCost || 2000;
+            document.getElementById('p-bonus').innerText = (state.pBonus || 0).toLocaleString();
         }
 
         window.openSec = (id) => {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id + '-sec').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         };
-        window.closeSec = () => document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        window.closeSec = () => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('nav-main').classList.add('active');
+        };
+        window.copyRef = () => {
+            const link = document.getElementById('ref-link');
+            link.select(); document.execCommand('copy'); showNotify("Ssilka nusxalandi!");
+        };
         window.showNotify = (msg) => {
             const n = document.getElementById('notify'); n.innerText = msg; n.style.display = 'block';
             setTimeout(() => n.style.display = 'none', 2500);
         };
-        window.airdrop = () => alert("Tez kunda TONga almashtirish ochiladi!");
-        function save() { state.lastActive = Date.now(); update(ref(db, 'users/' + userId), state); }
+        window.save = () => update(ref(db, 'users/' + userId), state);
 
         init();
     </script>
 </body>
-    </html>
+            </html>
+    
                                                         
                                                                 </html>
                                                       
