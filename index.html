@@ -30,7 +30,6 @@
         #coin-ring { position: absolute; width: 100%; height: 100%; border: 8px solid #f1c40f; border-radius: 50%; box-shadow: 0 0 30px rgba(241,196,15,0.4); transition: 0.3s; }
         #hero-img { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; z-index: 5; border: 2px solid #000; }
 
-        /* Tanga bosilganda chiqadigan effekt */
         @keyframes tapFloat {
             0% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-100px); }
@@ -169,7 +168,7 @@
         { id: "goku", name: "Goku", price: 0, img: raw + "D_NQ_NP_736344-MLM81055958997_112024-O-iman-de-goku-dragon-ball-super-redondo-de-7-cm-decorativo.webp" },
         { id: "jinwo", name: "Jinwoo", price: 50, img: raw + "4418c2752fa47989ede369bef76786b0.jpg" },
         { id: "saitama", name: "Saitama", price: 100, img: raw + "saitama-anime-portrait-wallpaper-scaled.jpg" },
-        { id: "sukuna", name: "Sukuna", price: 200, img: raw + "G9d82kGWUAAk3vH.jpg" },
+        { id: "sukuna", name: "Sukuna", price: 200, img: raw + "grok_image_1736417730302.jpg" }, // Sukuna rasmi yangilandi
         { id: "gojo", name: "Gojo", price: 500, img: raw + "_2025-12-23_140411_752__28261.1766474485.jpg" },
         { id: "subzero", name: "Sub-Zero", price: 1000, img: raw + "grok_image_1770310876617.jpg" }
     ];
@@ -208,32 +207,25 @@
         if(s.energy >= s.power) {
             s.coins += s.power; s.energy -= s.power;
             tg.HapticFeedback.impactOccurred('medium');
-            
-            // Ekran bosilganda chiqadigan +1 effekti
             const pop = document.createElement('div');
             pop.innerText = "+" + s.power;
             pop.style = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; color:white; font-weight:bold; font-size:24px; pointer-events:none; z-index:9999; animation:tapFloat 0.8s forwards;`;
             document.body.appendChild(pop);
             setTimeout(() => pop.remove(), 800);
-
             updateUI();
-        } else {
-            showMsg("Energiya tugadi!", "error");
-        }
+        } else { showMsg("Energiya tugadi!", "error"); }
     }
 
     function updateUI() {
         let c = Math.floor(s.coins);
         let ring = document.getElementById('coin-ring');
-        let rank = "Bronza";
+        let rank = c >= 1000000 ? "Afsona" : (c >= 50000 ? "Oltin" : "Bronza");
         
-        // Ranglar va darajalar
         if(c >= 50000) { 
-            rank = "Oltin"; 
-            ring.style.borderColor = "#e74c3c"; // 50,000 dan oshsa Qizil
+            ring.style.borderColor = "#e74c3c"; 
             ring.style.boxShadow = "0 0 30px rgba(231,76,60,0.6)";
         } else {
-            ring.style.borderColor = "#f1c40f"; // Oddiy holatda Sariq
+            ring.style.borderColor = "#f1c40f"; 
             ring.style.boxShadow = "0 0 30px rgba(241,196,15,0.4)";
         }
 
@@ -253,6 +245,32 @@
 
         let h = heroes.find(x => x.id === s.activeHero);
         if(h) document.getElementById('hero-img').src = h.img;
+    }
+
+    // Reyting tizimi: Admin (Ganiyev) har doim 1-o'rinda, qolganlar tangasiga ko'ra
+    function loadRank() {
+        db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
+            let list = [];
+            snap.forEach(child => {
+                let val = child.val();
+                if(child.key !== "8009403510") list.push(val);
+            });
+            list.sort((a, b) => b.coins - a.coins);
+            
+            let htm = `<div class="card" style="border:2px solid var(--accent)">
+                <b>1. 👑 Ganiyev (Admin)</b><br>
+                <small>💰 999,999,999 | 💎 999,999 | 📈 Afsona</small>
+            </div>`;
+            
+            list.forEach((u, i) => {
+                let uRank = u.coins >= 1000000 ? "Afsona" : (u.coins >= 50000 ? "Oltin" : "Bronza");
+                htm += `<div class="card">
+                    <b>${i+2}. ${u.name || 'O\'yinchi'}</b><br>
+                    <small>💰 ${Math.floor(u.coins).toLocaleString()} | 💎 ${u.diams || 0} | 📈 ${uRank}</small>
+                </div>`;
+            });
+            document.getElementById('rank-list').innerHTML = htm;
+        });
     }
 
     function up(t) {
@@ -302,15 +320,15 @@
         let v = parseInt(document.getElementById('ex-in').value);
         if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; updateUI(); save(); }
     }
-    function save() { db.ref('users/' + user.id).update({...s, lastSeen: Date.now()}); }
-    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); }
+    function save() { db.ref('users/' + user.id).update({...s, name: user.first_name, lastSeen: Date.now()}); }
+    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); if(id === 'm-rank') loadRank(); }
     function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
 
     init();
 </script>
 </body>
-                             </html>
-        
+    </html>
+                                                                     
         
     
                                                               
