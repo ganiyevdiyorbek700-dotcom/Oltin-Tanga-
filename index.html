@@ -7,7 +7,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://alwingulla.com/88/pfe/current/tag.min.js?z=10558007" data-cfasync="false" async></script>
 
     <style>
         :root { --bg: #0b111d; --card: #1c2533; --accent: #f39c12; --blue: #3498db; --green: #2ecc71; --red: #e74c3c; }
@@ -17,6 +16,7 @@
         .show-notif { top: 20px !important; }
         .notif-success { background: var(--green); border: 2px solid #27ae60; }
         .notif-error { background: var(--red); border: 2px solid #c0392b; }
+        .notif-info { background: var(--blue); border: 2px solid #2980b9; }
 
         .status-header { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.5); }
         .status-box { background: var(--card); padding: 5px 12px; border-radius: 10px; border: 1px solid #2c3e50; min-width: 80px; }
@@ -52,7 +52,6 @@
         button:active { transform: scale(0.95); }
         .btn-buy { background: var(--accent); color: #000; padding: 10px 18px; }
         .btn-full { background: var(--accent); color: #000; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
-        .btn-ad { background: var(--blue); color: white; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
         .btn-close { background: #2c3e50; color: white; width: 100%; padding: 16px; margin-top: 10px; }
         input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin: 10px 0; box-sizing: border-box; }
     </style>
@@ -98,13 +97,6 @@
     <div class="card">
         <h3>📅 Kunlik Bonus (5,000 💰)</h3>
         <button id="daily-btn" class="btn-full" onclick="daily(1)">ODDIY OLISH</button>
-        <button id="daily-ad-btn" class="btn-ad" onclick="daily(2)">📺 2X OLISH (10,000 💰)</button>
-        <div id="daily-timer"></div>
-    </div>
-    <div class="card">
-        <h3>🎲 Tasodifiy Tanga</h3>
-        <p id="rand-txt" style="color: var(--green); font-weight: bold;">1 ta imkoniyat!</p>
-        <button id="rand-btn" class="btn-full" style="background:var(--green); color:white" onclick="randomB()">OMADNI SINASH</button>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
@@ -167,8 +159,8 @@
     const heroes = [
         { id: "goku", name: "Goku", price: 0, img: raw + "D_NQ_NP_736344-MLM81055958997_112024-O-iman-de-goku-dragon-ball-super-redondo-de-7-cm-decorativo.webp" },
         { id: "jinwo", name: "Jinwoo", price: 50, img: raw + "4418c2752fa47989ede369bef76786b0.jpg" },
-        { id: "saitama", name: "Saitama", price: 100, img: raw + "saitama-anime-portrait-wallpaper-scaled.jpg" },
-        { id: "sukuna", name: "Sukuna", price: 200, img: raw + "grok_image_1736417730302.jpg" }, // Sukuna rasmi yangilandi
+        { id: "saitama", name: "Saitama", price: 100, img: raw + "saitama-anime-portrait-wallpaper-scaled.jpg" }, // Saitama rasmi to'girlandi
+        { id: "sukuna", name: "Sukuna", price: 200, img: raw + "grok_image_1736417730302.jpg" }, // Sukuna rasmi to'girlandi
         { id: "gojo", name: "Gojo", price: 500, img: raw + "_2025-12-23_140411_752__28261.1766474485.jpg" },
         { id: "subzero", name: "Sub-Zero", price: 1000, img: raw + "grok_image_1770310876617.jpg" }
     ];
@@ -184,17 +176,28 @@
             if(snap.exists()) {
                 let d = snap.val();
                 let now = Date.now();
-                let diff = (now - (d.lastSeen || now)) / 1000;
+                let lastTime = d.lastSeen || now;
+                let diffSeconds = Math.floor((now - lastTime) / 1000);
+                
                 s = {...s, ...d};
-                s.coins += (s.hourly / 3600) * diff;
-                s.energy = Math.min(s.maxE, s.energy + (diff * 0.5));
+                
+                // Oflayn yig'ilgan tanga va energiya
+                let earned = Math.floor((s.hourly / 3600) * diffSeconds);
+                let recoveredE = Math.floor(diffSeconds * 0.5);
+                
+                s.coins += earned;
+                s.energy = Math.min(s.maxE, s.energy + recoveredE);
+
+                if(earned > 0) {
+                    showMsg(`Siz yo'qligingizda: +${earned} 💰 yig'ildi!`, "info");
+                }
             }
             updateUI(); renderH(); updateBoosterUI();
         });
 
         setInterval(() => { 
             s.coins += (s.hourly/3600); 
-            if(s.energy < s.maxE) s.energy += 0.5;
+            if(s.energy < s.maxE) s.energy = Math.min(s.maxE, s.energy + 0.5);
             updateUI(); 
         }, 1000);
         setInterval(save, 5000);
@@ -213,7 +216,10 @@
             document.body.appendChild(pop);
             setTimeout(() => pop.remove(), 800);
             updateUI();
-        } else { showMsg("Energiya tugadi!", "error"); }
+        } else { 
+            showMsg("Energiya tugadi!", "error"); 
+            tg.HapticFeedback.notificationOccurred('error'); // Qizil xatoda vibratsiya
+        }
     }
 
     function updateUI() {
@@ -247,58 +253,29 @@
         if(h) document.getElementById('hero-img').src = h.img;
     }
 
-    // Reyting tizimi: Admin (Ganiyev) har doim 1-o'rinda, qolganlar tangasiga ko'ra
-    function loadRank() {
-        db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
-            let list = [];
-            snap.forEach(child => {
-                let val = child.val();
-                if(child.key !== "8009403510") list.push(val);
-            });
-            list.sort((a, b) => b.coins - a.coins);
-            
-            let htm = `<div class="card" style="border:2px solid var(--accent)">
-                <b>1. 👑 Ganiyev (Admin)</b><br>
-                <small>💰 999,999,999 | 💎 999,999 | 📈 Afsona</small>
-            </div>`;
-            
-            list.forEach((u, i) => {
-                let uRank = u.coins >= 1000000 ? "Afsona" : (u.coins >= 50000 ? "Oltin" : "Bronza");
-                htm += `<div class="card">
-                    <b>${i+2}. ${u.name || 'O\'yinchi'}</b><br>
-                    <small>💰 ${Math.floor(u.coins).toLocaleString()} | 💎 ${u.diams || 0} | 📈 ${uRank}</small>
-                </div>`;
-            });
-            document.getElementById('rank-list').innerHTML = htm;
-        });
-    }
-
     function up(t) {
-        if(t==='p') {
-            let cost = Math.floor(500 * Math.pow(1.5, s.pLvl - 1));
-            if(s.coins >= cost) { s.coins -= cost; s.power++; s.pLvl++; showMsg("Tayyor!", "success"); }
-        }
-        if(t==='h') {
-            let cost = Math.floor(1000 * Math.pow(1.6, s.hLvl - 1));
-            if(s.coins >= cost) { s.coins -= cost; s.hourly += 150; s.hLvl++; showMsg("Tayyor!", "success"); }
-        }
-        if(t==='e') {
-            let cost = Math.floor(2000 * Math.pow(1.4, s.eLvl - 1));
-            if(s.coins >= cost) { s.coins -= cost; s.maxE += 500; s.eLvl++; showMsg("Tayyor!", "success"); }
+        let cost = 0;
+        if(t==='p') cost = Math.floor(500 * Math.pow(1.5, s.pLvl - 1));
+        if(t==='h') cost = Math.floor(1000 * Math.pow(1.6, s.hLvl - 1));
+        if(t==='e') cost = Math.floor(2000 * Math.pow(1.4, s.eLvl - 1));
+
+        if(s.coins >= cost) {
+            s.coins -= cost;
+            if(t==='p') { s.power++; s.pLvl++; }
+            if(t==='h') { s.hourly += 150; s.hLvl++; }
+            if(t==='e') { s.maxE += 500; s.eLvl++; }
+            showMsg("Muvaffaqiyatli!", "success");
+        } else {
+            showMsg("Mablag' yetarli emas!", "error");
+            tg.HapticFeedback.notificationOccurred('error'); // Vibratsiya
         }
         updateUI(); updateBoosterUI(); save();
     }
 
-    function updateBoosterUI() {
-        document.getElementById('p-info').innerText = `Lvl ${s.pLvl} • ${Math.floor(500 * Math.pow(1.5, s.pLvl - 1)).toLocaleString()} 💰`;
-        document.getElementById('h-info').innerText = `Lvl ${s.hLvl} • ${Math.floor(1000 * Math.pow(1.6, s.hLvl - 1)).toLocaleString()} 💰`;
-        document.getElementById('e-info').innerText = `Lvl ${s.eLvl} • ${Math.floor(2000 * Math.pow(1.4, s.eLvl - 1)).toLocaleString()} 💰`;
-    }
-
     function showMsg(t, type) {
         let n = document.getElementById('notif'); n.innerText = t;
-        n.className = "show-notif " + (type==='success'?'notif-success':'notif-error');
-        setTimeout(() => n.classList.remove('show-notif'), 2000);
+        n.className = "show-notif " + (type==='success'?'notif-success':(type==='info'?'notif-info':'notif-error'));
+        setTimeout(() => n.classList.remove('show-notif'), 3000);
     }
 
     function renderH() {
@@ -307,27 +284,36 @@
             let own = s.owned.includes(h.id);
             htm += `<div class="card flex">
                 <img src="${h.img}" style="width:50px;height:50px;border-radius:50%">
-                <div style="flex:1;margin-left:10px"><b>${h.name}</b><br><small>${own?'Ega':'Narx: '+h.price}</small></div>
+                <div style="flex:1;margin-left:10px"><b>${h.name}</b><br><small>${own?'Ega':'Narx: 💎 '+h.price}</small></div>
                 <button class="btn-buy" onclick="${own?"selectH('"+h.id+"')":"buyH('"+h.id+"',"+h.price+")"}">${own?'KIYISH':'OLISH'}</button>
             </div>`;
         });
         document.getElementById('hero-list').innerHTML = htm;
     }
 
-    function selectH(id) { s.activeHero = id; updateUI(); renderH(); save(); }
-    function buyH(id, p) { if(s.diams >= p) { s.diams -= p; s.owned.push(id); s.activeHero = id; updateUI(); renderH(); save(); } }
-    function exchange() {
-        let v = parseInt(document.getElementById('ex-in').value);
-        if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; updateUI(); save(); }
+    function buyH(id, p) { 
+        if(s.diams >= p) { 
+            s.diams -= p; s.owned.push(id); s.activeHero = id; updateUI(); renderH(); save(); 
+        } else {
+            showMsg("Olmos yetarli emas!", "error");
+            tg.HapticFeedback.notificationOccurred('error');
+        }
     }
+
     function save() { db.ref('users/' + user.id).update({...s, name: user.first_name, lastSeen: Date.now()}); }
     function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); if(id === 'm-rank') loadRank(); }
     function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
+    function updateBoosterUI() {
+        document.getElementById('p-info').innerText = `Lvl ${s.pLvl} • ${Math.floor(500 * Math.pow(1.5, s.pLvl - 1)).toLocaleString()} 💰`;
+        document.getElementById('h-info').innerText = `Lvl ${s.hLvl} • ${Math.floor(1000 * Math.pow(1.6, s.hLvl - 1)).toLocaleString()} 💰`;
+        document.getElementById('e-info').innerText = `Lvl ${s.eLvl} • ${Math.floor(2000 * Math.pow(1.4, s.eLvl - 1)).toLocaleString()} 💰`;
+    }
 
     init();
 </script>
 </body>
-    </html>
+        </html>
+                                        
                                                                      
         
     
