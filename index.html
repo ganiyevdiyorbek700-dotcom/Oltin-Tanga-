@@ -3,262 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga Pro</title>
+    <title>Oltin Tanga - Passive Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://alwingulla.com/tag.min.js" data-zone="10558007" async></script>
     
     <style>
-        :root { --bg: #050810; --accent: #f59e0b; --card: #111827; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 100px; text-align: center; user-select: none; overflow: hidden; }
+        :root { --bg: #0b101b; --card: #151c2c; --accent: #f39c12; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; user-select: none; overflow-x: hidden; }
         
-        /* Stats Panel */
-        .header-stats { display: flex; justify-content: space-around; padding: 12px; background: rgba(0,0,0,0.6); border-bottom: 1px solid #1e293b; }
-        .stat-box { background: #1a1f2e; border: 1px solid #374151; border-radius: 10px; flex: 1; margin: 0 4px; padding: 5px; }
-        .stat-label { font-size: 9px; color: #9ca3af; display: block; }
-        .stat-value { font-size: 13px; font-weight: bold; color: var(--accent); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 15px; }
+        .stat-card { background: var(--card); border: 1.5px solid #2c3e50; border-radius: 12px; padding: 8px; }
+        .stat-label { font-size: 10px; color: #888; display: block; }
+        .stat-val { color: var(--accent); font-weight: bold; font-size: 13px; }
 
-        /* Main Game Area */
-        .total-coins { font-size: 50px; font-weight: 900; color: #facc15; margin: 20px 0 5px; text-shadow: 0 0 15px rgba(250,204,21,0.3); }
-        .diamond-ui { color: #00d4ff; font-weight: bold; margin-bottom: 15px; }
+        .main-score { font-size: 55px; font-weight: 900; color: #f1c40f; margin-top: 15px; }
+        .diamond-info { color: #3498db; margin-bottom: 15px; font-weight: bold; }
         
-        .tanga-container { position: relative; height: 260px; display: flex; align-items: center; justify-content: center; }
-        .main-tanga { 
-            width: 210px; height: 210px; border-radius: 50%; 
-            background: radial-gradient(circle, #facc15 0%, #ca8a04 100%); 
-            border: 10px solid #854d0e; display: flex; align-items: center; justify-content: center; 
-            font-size: 70px; font-weight: 900; color: white; transition: 0.1s; z-index: 5;
+        .tanga-wrapper { position: relative; display: inline-block; margin: 15px auto; }
+        .tanga-btn { 
+            width: 220px; height: 220px; border-radius: 50%; 
+            background: radial-gradient(circle, #f1c40f 0%, #d4ac0d 100%);
+            border: 8px solid #91760b; display: flex; align-items: center; justify-content: center;
+            font-size: 75px; font-weight: bold; transition: 0.1s;
         }
-        .main-tanga:active { transform: scale(0.92); }
+        .tanga-btn:active { transform: scale(0.95); }
 
-        /* Side Buttons */
-        .side-btn { position: absolute; width: 55px; height: 55px; border-radius: 50%; background: #111; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 25px; z-index: 10; cursor: pointer; }
-        .btn-daily { left: 30px; } .btn-spin { right: 30px; background: conic-gradient(red, yellow, green, blue, red); }
+        .side-icon { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 3px solid #d4ac0d; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; font-size: 28px; background: #111; z-index: 10; }
+        .icon-left { left: -25px; } .icon-right { right: -25px; background: conic-gradient(red, yellow, green, blue, red); }
 
-        /* Sections */
-        .section { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
-        .section.active { display: block; }
-        .card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #374151; text-align: left; }
-        
-        .btn-action { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; }
-        .btn-close { background: #374151; color: white; margin-top: 10px; }
+        .energy-section { width: 85%; margin: 20px auto; }
+        .energy-bar-bg { width: 100%; height: 12px; background: #2c3e50; border-radius: 10px; overflow: hidden; }
+        .energy-fill { height: 100%; background: linear-gradient(to right, #f1c40f, #e67e22); width: 100%; transition: 0.3s; }
 
-        /* Nav Bar */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 1000; }
-        .nav-item { flex: 1; font-size: 10px; color: #94a3b8; }
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0a0e17; border-top: 1px solid #1a2533; padding: 12px 0; }
+        .nav-item { flex: 1; font-size: 11px; color: #666; }
+        .nav-item b { font-size: 20px; display: block; margin-bottom: 3px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 100; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .modal.active { display: block; }
+        .item-card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 12px; border: 1px solid #2c3e50; text-align: left; }
+        .btn-gold { background: #f39c12; color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; margin-top: 8px; }
+
+        .leader-item { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .me { border: 2px solid #f1c40f; background: rgba(243, 156, 18, 0.1); }
     </style>
 </head>
 <body>
-    <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
 
-    <div id="main-ui">
-        <div class="header-stats">
-            <div class="stat-box"><span class="stat-label">STATUS</span><span id="st-ui" class="stat-value">Bronza</span></div>
-            <div class="stat-box"><span class="stat-label">SOATIGA</span><span id="h-ui" class="stat-value">0</span></div>
-            <div class="stat-box"><span class="stat-label">ENERGY</span><span id="e-val" class="stat-value">500</span></div>
+    <audio id="bgMusic" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
+
+    <div id="game-ui">
+        <div class="stats-grid">
+            <div class="stat-card"><span class="stat-label">STATUS</span><span id="st-val" class="stat-val">Bronza</span></div>
+            <div class="stat-card"><span class="stat-label">SOATIGA</span><span id="h-val" class="stat-val">0</span></div>
+            <div class="stat-card"><span class="stat-label">TAP KUCHI</span><span id="p-val" class="stat-val">1</span></div>
         </div>
 
-        <div class="total-coins" id="c-ui">0</div>
-        <div class="diamond-ui">💎 <span id="d-ui">0</span></div>
+        <div class="main-score" id="score-ui">0</div>
+        <div class="diamond-info">💎 <span id="diam-ui">0</span></div>
 
-        <div class="tanga-container">
-            <div class="side-btn btn-daily" onclick="openSec('daily-sec')">🎁</div>
-            <div id="tanga" class="main-tanga" onclick="handleTap(event)">1</div>
-            <div class="side-btn btn-spin" onclick="openSec('spin-sec')">🎡</div>
+        <div class="tanga-wrapper">
+            <div class="side-icon icon-left" onclick="showModal('daily')">🎁</div>
+            <div class="tanga-btn" id="tanga-main" onclick="handleTap(event)">1</div>
+            <div class="side-icon icon-right" onclick="showModal('spin')">🎡</div>
         </div>
-        <p>Tap kuchi: <b id="p-ui">1</b></p>
-    </div>
 
-    <div id="market-sec" class="section">
-        <h2>🛒 Market</h2>
-        <div class="card">
-            <p>1,000 Tanga = 1 Olmos 💎</p>
-            <input type="number" id="m-input" style="width:90%; padding:10px; margin-bottom:10px;" placeholder="Tanga miqdorini yozing">
-            <button class="btn-action" onclick="exchange()">ALMASHTIRISH</button>
+        <div class="energy-section">
+            <div style="margin-bottom:5px;">⚡ <span id="e-current">500</span> / <span id="e-max">500</span></div>
+            <div class="energy-bar-bg"><div id="e-fill" class="energy-fill"></div></div>
         </div>
-        <button class="btn-action btn-close" onclick="closeAll()">YOPISH</button>
     </div>
 
-    <div id="ref-sec" class="section">
-        <h2>👥 Referal</h2>
-        <div class="card">Do'stlar: <b id="ref-count">0</b> | Bonus: <b id="ref-money">0</b> 💰</div>
-        <button class="btn-action" onclick="claimRef()">OLISH</button>
-        <div class="card" id="ref-link" style="font-size:11px; color:var(--accent); margin-top:10px;"></div>
-        <button class="btn-action btn-close" onclick="closeAll()">YOPISH</button>
+    <div id="booster-modal" class="modal">
+        <h2>⚡ Boosterlar</h2>
+        <div class="item-card"><b>Tap Kuchi (+1)</b><br><small>Narxi: 500 💰</small><button class="btn-gold" onclick="buy('tap', 500)">LEVEL UP</button></div>
+        <div class="item-card"><b>Soatbay Foyda (+100)</b><br><small>Narxi: 1000 💰</small><button class="btn-gold" onclick="buy('hour', 1000)">LEVEL UP</button></div>
+        <div class="item-card"><b>Max Energiya (+500)</b><br><small>Narxi: 2000 💰</small><button class="btn-gold" onclick="buy('energy', 2000)">LEVEL UP</button></div>
+        <button class="btn-gold" style="background:#444; color:white;" onclick="closeAll()">YOPISH</button>
     </div>
 
-    <div id="leader-sec" class="section">
-        <h2>📊 Leaderboard</h2>
+    <div id="leader-modal" class="modal">
+        <h2>📊 Reyting (Top O'yinchilar)</h2>
         <div id="leader-list"></div>
-        <button class="btn-action btn-close" onclick="closeAll()">YOPISH</button>
+        <button class="btn-gold" style="background:#444; color:white; margin-top:20px;" onclick="closeAll()">YOPISH</button>
     </div>
 
-    <div id="home-sec" class="section">
-        <h2>🏠 Mening Uyim</h2>
-        <div class="card">Foydalanuvchi: <b id="h-name">...</b><br>ID: <b id="h-id">...</b></div>
-        <div class="card">💰 Balans: <span id="h-c">0</span><br>💎 Olmoslar: <span id="h-d">0</span></div>
-        <button class="btn-action" style="background:linear-gradient(to right, #7c3aed, #db2777); color:white" onclick="alert('Tez kunda! Tonga almashtirilish boshlandi.')">🚀 AIRDROP</button>
-        <button class="btn-action btn-close" onclick="closeAll()">YOPISH</button>
-    </div>
-
-    <div id="spin-sec" class="section">
-        <h2>🎡 Tasodifiy Tanga</h2>
-        <div class="card">Limit: <span id="spin-limit-ui">0</span> / 4</div>
-        <button class="btn-action" id="spin-btn" onclick="handleSpin()">OMADNI SINASH</button>
-        <button class="btn-action btn-close" onclick="closeAll()">YOPISH</button>
-    </div>
-
-    <div id="daily-sec" class="section">
-        <h2>🎁 Kunlik Bonus</h2>
-        <div class="card">5,000 💰 olishingiz mumkin. Reklama bilan 2x (10,000 💰) qilsa bo'ladi!</div>
-        <button class="btn-action" onclick="claimDaily(false)">ODDIY OLISH (5k)</button>
-        <button class="btn-action" style="background:orange" onclick="claimDaily(true)">REKLAMA BILAN (10k)</button>
-        <button class="btn-action btn-close" onclick="closeAll()">YOPISH</button>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-item" onclick="openSec('market-sec')">🛒<br>MARKET</div>
-        <div class="nav-item" onclick="openSec('ref-sec')">👥<br>REFERAL</div>
-        <div class="nav-item" onclick="openSec('leader-sec')">📊<br>REYTING</div>
-        <div class="nav-item" onclick="openSec('home-sec')">🏠<br>UYIM</div>
+    <div class="nav">
+        <div class="nav-item" onclick="alert('Market tez kunda!')"><b>🛒</b>MARKET</div>
+        <div class="nav-item" onclick="alert('Referal tez kunda!')"><b>👥</b>REFERAL</div>
+        <div class="nav-item" onclick="showModal('leader')"><b>📊</b>REYTING</div>
+        <div class="nav-item" onclick="showModal('booster')"><b>⚡</b>BOOSTER</div>
+        <div class="nav-item" onclick="alert('Uyim tez kunda!')"><b>🏠</b>UYIM</div>
     </div>
 
     <script>
-        // 1. Firebase Sozlamalari (O'zingiznikini qo'ying)
-        const firebaseConfig = { apiKey: "AIza...", databaseURL: "https://your-db-url.firebaseio.com" };
+        const firebaseConfig = { apiKey: "AIza...", databaseURL: "https://your-db.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         const tg = window.Telegram.WebApp;
         const user = tg.initDataUnsafe.user || { id: "7462622808", first_name: "Ganiyev Diyorbek" };
         
-        let s = { coins: 0, diamonds: 0, energy: 500, maxE: 500, power: 1, hourly: 0, refs: 0, refPending: 0, spinCount: 0, lastSpinDate: "", lastDaily: 0 };
+        let s = { coins: 0, diams: 0, energy: 500, maxE: 500, power: 1, hourly: 0, lastSeen: Date.now() };
 
         function init() {
             tg.expand();
-            document.getElementById('h-name').innerText = user.first_name;
-            document.getElementById('h-id').innerText = user.id;
-            document.getElementById('ref-link').innerText = "t.me/OltinTanga1_bot?start=" + user.id;
-            
-            document.body.addEventListener('click', () => { 
-                const m = document.getElementById('bg-music');
-                if(m.paused) m.play().catch(()=>{}); 
-            }, {once: true});
-
-            loadFromFirebase();
+            loadData();
             setInterval(loop, 1000);
+            document.addEventListener('click', () => { document.getElementById('bgMusic').play().catch(()=>{}); }, {once: true});
         }
 
         function loop() {
             s.coins += (s.hourly / 3600);
             if(s.energy < s.maxE) s.energy += 0.5;
+            s.lastSeen = Date.now(); // Har soniyada vaqtni yangilash
             updateUI();
-            updateTangaVisual();
+            if(Math.floor(s.coins) % 10 === 0) saveData(); // Har 10 tangada bir marta bazaga yozish (yuklamani kamaytirish uchun)
         }
 
         function handleTap(e) {
             if(s.energy >= s.power) {
                 s.coins += s.power;
                 s.energy -= s.power;
-                saveToFirebase();
                 updateUI();
+                saveData();
             }
         }
 
-        function claimDaily(withAd) {
-            let now = Date.now();
-            if(now - s.lastDaily < 86400000) return alert("Ertaga qayting!");
-
-            if(withAd) {
-                if(window.show_10558007) {
-                    window.show_10558007().then(() => { finishDaily(10000); });
-                } else { alert("Reklama yuklanmadi!"); }
-            } else { finishDaily(5000); }
-        }
-
-        function finishDaily(amt) {
-            s.coins += amt; s.lastDaily = Date.now();
-            saveToFirebase(); alert(amt + " 💰 olindi!");
-        }
-
-        async function handleSpin() {
-            let today = new Date().toISOString().slice(0, 10);
-            if(s.lastSpinDate !== today) { s.spinCount = 0; s.lastSpinDate = today; }
-
-            if(s.spinCount >= 4) return alert("Limit tugadi!");
-
-            if(s.spinCount === 0) { executeSpin(); } 
-            else {
-                if(window.show_10558007) {
-                    window.show_10558007().then(() => { executeSpin(); });
-                } else { alert("Reklama yo'q!"); }
-            }
-        }
-
-        function executeSpin() {
-            let win = Math.floor(Math.random() * 4900) + 100;
-            s.coins += win; s.spinCount++;
-            saveToFirebase(); alert("Yutuq: " + win + " 💰");
-        }
-
-        function exchange() {
-            let v = parseInt(document.getElementById('m-input').value);
-            if(v >= 1000 && s.coins >= v) {
-                s.coins -= v; s.diamonds += Math.floor(v/1000);
-                saveToFirebase(); alert("Muvaffaqiyatli!");
-            }
-        }
-
-        function updateTangaVisual() {
-            const t = document.getElementById('tanga');
-            t.innerText = s.power;
-            if(s.coins >= 5000000) t.style.background = "black";
-            else if(s.coins >= 1000000) t.style.background = "purple";
-            else if(s.coins >= 500000) t.style.background = "blue";
-            else if(s.coins >= 100000) t.style.background = "green";
-            else if(s.coins >= 50000) t.style.background = "red";
+        function buy(type, price) {
+            if(s.coins >= price) {
+                s.coins -= price;
+                if(type==='tap') s.power++;
+                if(type==='hour') s.hourly += 100;
+                if(type==='energy') { s.maxE += 500; s.energy += 500; }
+                saveData(); updateUI();
+            } else { alert("Mablag' yetarli emas!"); }
         }
 
         function updateUI() {
-            document.getElementById('c-ui').innerText = Math.floor(s.coins).toLocaleString();
-            document.getElementById('d-ui').innerText = s.diamonds;
-            document.getElementById('e-val').innerText = Math.floor(s.energy) + " / " + s.maxE;
-            document.getElementById('p-ui').innerText = s.power;
-            document.getElementById('h-ui').innerText = s.hourly;
-            document.getElementById('h-c').innerText = Math.floor(s.coins).toLocaleString();
-            document.getElementById('h-d').innerText = s.diamonds;
-            document.getElementById('spin-limit-ui').innerText = s.spinCount;
-            document.getElementById('ref-count').innerText = s.refs;
-            document.getElementById('ref-money').innerText = s.refPending;
+            document.getElementById('score-ui').innerText = Math.floor(s.coins).toLocaleString();
+            document.getElementById('diam-ui').innerText = s.diams;
+            document.getElementById('e-current').innerText = Math.floor(s.energy);
+            document.getElementById('e-max').innerText = s.maxE;
+            document.getElementById('e-fill').style.width = (s.energy / s.maxE * 100) + "%";
+            document.getElementById('p-val').innerText = s.power;
+            document.getElementById('h-val').innerText = s.hourly;
+            document.getElementById('tanga-main').innerText = s.power;
         }
 
-        function saveToFirebase() {
+        function saveData() {
             db.ref('users/' + user.id).set(s);
             db.ref('leaderboard/' + user.id).set({name: user.first_name, coins: Math.floor(s.coins)});
         }
 
-        function loadFromFirebase() {
+        function loadData() {
             db.ref('users/' + user.id).once('value', (snap) => {
-                if(snap.exists()) { s = {...s, ...snap.val()}; updateUI(); }
+                if(snap.exists()) {
+                    let data = snap.val();
+                    let now = Date.now();
+                    let diff = (now - data.lastSeen) / 1000; // Yo'q bo'lgan vaqt (soniya)
+                    let offlineEarnings = (data.hourly / 3600) * diff;
+
+                    if(offlineEarnings > 1) {
+                        alert(`Siz yo'qligingizda soatbay daromad hisobiga ${Math.floor(offlineEarnings)} 💰 yig'ildi!`);
+                        data.coins += offlineEarnings;
+                    }
+                    s = {...s, ...data};
+                    updateUI();
+                }
             });
-            db.ref('leaderboard').orderByChild('coins').limitToLast(10).on('value', (snap) => {
-                let h = ""; let list = [];
-                snap.forEach(c => list.push(c.val()));
-                list.reverse().forEach((p, i) => {
-                    h += `<div class="card">${i+1}. ${p.name} <span style="float:right">${p.coins.toLocaleString()}</span></div>`;
+
+            // Reyting faqat bazadagi foydalanuvchilar
+            db.ref('leaderboard').orderByChild('coins').limitToLast(15).on('value', (snap) => {
+                let list = [];
+                snap.forEach(c => { if(c.key !== String(user.id)) list.push(c.val()); });
+                list.reverse();
+                let html = `<div class="leader-item me">1. ${user.first_name} (Siz) <b>${Math.floor(s.coins).toLocaleString()}</b></div>`;
+                list.forEach((p, i) => {
+                    html += `<div class="leader-item">${i+2}. ${p.name} <b>${p.coins.toLocaleString()}</b></div>`;
                 });
-                document.getElementById('leader-list').innerHTML = h;
+                document.getElementById('leader-list').innerHTML = html;
             });
         }
 
-        function openSec(id) { closeAll(); document.getElementById(id).classList.add('active'); }
-        function closeAll() { document.querySelectorAll('.section').forEach(x => x.classList.remove('active')); }
+        function showModal(id) { closeAll(); document.getElementById(id + '-modal').classList.add('active'); }
+        function closeAll() { document.querySelectorAll('.modal').forEach(x => x.classList.remove('active')); }
 
         init();
     </script>
 </body>
-                          </html>
+    </html>
+    
                                         
                                                                                  </html>
 
