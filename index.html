@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga - Pro Edition</title>
+    <title>Oltin Tanga - Final Edition</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -11,13 +11,11 @@
         :root { --bg: #0b111d; --card: #1c2533; --accent: #f39c12; --blue: #3498db; --green: #2ecc71; --red: #e74c3c; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; }
         
-        /* Bildirishnoma (Notification) */
         #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 85%; padding: 15px; border-radius: 12px; color: white; font-weight: bold; z-index: 10000; transition: 0.5s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .show-notif { top: 20px !important; }
         .notif-success { background: var(--green); border: 2px solid #27ae60; }
         .notif-error { background: var(--red); border: 2px solid #c0392b; }
-        .show-notif { top: 20px !important; }
 
-        /* Statuslar */
         .status-header { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.5); }
         .status-box { background: var(--card); padding: 5px 12px; border-radius: 10px; border: 1px solid #2c3e50; min-width: 80px; }
         .status-box small { font-size: 10px; color: #888; display: block; }
@@ -26,32 +24,28 @@
         .score-main { font-size: 45px; font-weight: 900; margin-top: 15px; text-shadow: 0 0 10px rgba(243,156,18,0.3); }
         .diam-main { color: var(--blue); font-size: 18px; margin-bottom: 10px; }
 
-        /* Tanga va GitHub Rasmi */
         .coin-area { position: relative; width: 250px; height: 250px; margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         #coin-ring { position: absolute; width: 100%; height: 100%; border: 8px solid #f1c40f; border-radius: 50%; box-shadow: 0 0 25px rgba(241,196,15,0.4); transition: 0.1s; }
-        #hero-img { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; z-index: 5; border: 2px solid #000; }
+        #hero-img { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; z-index: 5; border: 2px solid #000; display: block; }
 
-        /* Energiya */
         .energy-wrap { width: 80%; margin: 20px auto; }
         .progress-bar { height: 12px; background: #162130; border-radius: 10px; overflow: hidden; border: 1px solid #2c3e50; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #f39c12, #e67e22); width: 100%; transition: 0.2s; }
 
-        /* Navigatsiya */
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #080c14; padding: 10px 0; border-top: 1px solid #1a2533; height: 70px; z-index: 2000; }
         .nav-btn { flex: 1; font-size: 10px; color: #666; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-btn.active { color: var(--accent); }
 
-        /* Modallar */
         .modal { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 3000; padding: 20px 15px 80px; overflow-y: auto; text-align: left; }
         .active-modal { display: block; }
         .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 12px; border: 1px solid #2c3e50; }
         .flex { display: flex; justify-content: space-between; align-items: center; }
         
-        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin: 10px 0; box-sizing: border-box; }
         button { border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .btn-buy { background: var(--accent); color: #000; padding: 10px 15px; }
         .btn-full { background: var(--accent); color: #000; padding: 15px; width: 100%; font-size: 16px; margin: 5px 0; }
         .btn-close { background: #2c3e50; color: white; width: 100%; padding: 15px; margin-top: 10px; }
+        .timer-txt { font-size: 12px; color: var(--accent); margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -82,9 +76,8 @@
     <h2>🛒 Market</h2>
     <div class="card">
         <h3>💎 Olmos Ayirboshlash</h3>
-        <p>1,000 Tanga = 1 Olmos</p>
-        <input type="number" id="ex-in" placeholder="Olmos miqdorini kiriting">
-        <button class="btn-full" onclick="exchange()">ALMASHTIRISH</button>
+        <input type="number" id="ex-in" placeholder="Olmos miqdorini yozing">
+        <button class="btn-full" onclick="exchange()">ALMASHTIRISH (1,000 = 1 💎)</button>
     </div>
     <h3>🎭 Anime Kartalar</h3>
     <div id="hero-list"></div>
@@ -92,15 +85,15 @@
 </div>
 
 <div id="m-bonus" class="modal">
-    <h2>🎁 Bonuslar</h2>
+    <h2>🎁 Bonus Bolimi</h2>
     <div class="card">
-        <h3>📅 Kunlik Bonus</h3>
-        <button class="btn-full" onclick="daily(1)">OLISH (5,000 💰)</button>
-        <button class="btn-full" style="background:var(--blue); color:white" onclick="daily(2)">📺 REKLAMA KO'RIB 2X</button>
+        <h3>📅 Kunlik Bonus (5,000 💰)</h3>
+        <button id="daily-btn" class="btn-full" onclick="daily(1)">OLISH</button>
+        <div id="daily-timer" class="timer-txt"></div>
     </div>
     <div class="card">
         <h3>🎲 Tasodifiy Tanga</h3>
-        <p id="rand-txt">Bugun 3 ta imkoniyat bor</p>
+        <p id="rand-txt">3 ta imkoniyat bor</p>
         <button class="btn-full" style="background:var(--green); color:white" onclick="randomB()">OMADNI SINASH</button>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
@@ -123,7 +116,7 @@
         <button class="btn-buy" onclick="up('h')">UP</button>
     </div>
     <div class="card flex">
-        <div><b>Energiya Sig'imi</b><br><small id="e-info">Lvl 1 • 2,000 💰</small></div>
+        <div><b>Max Energiya</b><br><small id="e-info">Lvl 1 • 2,000 💰</small></div>
         <button class="btn-buy" onclick="up('e')">UP</button>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
@@ -133,12 +126,7 @@
     <h2>🏠 Mening Uyim</h2>
     <div class="card">
         <b id="my-name">...</b><br><small id="my-id"></small>
-        <p>💰 Tanga: <span id="my-c">0</span> | 💎 Olmos: <span id="my-d">0</span></p>
-    </div>
-    <div class="card">
-        <h3>👥 Referal</h3>
-        <input type="text" id="ref-link" readonly>
-        <button class="btn-full" onclick="copyRef()">NUSXALASH</button>
+        <p>💰: <span id="my-c">0</span> | 💎: <span id="my-d">0</span></p>
     </div>
     <button class="btn-full" style="background:var(--red); color:white" onclick="showMsg('Tez kunda Tonga almashtirilish boshlandi!', 'success')">🚀 AIRDROP</button>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
@@ -169,25 +157,34 @@
         { id: "subzero", name: "Sub-Zero", price: 1000, img: raw + "grok_image_1770310876617.jpg" }
     ];
 
-    let s = { coins: 0, diams: 0, power: 1, hourly: 0, energy: 500, maxE: 500, pLvl: 1, hLvl: 1, eLvl: 1, lastD: 0, randC: 3, activeHero: "goku", owned: ["goku"] };
+    let s = { coins: 0, diams: 0, power: 1, hourly: 0, energy: 500, maxE: 500, pLvl: 1, hLvl: 1, eLvl: 1, lastD: 0, randC: 3, activeHero: "goku", owned: ["goku"], lastSeen: Date.now() };
 
     function init() {
         tg.expand();
         document.getElementById('my-name').innerText = user.first_name;
-        document.getElementById('my-id').innerText = "ID: " + user.id;
-        document.getElementById('ref-link').value = "https://t.me/bot?start=" + user.id;
-
         db.ref('users/' + user.id).on('value', snap => {
             if(snap.exists()) {
                 let d = snap.val();
-                let off = (d.hourly / 3600) * ((Date.now() - (d.lastSeen || Date.now()))/1000);
+                let now = Date.now();
+                let diff = (now - (d.lastSeen || now)) / 1000;
+                
                 s = {...s, ...d};
-                if(off > 1) { s.coins += off; showMsg(`Siz yo'qligingizda ${Math.floor(off)} 💰 yig'ildi!`, 'success'); }
+                
+                // Offline Energiya va Foyda
+                let earned = (s.hourly / 3600) * diff;
+                s.coins += earned;
+                s.energy = Math.min(s.maxE, s.energy + diff); // 1 sekunda 1 energiya
+                
                 updateUI(); renderH();
             }
         });
 
-        setInterval(() => { s.coins += (s.hourly/3600); if(s.energy < s.maxE) s.energy++; updateUI(); }, 1000);
+        setInterval(() => { 
+            s.coins += (s.hourly/3600); 
+            if(s.energy < s.maxE) s.energy += 0.5; // Doimiy tiklanish
+            updateUI(); 
+            updateBonusTimer();
+        }, 1000);
         setInterval(save, 5000);
     }
 
@@ -199,12 +196,13 @@
     }
 
     function handleTap(e) {
-        document.getElementById('music').play().catch(()=>{});
+        let m = document.getElementById('music');
+        if(m.paused) m.play().catch(()=>{});
         if(s.energy >= s.power) {
             s.coins += s.power; s.energy -= s.power;
             tg.HapticFeedback.impactOccurred('medium');
             updateUI();
-        } else { showMsg("Energiya tugadi!", "error"); }
+        } else showMsg("Energiya kam!", "error");
     }
 
     function updateUI() {
@@ -215,40 +213,61 @@
         document.getElementById('e-now').innerText = Math.floor(s.energy);
         document.getElementById('e-max').innerText = s.maxE;
         document.getElementById('e-fill').style.width = (s.energy/s.maxE*100) + "%";
-        document.getElementById('my-c').innerText = Math.floor(s.coins).toLocaleString();
-        document.getElementById('my-d').innerText = s.diams;
-
+        
         document.getElementById('p-info').innerText = `Lvl ${s.pLvl} • ${Math.floor(500 * Math.pow(1.3, s.pLvl-1))} 💰`;
         document.getElementById('h-info').innerText = `Lvl ${s.hLvl} • ${Math.floor(1000 * Math.pow(1.5, s.hLvl-1))} 💰`;
         document.getElementById('e-info').innerText = `Lvl ${s.eLvl} • ${Math.floor(2000 * Math.pow(1.4, s.eLvl-1))} 💰`;
 
         let h = heroes.find(x => x.id === s.activeHero);
         if(h) document.getElementById('hero-img').src = h.img;
-        document.getElementById('st-rank').innerText = s.coins > 100000 ? "Oltin" : (s.coins > 50000 ? "Kumush" : "Bronza");
+        document.getElementById('st-rank').innerText = s.coins > 1000000 ? "Afsona" : (s.coins > 100000 ? "Oltin" : "Bronza");
+    }
+
+    function updateBonusTimer() {
+        let remain = 86400000 - (Date.now() - s.lastD);
+        let btn = document.getElementById('daily-btn');
+        let div = document.getElementById('daily-timer');
+        if(remain > 0) {
+            btn.disabled = true; btn.style.opacity = "0.5";
+            let h = Math.floor(remain/3600000), m = Math.floor((remain%3600000)/60000), sec = Math.floor((remain%60000)/1000);
+            div.innerText = `Keyingi bonus: ${h}s ${m}m ${sec}s`;
+        } else {
+            btn.disabled = false; btn.style.opacity = "1";
+            div.innerText = "Bonus tayyor!";
+        }
+    }
+
+    function daily() {
+        if(Date.now() - s.lastD > 86400000) {
+            s.coins += 5000; s.lastD = Date.now();
+            showMsg("5,000 💰 olindi!", "success"); save();
+        }
+    }
+
+    function loadRank() {
+        db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
+            let l = `<div class="card" style="border:2px solid var(--accent)"><b>1. 👑 Ganiyev (Siz)</b><br>💰 999,999,999 | 💎 99,999</div>`;
+            let users = [];
+            snap.forEach(p => { if(p.key !== "8009403510") users.push(p.val()); });
+            users.reverse().forEach((u, i) => {
+                l += `<div class="card"><b>${i+2}. ${u.name || 'O\'yinchi'}</b><br>💰 ${Math.floor(u.coins).toLocaleString()}</div>`;
+            });
+            document.getElementById('rank-list').innerHTML = l;
+        });
     }
 
     function up(t) {
         let c = 0;
-        if(t==='p') { c=Math.floor(500*Math.pow(1.3,s.pLvl-1)); if(s.coins>=c){s.coins-=c; s.power++; s.pLvl++; showMsg("Tap kuchaytirildi!", "success");} else showMsg("Mablag' yetarli emas!", "error"); }
-        if(t==='h') { c=Math.floor(1000*Math.pow(1.5,s.hLvl-1)); if(s.coins>=c){s.coins-=c; s.hourly+=150; s.hLvl++; showMsg("Daromad oshdi!", "success");} else showMsg("Mablag' yetarli emas!", "error"); }
-        if(t==='e') { c=Math.floor(2000*Math.pow(1.4,s.eLvl-1)); if(s.coins>=c){s.coins-=c; s.maxE+=500; s.eLvl++; showMsg("Energiya oshdi!", "success");} else showMsg("Mablag' yetarli emas!", "error"); }
+        if(t==='p') { c=Math.floor(500*Math.pow(1.3,s.pLvl-1)); if(s.coins>=c){s.coins-=c; s.power++; s.pLvl++; showMsg("Tayyor!", "success");} else showMsg("Pul kam!", "error"); }
+        if(t==='h') { c=Math.floor(1000*Math.pow(1.5,s.hLvl-1)); if(s.coins>=c){s.coins-=c; s.hourly+=150; s.hLvl++; showMsg("Tayyor!", "success");} else showMsg("Pul kam!", "error"); }
+        if(t==='e') { c=Math.floor(2000*Math.pow(1.4,s.eLvl-1)); if(s.coins>=c){s.coins-=c; s.maxE+=500; s.eLvl++; showMsg("Tayyor!", "success");} else showMsg("Pul kam!", "error"); }
         save(); updateUI();
     }
 
     function exchange() {
         let v = parseInt(document.getElementById('ex-in').value);
-        if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; showMsg("Olmos sotib olindi!", "success"); save(); }
-        else showMsg("Tanga yetarli emas!", "error");
-    }
-
-    function daily(m) {
-        if(Date.now() - s.lastD > 86400000) { s.coins += 5000*m; s.lastD = Date.now(); showMsg("Bonus olindi!", "success"); save(); }
-        else showMsg("Ertaga qayting!", "error");
-    }
-
-    function randomB() {
-        if(s.randC > 0) { let w = Math.floor(Math.random()*3000)+500; s.coins += w; s.randC--; showMsg(`Yutuq: ${w} 💰`, "success"); save(); }
-        else showMsg("Limit tugadi!", "error");
+        if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; showMsg("Olmos olindi!", "success"); save(); }
+        else showMsg("Tanga kam!", "error");
     }
 
     function renderH() {
@@ -256,7 +275,7 @@
         heroes.forEach(h => {
             let own = s.owned.includes(h.id);
             htm += `<div class="card flex">
-                <img src="${h.img}" style="width:50px; height:50px; border-radius:50%">
+                <img src="${h.img}" style="width:55px; height:55px; border-radius:50%; object-fit:cover">
                 <div style="flex:1; margin-left:12px;"><b>${h.name}</b><br><small>${own ? 'Sotib olingan' : h.price+' 💎'}</small></div>
                 <button class="btn-buy" onclick="${own ? "selectH('"+h.id+"')" : "buyH('"+h.id+"',"+h.price+")"}">${own ? (s.activeHero===h.id?'KIYILGAN':'KIYISH') : 'OLISH'}</button>
             </div>`;
@@ -264,17 +283,13 @@
         document.getElementById('hero-list').innerHTML = htm;
     }
 
-    function loadRank() {
-        db.ref('users').orderByChild('coins').limitToLast(10).once('value', snap => {
-            let l = `<div class="card" style="border:2px solid var(--accent)"><b>1. 👑 Ganiyev (Admin)</b><br>💰 999,999,999 | 💎 99,999</div>`;
-            let i = 2; snap.forEach(p => { if(p.key!=="8009403510"){ l+=`<div class="card"><b>${i}. ${p.val().name || 'User'}</b><br>💰 ${Math.floor(p.val().coins).toLocaleString()}</div>`; i++; }});
-            document.getElementById('rank-list').innerHTML = l;
-        });
+    function randomB() {
+        if(s.randC > 0) { let w = Math.floor(Math.random()*2500)+500; s.coins += w; s.randC--; showMsg(`Yutuq: ${w} 💰`, "success"); save(); }
+        else showMsg("Limit tugadi!", "error");
     }
 
-    function selectH(id) { s.activeHero = id; showMsg("Rasm o'zgardi!", "success"); save(); }
-    function buyH(id, p) { if(s.diams >= p) { s.diams -= p; s.owned.push(id); s.activeHero = id; showMsg("Tabriklaymiz!", "success"); save(); renderH(); } else showMsg("Olmos yetarli emas!", "error"); }
-    function copyRef() { let r = document.getElementById("ref-link"); r.select(); document.execCommand("copy"); showMsg("Link nusxalandi!", "success"); }
+    function selectH(id) { s.activeHero = id; save(); renderH(); }
+    function buyH(id, p) { if(s.diams >= p) { s.diams -= p; s.owned.push(id); s.activeHero = id; showMsg("Sotib olindi!", "success"); save(); renderH(); } else showMsg("Olmos kam!", "error"); }
     function save() { db.ref('users/' + user.id).update({...s, name: user.first_name, lastSeen: Date.now()}); }
     function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); if(id==='m-rank') loadRank(); }
     function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
@@ -282,7 +297,8 @@
     init();
 </script>
 </body>
-        </html>
+    </html>
+    
             
             
                                                       
