@@ -7,52 +7,40 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <script src="https://alwingulla.com/88/pfe/current/tag.min.js?z=10558007" data-cfasync="false" async></script>
 
     <style>
         :root { --bg: #0b111d; --card: #1c2533; --accent: #f39c12; --blue: #3498db; --green: #2ecc71; --red: #e74c3c; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; }
-        
         #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 85%; padding: 15px; border-radius: 12px; color: white; font-weight: bold; z-index: 10000; transition: 0.5s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .show-notif { top: 20px !important; }
         .notif-success { background: var(--green); border: 2px solid #27ae60; }
         .notif-error { background: var(--red); border: 2px solid #c0392b; }
-
         .status-header { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.5); }
         .status-box { background: var(--card); padding: 5px 12px; border-radius: 10px; border: 1px solid #2c3e50; min-width: 80px; }
         .status-box small { font-size: 10px; color: #888; display: block; }
         .status-box b { color: var(--accent); font-size: 13px; }
-
         .score-main { font-size: 48px; font-weight: 900; margin-top: 15px; text-shadow: 0 0 15px rgba(243,156,18,0.4); }
         .diam-main { color: var(--blue); font-size: 20px; margin-bottom: 10px; }
-
         .coin-area { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        #coin-ring { position: absolute; width: 100%; height: 100%; border: 8px solid #f1c40f; border-radius: 50%; box-shadow: 0 0 30px rgba(241,196,15,0.4); transition: 0.1s; }
-        #hero-img { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; z-index: 5; border: 2px solid #000; }
-
+        #coin-ring { position: absolute; width: 100%; height: 100%; border: 8px solid #f1c40f; border-radius: 50%; box-shadow: 0 0 30px rgba(241,196,15,0.4); }
+        #hero-img { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; z-index: 5; border: 2px solid #000; background: #000; }
         .energy-wrap { width: 85%; margin: 25px auto; }
         .progress-bar { height: 14px; background: #162130; border-radius: 10px; overflow: hidden; border: 1px solid #2c3e50; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #f39c12, #e67e22); width: 100%; transition: 0.2s; }
-
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #080c14; padding: 15px 0; border-top: 1px solid #1a2533; height: 85px; z-index: 2000; }
         .nav-btn { flex: 1; font-size: 12px; color: #888; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: bold; }
         .nav-btn i { font-style: normal; font-size: 24px; }
-        .nav-btn.active { color: var(--accent); }
-
         .modal { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 3000; padding: 20px 15px 100px; overflow-y: auto; text-align: left; }
         .active-modal { display: block; }
         .card { background: var(--card); border-radius: 15px; padding: 18px; margin-bottom: 12px; border: 1px solid #2c3e50; }
         .flex { display: flex; justify-content: space-between; align-items: center; }
-        
         button { border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:active { transform: scale(0.95); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-buy { background: var(--accent); color: #000; padding: 10px 18px; }
         .btn-full { background: var(--accent); color: #000; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
         .btn-ad { background: var(--blue); color: white; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
         .btn-close { background: #2c3e50; color: white; width: 100%; padding: 16px; margin-top: 10px; }
-        .timer-txt { font-size: 13px; color: var(--accent); margin-top: 6px; font-weight: bold; }
         input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin: 10px 0; box-sizing: border-box; }
     </style>
 </head>
@@ -87,7 +75,6 @@
         <input type="number" id="ex-in" placeholder="Olmos miqdorini yozing">
         <button class="btn-full" onclick="exchange()">ALMASHTIRISH (1,000 = 1 💎)</button>
     </div>
-    <h3>🎭 Anime Kartalar</h3>
     <div id="hero-list"></div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
@@ -98,11 +85,11 @@
         <h3>📅 Kunlik Bonus (5,000 💰)</h3>
         <button id="daily-btn" class="btn-full" onclick="daily(1)">ODDIY OLISH</button>
         <button id="daily-ad-btn" class="btn-ad" onclick="daily(2)">📺 2X OLISH (10,000 💰)</button>
-        <div id="daily-timer" class="timer-txt"></div>
+        <div id="daily-timer" style="font-size:13px; color:var(--accent); margin-top:5px;"></div>
     </div>
     <div class="card">
         <h3>🎲 Tasodifiy Tanga</h3>
-        <p id="rand-txt" style="color: var(--green); font-weight: bold;">1 ta tekin imkoniyat!</p>
+        <p id="rand-txt" style="color: var(--green); font-weight: bold;">1 ta imkoniyat!</p>
         <button id="rand-btn" class="btn-full" style="background:var(--green); color:white" onclick="randomB()">OMADNI SINASH</button>
         <button id="rand-ad-btn" class="btn-ad" style="display:none;" onclick="getExtraSpin()">📺 +1 IMKONIYAT (REKLAMA)</button>
     </div>
@@ -118,15 +105,15 @@
 <div id="m-booster" class="modal">
     <h2>⚡ Boosterlar</h2>
     <div class="card flex">
-        <div><b>Tap Kuchi</b><br><small id="p-info">Yuklanmoqda...</small></div>
+        <div><b>Tap Kuchi</b><br><small id="p-info">Lvl 1 • 500 💰</small></div>
         <button id="p-btn" class="btn-buy" onclick="up('p')">UP</button>
     </div>
     <div class="card flex">
-        <div><b>Soatbay Foyda</b><br><small id="h-info">Yuklanmoqda...</small></div>
+        <div><b>Soatbay Foyda (Max 10)</b><br><small id="h-info">Lvl 1 • 1,000 💰</small></div>
         <button id="h-btn" class="btn-buy" onclick="up('h')">UP</button>
     </div>
     <div class="card flex">
-        <div><b>Max Energiya</b><br><small id="e-info">Yuklanmoqda...</small></div>
+        <div><b>Max Energiya (Max 10)</b><br><small id="e-info">Lvl 1 • 2,000 💰</small></div>
         <button id="e-btn" class="btn-buy" onclick="up('e')">UP</button>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
@@ -136,21 +123,13 @@
     <h2>🏠 Mening Uyim</h2>
     <div class="card">
         <b id="my-name" style="font-size: 20px; color: var(--accent);">...</b><br>
-        <small id="my-id" style="color: #888;"></small>
-        <hr style="border: 0; border-top: 1px solid #2c3e50; margin: 15px 0;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <small id="my-id"></small>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
             <div class="status-box"><small>💰 Tanga</small><b id="my-c">0</b></div>
             <div class="status-box"><small>💎 Olmos</small><b id="my-d">0</b></div>
-            <div class="status-box"><small>📈 Daraja</small><b id="my-rank-txt">Bronza</b></div>
-            <div class="status-box"><small>⚡ Energiya</small><b id="my-e">500</b></div>
         </div>
     </div>
-    <div class="card">
-        <h3>👥 Referal Tizimi</h3>
-        <input type="text" id="ref-link" readonly value="">
-        <button class="btn-full" onclick="copyRef()">LİNKNI NUSXALASH</button>
-    </div>
-    <button class="btn-full" style="background: linear-gradient(45deg, #e74c3c, #f39c12); color:white; height: 65px;" onclick="showMsg('Tez kunda Tonga almashtirilish boshlandi!', 'success')">🚀 AIRDROP (TEZ KUNDA)</button>
+    <button class="btn-full" style="background: linear-gradient(45deg, #e74c3c, #f39c12); color:white;" onclick="showMsg('Tez kunda!', 'success')">🚀 AIRDROP (TEZ KUNDA)</button>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
 
@@ -185,9 +164,8 @@
         tg.expand();
         document.getElementById('my-name').innerText = user.first_name;
         document.getElementById('my-id').innerText = "ID: " + user.id;
-        document.getElementById('ref-link').value = "https://t.me/OltinTanga1_bot?start=" + user.id;
 
-        db.ref('users/' + user.id).on('value', snap => {
+        db.ref('users/' + user.id).once('value', snap => {
             if(snap.exists()) {
                 let d = snap.val();
                 let now = Date.now();
@@ -195,8 +173,8 @@
                 s = {...s, ...d};
                 s.coins += (s.hourly / 3600) * diff;
                 s.energy = Math.min(s.maxE, s.energy + (diff * 0.5));
-                updateUI(); renderH(); updateSpinUI(); updateBoosterUI();
             }
+            updateUI(); renderH(); updateSpinUI(); updateBoosterUI();
         });
 
         setInterval(() => { 
@@ -209,196 +187,114 @@
     }
 
     function showAd() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (typeof show_10558007 === 'function') {
-                show_10558007().then(() => resolve()).catch(() => reject());
-            } else {
-                showMsg("Reklama yuklanmoqda...", "error");
-                reject();
-            }
+                show_10558007().then(() => resolve(true)).catch(() => resolve(false));
+            } else { showMsg("Reklama yuklanmadi", "error"); resolve(false); }
         });
     }
 
     function daily(mode) {
         if(Date.now() - s.lastD > 86400000) {
             if(mode === 2) {
-                showAd().then(() => {
-                    s.coins += 10000; s.lastD = Date.now();
-                    showMsg("2X Bonus: 10,000 💰 olindi!", "success"); save();
-                });
-            } else {
-                s.coins += 5000; s.lastD = Date.now();
-                showMsg("5,000 💰 olindi!", "success"); save();
-            }
+                showAd().then(res => { if(res){ s.coins += 10000; s.lastD = Date.now(); updateUI(); save(); } });
+            } else { s.coins += 5000; s.lastD = Date.now(); updateUI(); save(); }
         }
     }
 
-    function randomB() {
-        if(s.randC > 0) {
-            let w = Math.floor(Math.random()*4500)+500;
-            s.coins += w; s.randC--;
-            showMsg(`Yutuq: ${w} 💰`, "success");
-            save(); updateSpinUI();
+    function up(t) {
+        if(t==='p') {
+            let cost = Math.floor(500 * Math.pow(1.3, s.pLvl - 1));
+            if(s.pLvl < 50 && s.coins >= cost) { s.coins -= cost; s.power++; s.pLvl++; showMsg("Tayyor!", "success"); }
         }
+        if(t==='h') {
+            let cost = Math.floor(1000 * Math.pow(1.5, s.hLvl - 1));
+            if(s.hLvl < 10 && s.coins >= cost) { s.coins -= cost; s.hourly += 150; s.hLvl++; showMsg("Tayyor!", "success"); }
+        }
+        if(t==='e') {
+            let cost = Math.floor(2000 * Math.pow(1.5, s.eLvl - 1));
+            if(s.eLvl < 10 && s.coins >= cost) { s.coins -= cost; s.maxE += 500; s.eLvl++; showMsg("Tayyor!", "success"); }
+        }
+        updateUI(); updateBoosterUI(); save();
     }
 
-    function getExtraSpin() {
-        if(s.adSpins > 0) {
-            showAd().then(() => {
-                s.randC++; s.adSpins--;
-                showMsg("+1 Imkoniyat qo'shildi!", "success");
-                save(); updateSpinUI();
-            });
-        } else {
-            showMsg("Bugungi reklama limiti tugadi!", "error");
-        }
-    }
-
-    function updateSpinUI() {
-        const txt = document.getElementById('rand-txt');
-        const btn = document.getElementById('rand-btn');
-        const adBtn = document.getElementById('rand-ad-btn');
-
-        if(s.randC > 0) {
-            txt.innerText = `${s.randC} ta imkoniyat bor!`;
-            btn.style.display = "block";
-            adBtn.style.display = "none";
-        } else {
-            txt.innerText = "Imkoniyat qolmadi!";
-            btn.style.display = "none";
-            if(s.adSpins > 0) {
-                adBtn.style.display = "block";
-                adBtn.innerText = `📺 +1 IMKONIYAT (${s.adSpins}/3)`;
-            } else {
-                adBtn.style.display = "none";
-                txt.innerText = "Bugungi limit tugadi (0/3)";
-                txt.style.color = "var(--red)";
-            }
-        }
-    }
-
-    function showMsg(txt, type) {
-        const b = document.getElementById('notif');
-        b.innerText = txt; b.className = type === 'success' ? 'notif-success show-notif' : 'notif-error show-notif';
-        tg.HapticFeedback.notificationOccurred(type);
-        setTimeout(() => b.classList.remove('show-notif'), 3000);
+    function updateBoosterUI() {
+        let pCost = Math.floor(500 * Math.pow(1.3, s.pLvl - 1));
+        document.getElementById('p-info').innerText = s.pLvl >= 50 ? "MAX" : `Lvl ${s.pLvl} • ${pCost.toLocaleString()} 💰`;
+        let hCost = Math.floor(1000 * Math.pow(1.5, s.hLvl - 1));
+        document.getElementById('h-info').innerText = s.hLvl >= 10 ? "MAX" : `Lvl ${s.hLvl} • ${hCost.toLocaleString()} 💰`;
+        let eCost = Math.floor(2000 * Math.pow(1.5, s.eLvl - 1));
+        document.getElementById('e-info').innerText = s.eLvl >= 10 ? "MAX" : `Lvl ${s.eLvl} • ${eCost.toLocaleString()} 💰`;
     }
 
     function handleTap(e) {
-        let m = document.getElementById('music');
-        if(m.paused) m.play().catch(()=>{});
         if(s.energy >= s.power) {
             s.coins += s.power; s.energy -= s.power;
             tg.HapticFeedback.impactOccurred('medium');
             updateUI();
-        } else showMsg("Energiya yetarli emas!", "error");
+        }
     }
 
     function updateUI() {
-        let c = Math.floor(s.coins);
-        let rank = c > 1000000 ? "Afsona" : (c > 100000 ? "Oltin" : "Bronza");
-        document.getElementById('c-val').innerText = c.toLocaleString();
+        document.getElementById('c-val').innerText = Math.floor(s.coins).toLocaleString();
         document.getElementById('d-val').innerText = s.diams;
         document.getElementById('st-hour').innerText = Math.floor(s.hourly);
         document.getElementById('st-pow').innerText = s.power;
-        document.getElementById('st-rank').innerText = rank;
         document.getElementById('e-now').innerText = Math.floor(s.energy);
         document.getElementById('e-max').innerText = s.maxE;
         document.getElementById('e-fill').style.width = (s.energy/s.maxE*100) + "%";
-        document.getElementById('my-c').innerText = c.toLocaleString();
+        document.getElementById('my-c').innerText = Math.floor(s.coins).toLocaleString();
         document.getElementById('my-d').innerText = s.diams;
-        document.getElementById('my-rank-txt').innerText = rank;
-        document.getElementById('my-e').innerText = s.maxE;
         let h = heroes.find(x => x.id === s.activeHero);
         if(h) document.getElementById('hero-img').src = h.img;
     }
 
+    function randomB() {
+        if(s.randC > 0) { s.coins += 2000; s.randC--; updateUI(); updateSpinUI(); save(); }
+    }
+    function getExtraSpin() {
+        showAd().then(res => { if(res){ s.randC++; updateSpinUI(); save(); } });
+    }
+    function updateSpinUI() {
+        document.getElementById('rand-txt').innerText = s.randC + " ta imkoniyat!";
+        document.getElementById('rand-ad-btn').style.display = s.randC === 0 ? "block" : "none";
+    }
     function updateBonusTimer() {
-        let remain = 86400000 - (Date.now() - s.lastD);
-        let btn1 = document.getElementById('daily-btn');
-        let btn2 = document.getElementById('daily-ad-btn');
-        let div = document.getElementById('daily-timer');
-        if(remain > 0) {
-            btn1.disabled = btn2.disabled = true;
-            let h = Math.floor(remain/3600000), m = Math.floor((remain%3600000)/60000), sec = Math.floor((remain%60000)/1000);
-            div.innerText = `Keyingi bonus: ${h}s ${m}m ${sec}s`;
-        } else {
-            btn1.disabled = btn2.disabled = false;
-            div.innerText = "Bonus tayyor!";
-            if(s.randC === 0 && s.adSpins === 0) { s.randC = 1; s.adSpins = 3; updateSpinUI(); }
-        }
+        let rem = 86400000 - (Date.now() - s.lastD);
+        document.getElementById('daily-timer').innerText = rem > 0 ? "Kuting..." : "Bonus tayyor!";
     }
-
-    // --- BOOSTER TIZIMI (YANGILANGAN) ---
-    function updateBoosterUI() {
-        // Tap Kuchi - 50 Lvl, 1.3x
-        let pCost = Math.floor(500 * Math.pow(1.3, s.pLvl - 1));
-        document.getElementById('p-info').innerText = s.pLvl >= 50 ? "MAX Level" : `Lvl ${s.pLvl} • ${pCost.toLocaleString()} 💰`;
-        document.getElementById('p-btn').disabled = s.pLvl >= 50;
-
-        // Soatbay Foyda - 10 Lvl, 1.5x
-        let hCost = Math.floor(1000 * Math.pow(1.5, s.hLvl - 1));
-        document.getElementById('h-info').innerText = s.hLvl >= 10 ? "MAX Level" : `Lvl ${s.hLvl} • ${hCost.toLocaleString()} 💰`;
-        document.getElementById('h-btn').disabled = s.hLvl >= 10;
-
-        // Max Energiya - 10 Lvl, 1.5x
-        let eCost = Math.floor(2000 * Math.pow(1.5, s.eLvl - 1));
-        document.getElementById('e-info').innerText = s.eLvl >= 10 ? "MAX Level" : `Lvl ${s.eLvl} • ${eCost.toLocaleString()} 💰`;
-        document.getElementById('e-btn').disabled = s.eLvl >= 10;
+    function showMsg(t, type) {
+        let n = document.getElementById('notif'); n.innerText = t;
+        n.className = "show-notif " + (type==='success'?'notif-success':'notif-error');
+        setTimeout(() => n.classList.remove('show-notif'), 2000);
     }
-
-    function up(t) {
-        if(t==='p') { 
-            let cost = Math.floor(500 * Math.pow(1.3, s.pLvl - 1));
-            if(s.pLvl < 50 && s.coins >= cost) {
-                s.coins -= cost; s.power++; s.pLvl++; 
-                showMsg("Tap kuchaytirildi!", "success");
-            } else if(s.pLvl >= 50) showMsg("Maksimal daraja!", "error");
-            else showMsg("Mablag' yetarli emas!", "error"); 
-        }
-        if(t==='h') { 
-            let cost = Math.floor(1000 * Math.pow(1.5, s.hLvl - 1));
-            if(s.hLvl < 10 && s.coins >= cost) {
-                s.coins -= cost; s.hourly += 300; s.hLvl++; 
-                showMsg("Soatbay daromad oshdi!", "success");
-            } else if(s.hLvl >= 10) showMsg("Maksimal daraja!", "error");
-            else showMsg("Mablag' yetarli emas!", "error");
-        }
-        if(t==='e') { 
-            let cost = Math.floor(2000 * Math.pow(1.5, s.eLvl - 1));
-            if(s.eLvl < 10 && s.coins >= cost) {
-                s.coins -= cost; s.maxE += 1000; s.eLvl++; 
-                showMsg("Max energiya oshdi!", "success");
-            } else if(s.eLvl >= 10) showMsg("Maksimal daraja!", "error");
-            else showMsg("Mablag' yetarli emas!", "error");
-        }
-        save(); updateUI(); updateBoosterUI();
-    }
-
-    function exchange() {
-        let v = parseInt(document.getElementById('ex-in').value);
-        if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; showMsg("Olmos sotib olindi!", "success"); save(); }
-        else showMsg("Tanga yetarli emas!", "error");
-    }
-
     function renderH() {
         let htm = "";
         heroes.forEach(h => {
             let own = s.owned.includes(h.id);
             htm += `<div class="card flex">
-                <img src="${h.img}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border: 2px solid #333;">
-                <div style="flex:1; margin-left:15px;"><b>${h.name}</b><br><small>${own ? 'Sotib olingan' : h.price+' 💎'}</small></div>
-                <button class="btn-buy" onclick="${own ? "selectH('"+h.id+"')" : "buyH('"+h.id+"',"+h.price+")"}">${own ? (s.activeHero===h.id?'KIYILGAN':'KIYISH') : 'OLISH'}</button>
+                <img src="${h.img}" style="width:50px;height:50px;border-radius:50%">
+                <div style="flex:1;margin-left:10px"><b>${h.name}</b><br><small>${own?'Ega':'Narx: '+h.price}</small></div>
+                <button class="btn-buy" onclick="${own?"selectH('"+h.id+"')":"buyH('"+h.id+"',"+h.price+")"}">${own?'KIYISH':'OLISH'}</button>
             </div>`;
         });
         document.getElementById('hero-list').innerHTML = htm;
     }
+    function selectH(id) { s.activeHero = id; updateUI(); renderH(); save(); }
+    function buyH(id, p) { if(s.diams >= p) { s.diams -= p; s.owned.push(id); s.activeHero = id; updateUI(); renderH(); save(); } }
+    function exchange() {
+        let v = parseInt(document.getElementById('ex-in').value);
+        if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; updateUI(); save(); }
+    }
+    function save() { db.ref('users/' + user.id).update({...s, lastSeen: Date.now()}); }
+    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); }
+    function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
 
-    function loadRank() {
-        db.ref('users').orderByChild('coins').limitToLast(15).once('value', snap => {
-            let l = `<div class="card" style="border:2px solid var(--accent)"><b>1. 👑 Ganiyev (Admin)</b><br>💰 999,999,999 | 💎 99,999</div>`;
-            let users = [];
-            snap.forEach(p => { if(p.key !== "8009403510") users.push(p.val())
+    init();
+</script>
+</body>
+                    </html>
+    
                                                               
             
     
