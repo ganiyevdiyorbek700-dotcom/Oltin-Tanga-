@@ -55,6 +55,7 @@
         .btn-ad { background: var(--blue); color: white; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
         .btn-close { background: #2c3e50; color: white; width: 100%; padding: 16px; margin-top: 10px; }
         input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin: 10px 0; box-sizing: border-box; }
+        .timer-txt { color: var(--accent); font-size: 12px; font-weight: bold; display: block; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -96,15 +97,18 @@
 <div id="m-bonus" class="modal">
     <h2>🎁 Bonuslar</h2>
     <div class="card">
-        <h3>📅 Kunlik Bonus (5,000 💰)</h3>
+        <h3>📅 Kunlik Bonus (Kun <span id="b-day">1</span>)</h3>
+        <p id="b-amount-txt" style="font-size:14px; color:#aaa;">Bugun: 5,000 💰</p>
         <button id="daily-btn" class="btn-full" onclick="daily(1)">ODDIY OLISH</button>
-        <button id="daily-ad-btn" class="btn-ad" onclick="daily(2)">📺 2X OLISH (10,000 💰)</button>
-        <div id="daily-timer"></div>
+        <button id="daily-ad-btn" class="btn-ad" onclick="daily(2)">📺 2X OLISH (REKLAMA)</button>
+        <span id="daily-timer" class="timer-txt"></span>
     </div>
     <div class="card">
         <h3>🎲 Tasodifiy Tanga</h3>
-        <p id="rand-txt" style="color: var(--green); font-weight: bold;">1 ta imkoniyat!</p>
+        <p id="rand-txt" style="color: var(--green); font-weight: bold;">Imkoniyat: <span id="rand-count">1</span></p>
         <button id="rand-btn" class="btn-full" style="background:var(--green); color:white" onclick="randomB()">OMADNI SINASH</button>
+        <button id="rand-ad-btn" class="btn-ad" onclick="randomAd()">📺 +1 IMKONIYAT (REKLAMA)</button>
+        <span id="rand-timer" class="timer-txt"></span>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
@@ -122,11 +126,11 @@
         <button class="btn-buy" onclick="up('p')">UP</button>
     </div>
     <div class="card flex">
-        <div><b>Soatbay Foyda</b><br><small id="h-info">Lvl 1 • 1,000 💰</small></div>
+        <div><b>Soatbay Foyda</b><br><small id="h-info">Lvl 1 • 500 💰</small></div>
         <button class="btn-buy" onclick="up('h')">UP</button>
     </div>
     <div class="card flex">
-        <div><b>Max Energiya</b><br><small id="e-info">Lvl 1 • 2,000 💰</small></div>
+        <div><b>Max Energiya</b><br><small id="e-info">Lvl 1 • 500 💰</small></div>
         <button class="btn-buy" onclick="up('e')">UP</button>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
@@ -167,13 +171,15 @@
     const heroes = [
         { id: "goku", name: "Goku", price: 0, img: raw + "D_NQ_NP_736344-MLM81055958997_112024-O-iman-de-goku-dragon-ball-super-redondo-de-7-cm-decorativo.webp" },
         { id: "jinwo", name: "Jinwoo", price: 50, img: raw + "4418c2752fa47989ede369bef76786b0.jpg" },
-        { id: "saitama", name: "Saitama", price: 100, img: raw + "saitama-anime-portrait-wallpaper-scaled.jpg" },
-        { id: "sukuna", name: "Sukuna", price: 200, img: raw + "grok_image_1736417730302.jpg" }, // Sukuna rasmi yangilandi
+        { id: "saitama", name: "Saitama", price: 100, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_xN8x4z1nLp0X_qRk-x_j7z-T-V4Y5-T-V4Y5&usqp=CAU" },
+        { id: "sukuna", name: "Sukuna", price: 200, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7_5pXG4_5Y5_5Y5_5Y5_5Y5_5Y5_5Y5_5Y5&usqp=CAU" },
         { id: "gojo", name: "Gojo", price: 500, img: raw + "_2025-12-23_140411_752__28261.1766474485.jpg" },
         { id: "subzero", name: "Sub-Zero", price: 1000, img: raw + "grok_image_1770310876617.jpg" }
     ];
 
-    let s = { coins: 0, diams: 0, power: 1, hourly: 0, energy: 500, maxE: 500, pLvl: 1, hLvl: 1, eLvl: 1, lastD: 0, randC: 1, activeHero: "goku", owned: ["goku"], lastSeen: Date.now() };
+    const boostCosts = [500, 1000, 3000, 5000, 7500, 10000, 15000, 25000, 50000, 75000];
+
+    let s = { coins: 0, diams: 0, power: 1, hourly: 0, energy: 500, maxE: 500, pLvl: 1, hLvl: 1, eLvl: 1, lastD: 0, bonusDay: 1, randC: 1, lastR: 0, activeHero: "goku", owned: ["goku"], lastSeen: Date.now() };
 
     function init() {
         tg.expand();
@@ -186,7 +192,11 @@
                 let now = Date.now();
                 let diff = (now - (d.lastSeen || now)) / 1000;
                 s = {...s, ...d};
-                s.coins += (s.hourly / 3600) * diff;
+                let earned = Math.floor((s.hourly / 3600) * diff);
+                if(earned > 0) {
+                    s.coins += earned;
+                    showMsg(`Oflayn foyda: +${earned} 💰`, "success");
+                }
                 s.energy = Math.min(s.maxE, s.energy + (diff * 0.5));
             }
             updateUI(); renderH(); updateBoosterUI();
@@ -195,9 +205,17 @@
         setInterval(() => { 
             s.coins += (s.hourly/3600); 
             if(s.energy < s.maxE) s.energy += 0.5;
-            updateUI(); 
+            updateUI();
+            updateTimers();
         }, 1000);
         setInterval(save, 5000);
+    }
+
+    function showMsg(t, type) {
+        let n = document.getElementById('notif'); n.innerText = t;
+        n.className = "show-notif " + (type==='success'?'notif-success':'notif-error');
+        if(type === 'error') tg.HapticFeedback.notificationOccurred('error');
+        setTimeout(() => n.classList.remove('show-notif'), 2000);
     }
 
     function handleTap(e) {
@@ -221,84 +239,91 @@
         let ring = document.getElementById('coin-ring');
         let rank = c >= 1000000 ? "Afsona" : (c >= 50000 ? "Oltin" : "Bronza");
         
-        if(c >= 50000) { 
-            ring.style.borderColor = "#e74c3c"; 
-            ring.style.boxShadow = "0 0 30px rgba(231,76,60,0.6)";
-        } else {
-            ring.style.borderColor = "#f1c40f"; 
-            ring.style.boxShadow = "0 0 30px rgba(241,196,15,0.4)";
-        }
-
         document.getElementById('c-val').innerText = c.toLocaleString();
         document.getElementById('d-val').innerText = s.diams;
-        document.getElementById('st-hour').innerText = s.hourly;
+        document.getElementById('st-hour').innerText = Math.floor(s.hourly);
         document.getElementById('st-pow').innerText = s.power;
         document.getElementById('st-rank').innerText = rank;
         document.getElementById('e-now').innerText = Math.floor(s.energy);
         document.getElementById('e-max').innerText = s.maxE;
         document.getElementById('e-fill').style.width = (s.energy/s.maxE*100) + "%";
-        
         document.getElementById('my-c').innerText = c.toLocaleString();
         document.getElementById('my-d').innerText = s.diams;
         document.getElementById('my-rank-txt').innerText = rank;
         document.getElementById('my-e').innerText = s.maxE;
+        document.getElementById('rand-count').innerText = s.randC;
+        document.getElementById('b-day').innerText = s.bonusDay || 1;
+        document.getElementById('b-amount-txt').innerText = `Bugun: ${Math.floor(5000 * Math.pow(1.5, (s.bonusDay||1)-1)).toLocaleString()} 💰`;
 
         let h = heroes.find(x => x.id === s.activeHero);
         if(h) document.getElementById('hero-img').src = h.img;
     }
 
-    // Reyting tizimi: Admin (Ganiyev) har doim 1-o'rinda, qolganlar tangasiga ko'ra
-    function loadRank() {
-        db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
-            let list = [];
-            snap.forEach(child => {
-                let val = child.val();
-                if(child.key !== "8009403510") list.push(val);
-            });
-            list.sort((a, b) => b.coins - a.coins);
-            
-            let htm = `<div class="card" style="border:2px solid var(--accent)">
-                <b>1. 👑 Ganiyev (Admin)</b><br>
-                <small>💰 999,999,999 | 💎 999,999 | 📈 Afsona</small>
-            </div>`;
-            
-            list.forEach((u, i) => {
-                let uRank = u.coins >= 1000000 ? "Afsona" : (u.coins >= 50000 ? "Oltin" : "Bronza");
-                htm += `<div class="card">
-                    <b>${i+2}. ${u.name || 'O\'yinchi'}</b><br>
-                    <small>💰 ${Math.floor(u.coins).toLocaleString()} | 💎 ${u.diams || 0} | 📈 ${uRank}</small>
-                </div>`;
-            });
-            document.getElementById('rank-list').innerHTML = htm;
-        });
-    }
-
     function up(t) {
-        if(t==='p') {
-            let cost = Math.floor(500 * Math.pow(1.5, s.pLvl - 1));
-            if(s.coins >= cost) { s.coins -= cost; s.power++; s.pLvl++; showMsg("Tayyor!", "success"); }
-        }
-        if(t==='h') {
-            let cost = Math.floor(1000 * Math.pow(1.6, s.hLvl - 1));
-            if(s.coins >= cost) { s.coins -= cost; s.hourly += 150; s.hLvl++; showMsg("Tayyor!", "success"); }
-        }
-        if(t==='e') {
-            let cost = Math.floor(2000 * Math.pow(1.4, s.eLvl - 1));
-            if(s.coins >= cost) { s.coins -= cost; s.maxE += 500; s.eLvl++; showMsg("Tayyor!", "success"); }
-        }
-        updateUI(); updateBoosterUI(); save();
+        let cost = 0;
+        if(t === 'p') cost = 500 + (s.pLvl - 1) * 1000;
+        else if(t === 'h') cost = boostCosts[s.hLvl - 1] || 100000;
+        else if(t === 'e') cost = boostCosts[s.eLvl - 1] || 100000;
+
+        if(s.coins >= cost) {
+            s.coins -= cost;
+            if(t==='p') { s.power++; s.pLvl++; }
+            if(t==='h') { s.hourly += 150; s.hLvl++; }
+            if(t==='e') { s.maxE += 500; s.eLvl++; }
+            showMsg("Kuchaytirildi! ✅", "success");
+            updateUI(); updateBoosterUI(); save();
+        } else { showMsg("Tanga yetarli emas! ❌", "error"); }
     }
 
     function updateBoosterUI() {
-        document.getElementById('p-info').innerText = `Lvl ${s.pLvl} • ${Math.floor(500 * Math.pow(1.5, s.pLvl - 1)).toLocaleString()} 💰`;
-        document.getElementById('h-info').innerText = `Lvl ${s.hLvl} • ${Math.floor(1000 * Math.pow(1.6, s.hLvl - 1)).toLocaleString()} 💰`;
-        document.getElementById('e-info').innerText = `Lvl ${s.eLvl} • ${Math.floor(2000 * Math.pow(1.4, s.eLvl - 1)).toLocaleString()} 💰`;
+        document.getElementById('p-info').innerText = `Lvl ${s.pLvl} • ${(500 + (s.pLvl - 1) * 1000).toLocaleString()} 💰`;
+        document.getElementById('h-info').innerText = `Lvl ${s.hLvl} • ${(boostCosts[s.hLvl - 1] || 100000).toLocaleString()} 💰`;
+        document.getElementById('e-info').innerText = `Lvl ${s.eLvl} • ${(boostCosts[s.eLvl - 1] || 100000).toLocaleString()} 💰`;
     }
 
-    function showMsg(t, type) {
-        let n = document.getElementById('notif'); n.innerText = t;
-        n.className = "show-notif " + (type==='success'?'notif-success':'notif-error');
-        setTimeout(() => n.classList.remove('show-notif'), 2000);
+    function daily(mode) {
+        let now = Date.now();
+        if(now - s.lastD > 86400000) {
+            let base = 5000 * Math.pow(1.5, (s.bonusDay||1)-1);
+            let amount = mode === 2 ? base * 2 : base;
+            s.coins += amount;
+            s.lastD = now;
+            s.bonusDay = (s.bonusDay >= 7) ? 1 : (s.bonusDay + 1);
+            showMsg(`Bonus olindi: +${amount.toLocaleString()} 💰`, "success");
+            updateUI(); save();
+        } else { showMsg("Hali vaqt bor! ❌", "error"); }
+    }
+
+    function randomB() {
+        if(s.randC > 0) {
+            let win = Math.floor(Math.random() * 10000) + 1000;
+            s.coins += win;
+            s.randC--;
+            if(s.randC === 0) s.lastR = Date.now();
+            showMsg(`Tasodifiy tanga: +${win.toLocaleString()} 💰`, "success");
+            updateUI(); save();
+        } else { showMsg("Hamma bonuslarni olib boldingiz!", "error"); }
+    }
+
+    function randomAd() {
+        if(s.randC < 3) {
+            // Reklama simulyatsiyasi
+            s.randC++;
+            showMsg("Imkoniyat qo'shildi! ✅", "success");
+            updateUI();
+        } else { showMsg("Bugun boshqa imkon yo'q! ❌", "error"); }
+    }
+
+    function updateTimers() {
+        let now = Date.now();
+        let dRem = 86400000 - (now - s.lastD);
+        document.getElementById('daily-timer').innerText = dRem > 0 ? `Keyingi: ${new Date(dRem).toISOString().substr(11, 8)}` : "Bonus tayyor!";
+        
+        let rRem = 86400000 - (now - s.lastR);
+        if(s.randC === 0) {
+            document.getElementById('rand-timer').innerText = rRem > 0 ? `Yangilanish: ${new Date(rRem).toISOString().substr(11, 8)}` : "Yangilandi!";
+            if(rRem <= 0) { s.randC = 1; updateUI(); }
+        } else { document.getElementById('rand-timer').innerText = ""; }
     }
 
     function renderH() {
@@ -306,28 +331,41 @@
         heroes.forEach(h => {
             let own = s.owned.includes(h.id);
             htm += `<div class="card flex">
-                <img src="${h.img}" style="width:50px;height:50px;border-radius:50%">
-                <div style="flex:1;margin-left:10px"><b>${h.name}</b><br><small>${own?'Ega':'Narx: '+h.price}</small></div>
+                <img src="${h.img}" style="width:50px;height:50px;border-radius:50%;object-fit:cover">
+                <div style="flex:1;margin-left:10px"><b>${h.name}</b><br><small>${own?'Ega':'Narx: 💎 '+h.price}</small></div>
                 <button class="btn-buy" onclick="${own?"selectH('"+h.id+"')":"buyH('"+h.id+"',"+h.price+")"}">${own?'KIYISH':'OLISH'}</button>
             </div>`;
         });
         document.getElementById('hero-list').innerHTML = htm;
     }
 
-    function selectH(id) { s.activeHero = id; updateUI(); renderH(); save(); }
-    function buyH(id, p) { if(s.diams >= p) { s.diams -= p; s.owned.push(id); s.activeHero = id; updateUI(); renderH(); save(); } }
+    function selectH(id) { s.activeHero = id; showMsg("Kiyim almashtirildi! 🎭", "success"); updateUI(); renderH(); save(); }
+    function buyH(id, p) { 
+        if(s.diams >= p) { 
+            s.diams -= p; s.owned.push(id); s.activeHero = id; 
+            showMsg("Yangi kahrabo olindi! ✨", "success");
+            updateUI(); renderH(); save(); 
+        } else { showMsg("Olmos yetarli emas! 💎", "error"); }
+    }
+
     function exchange() {
         let v = parseInt(document.getElementById('ex-in').value);
-        if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; updateUI(); save(); }
+        if(v > 0 && s.coins >= v*1000) { 
+            s.coins -= v*1000; s.diams += v; 
+            showMsg(`${v} Olmos olindi! 💎`, "success");
+            updateUI(); save(); 
+        } else { showMsg("Mablag' yetarli emas! ❌", "error"); }
     }
+
     function save() { db.ref('users/' + user.id).update({...s, name: user.first_name, lastSeen: Date.now()}); }
-    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); if(id === 'm-rank') loadRank(); }
+    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); }
     function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
 
     init();
 </script>
 </body>
     </html>
+        
         
     
                                         
