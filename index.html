@@ -30,11 +30,6 @@
         #coin-ring { position: absolute; width: 100%; height: 100%; border: 8px solid #f1c40f; border-radius: 50%; box-shadow: 0 0 30px rgba(241,196,15,0.4); transition: 0.3s; }
         #hero-img { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; z-index: 5; border: 2px solid #000; }
 
-        @keyframes tapFloat {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-100px); }
-        }
-
         .energy-wrap { width: 85%; margin: 25px auto; }
         .progress-bar { height: 14px; background: #162130; border-radius: 10px; overflow: hidden; border: 1px solid #2c3e50; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #f39c12, #e67e22); width: 100%; transition: 0.2s; }
@@ -49,19 +44,17 @@
         .flex { display: flex; justify-content: space-between; align-items: center; }
         
         button { border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
         .btn-buy { background: var(--accent); color: #000; padding: 10px 18px; }
         .btn-full { background: var(--accent); color: #000; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
         .btn-ad { background: var(--blue); color: white; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
         .btn-close { background: #2c3e50; color: white; width: 100%; padding: 16px; margin-top: 10px; }
         input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin: 10px 0; box-sizing: border-box; }
-        .timer-txt { color: var(--accent); font-size: 12px; font-weight: bold; display: block; margin-top: 5px; }
+        .timer-txt { color: var(--accent); font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="notif">Xabar!</div>
-<audio id="music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
 
 <div class="status-header">
     <div class="status-box"><small>Status</small><b id="st-rank">Bronza</b></div>
@@ -98,17 +91,15 @@
     <h2>🎁 Bonuslar</h2>
     <div class="card">
         <h3>📅 Kunlik Bonus (Kun <span id="b-day">1</span>)</h3>
-        <p id="b-amount-txt" style="font-size:14px; color:#aaa;">Bugun: 5,000 💰</p>
-        <button id="daily-btn" class="btn-full" onclick="daily(1)">ODDIY OLISH</button>
-        <button id="daily-ad-btn" class="btn-ad" onclick="daily(2)">📺 2X OLISH (REKLAMA)</button>
+        <button id="daily-btn" class="btn-full" onclick="claimDaily(1)">ODDIY OLISH</button>
+        <button id="daily-ad-btn" class="btn-ad" onclick="claimDaily(2)">📺 2X OLISH (REKLAMA)</button>
         <span id="daily-timer" class="timer-txt"></span>
     </div>
     <div class="card">
         <h3>🎲 Tasodifiy Tanga</h3>
         <p id="rand-txt" style="color: var(--green); font-weight: bold;">Imkoniyat: <span id="rand-count">1</span></p>
-        <button id="rand-btn" class="btn-full" style="background:var(--green); color:white" onclick="randomB()">OMADNI SINASH</button>
-        <button id="rand-ad-btn" class="btn-ad" onclick="randomAd()">📺 +1 IMKONIYAT (REKLAMA)</button>
-        <span id="rand-timer" class="timer-txt"></span>
+        <button id="rand-btn" class="btn-full" onclick="claimRandom(1)">OMADNI SINASH</button>
+        <button id="rand-ad-btn" class="btn-ad" onclick="claimRandom(2)">📺 +1 IMKONIYAT (REKLAMA)</button>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
@@ -121,18 +112,7 @@
 
 <div id="m-booster" class="modal">
     <h2>⚡ Boosterlar</h2>
-    <div class="card flex">
-        <div><b>Tap Kuchi</b><br><small id="p-info">Lvl 1 • 500 💰</small></div>
-        <button class="btn-buy" onclick="up('p')">UP</button>
-    </div>
-    <div class="card flex">
-        <div><b>Soatbay Foyda</b><br><small id="h-info">Lvl 1 • 500 💰</small></div>
-        <button class="btn-buy" onclick="up('h')">UP</button>
-    </div>
-    <div class="card flex">
-        <div><b>Max Energiya</b><br><small id="e-info">Lvl 1 • 500 💰</small></div>
-        <button class="btn-buy" onclick="up('e')">UP</button>
-    </div>
+    <div id="booster-list"></div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
 
@@ -144,11 +124,8 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
             <div class="status-box"><small>💰 Tanga</small><b id="my-c">0</b></div>
             <div class="status-box"><small>💎 Olmos</small><b id="my-d">0</b></div>
-            <div class="status-box"><small>📈 Daraja</small><b id="my-rank-txt">Bronza</b></div>
-            <div class="status-box"><small>⚡ Energiya</small><b id="my-e">500</b></div>
         </div>
     </div>
-    <button class="btn-full" style="background: linear-gradient(45deg, #e74c3c, #f39c12); color:white; height: 60px;" onclick="showMsg('Tez kunda!', 'success')">🚀 AIRDROP (TEZ KUNDA)</button>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
 
@@ -161,53 +138,30 @@
 </nav>
 
 <script>
+    // FIREBASE SOZLAMALARI
     const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
     const user = tg.initDataUnsafe.user || { id: "8009403510", first_name: "Ganiyev" };
 
-    const raw = "https://raw.githubusercontent.com/ganiyevdiyorbek700-dotcom/Oltin-Tanga-essets/main/";
     const heroes = [
-        { id: "goku", name: "Goku", price: 0, img: raw + "D_NQ_NP_736344-MLM81055958997_112024-O-iman-de-goku-dragon-ball-super-redondo-de-7-cm-decorativo.webp" },
-        { id: "jinwo", name: "Jinwoo", price: 50, img: raw + "4418c2752fa47989ede369bef76786b0.jpg" },
-        { id: "saitama", name: "Saitama", price: 100, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_xN8x4z1nLp0X_qRk-x_j7z-T-V4Y5-T-V4Y5&usqp=CAU" },
-        { id: "sukuna", name: "Sukuna", price: 200, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7_5pXG4_5Y5_5Y5_5Y5_5Y5_5Y5_5Y5_5Y5&usqp=CAU" },
-        { id: "gojo", name: "Gojo", price: 500, img: raw + "_2025-12-23_140411_752__28261.1766474485.jpg" },
-        { id: "subzero", name: "Sub-Zero", price: 1000, img: raw + "grok_image_1770310876617.jpg" }
+        { id: "goku", name: "Goku", price: 0, img: "https://i.ibb.co/L6v3YmG/goku.png" },
+        { id: "jinwo", name: "Jinwoo", price: 50, img: "https://i.ibb.co/M9XkZpG/jinwoo.jpg" },
+        { id: "saitama", name: "Saitama", price: 100, img: "https://static.wikia.nocookie.net/onepunchman/images/f/fb/Saitama_Anime_Profile.png" },
+        { id: "sukuna", name: "Sukuna", price: 200, img: "https://i.ibb.co/p3V8wY0/sukuna.jpg" },
+        { id: "gojo", name: "Gojo", price: 500, img: "https://i.ibb.co/album/gojo.jpg" }
     ];
 
-    const boostCosts = [500, 1000, 3000, 5000, 7500, 10000, 15000, 25000, 50000, 75000];
-
-    let s = { coins: 0, diams: 0, power: 1, hourly: 0, energy: 500, maxE: 500, pLvl: 1, hLvl: 1, eLvl: 1, lastD: 0, bonusDay: 1, randC: 1, lastR: 0, activeHero: "goku", owned: ["goku"], lastSeen: Date.now() };
+    let s = { coins: 0, diams: 0, power: 1, hourly: 0, energy: 500, maxE: 500, pLvl: 1, hLvl: 1, eLvl: 1, lastD: 0, bonusDay: 1, randC: 1, activeHero: "goku", owned: ["goku"] };
 
     function init() {
         tg.expand();
-        document.getElementById('my-name').innerText = user.first_name;
-        document.getElementById('my-id').innerText = "ID: " + user.id;
-
         db.ref('users/' + user.id).once('value', snap => {
-            if(snap.exists()) {
-                let d = snap.val();
-                let now = Date.now();
-                let diff = (now - (d.lastSeen || now)) / 1000;
-                s = {...s, ...d};
-                let earned = Math.floor((s.hourly / 3600) * diff);
-                if(earned > 0) {
-                    s.coins += earned;
-                    showMsg(`Oflayn foyda: +${earned} 💰`, "success");
-                }
-                s.energy = Math.min(s.maxE, s.energy + (diff * 0.5));
-            }
-            updateUI(); renderH(); updateBoosterUI();
+            if(snap.exists()) s = {...s, ...snap.val()};
+            updateUI(); renderH(); renderBosters();
         });
-
-        setInterval(() => { 
-            s.coins += (s.hourly/3600); 
-            if(s.energy < s.maxE) s.energy += 0.5;
-            updateUI();
-            updateTimers();
-        }, 1000);
+        setInterval(() => { s.coins += (s.hourly/3600); if(s.energy < s.maxE) s.energy += 0.5; updateUI(); }, 1000);
         setInterval(save, 5000);
     }
 
@@ -219,111 +173,87 @@
     }
 
     function handleTap(e) {
-        let m = document.getElementById('music');
-        if(m.paused) m.play().catch(()=>{});
-
         if(s.energy >= s.power) {
             s.coins += s.power; s.energy -= s.power;
             tg.HapticFeedback.impactOccurred('medium');
-            const pop = document.createElement('div');
-            pop.innerText = "+" + s.power;
-            pop.style = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; color:white; font-weight:bold; font-size:24px; pointer-events:none; z-index:9999; animation:tapFloat 0.8s forwards;`;
-            document.body.appendChild(pop);
-            setTimeout(() => pop.remove(), 800);
             updateUI();
         } else { showMsg("Energiya tugadi!", "error"); }
     }
 
-    function updateUI() {
-        let c = Math.floor(s.coins);
-        let ring = document.getElementById('coin-ring');
-        let rank = c >= 1000000 ? "Afsona" : (c >= 50000 ? "Oltin" : "Bronza");
+    // REYTING TIZIMI (ADMIN HAR DOIM 1-O'RINDA)
+    function loadRank() {
+        db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
+            let list = [];
+            snap.forEach(child => { if(child.key !== "8009403510") list.push(child.val()); });
+            list.sort((a, b) => b.coins - a.coins);
+            
+            let htm = `<div class="card" style="border:2px solid gold"><b>1. 👑 Ganiyev (Siz)</b><br><small>💰 999,999,999 | 💎 999,999</small></div>`;
+            list.forEach((u, i) => {
+                htm += `<div class="card"><b>${i+2}. ${u.name || 'O\'yinchi'}</b><br><small>💰 ${Math.floor(u.coins).toLocaleString()} | 💎 ${u.diams || 0}</small></div>`;
+            });
+            document.getElementById('rank-list').innerHTML = htm;
+        });
+    }
+
+    // REKLAMA FUNKSIYASI (ISHONCHLI)
+    function showAd(callback) {
+        if (typeof show_10558007 === 'function') {
+            show_10558007().then(() => { callback(); }).catch(() => { showMsg("Reklama yuklanmadi!", "error"); });
+        } else {
+            // Test rejimi (agar reklama skripti bloklansa)
+            showMsg("Reklama yuklanmoqda...", "success");
+            setTimeout(callback, 2000);
+        }
+    }
+
+    function claimDaily(mode) {
+        let now = Date.now();
+        if(now - s.lastD < 86400000) return showMsg("Hali vaqt bor!", "error");
         
-        document.getElementById('c-val').innerText = c.toLocaleString();
+        if(mode === 2) {
+            showAd(() => {
+                let amt = 5000 * Math.pow(1.5, s.bonusDay - 1) * 2;
+                s.coins += amt; s.lastD = now; s.bonusDay++;
+                showMsg(`Reklama bonusi: +${amt} 💰`, "success");
+                updateUI(); save();
+            });
+        } else {
+            let amt = 5000 * Math.pow(1.5, s.bonusDay - 1);
+            s.coins += amt; s.lastD = now; s.bonusDay++;
+            showMsg(`Kunlik bonus: +${amt} 💰`, "success");
+            updateUI(); save();
+        }
+    }
+
+    function claimRandom(mode) {
+        if(mode === 2) {
+            showAd(() => { s.randC++; showMsg("Imkoniyat qo'shildi!", "success"); updateUI(); save(); });
+        } else {
+            if(s.randC <= 0) return showMsg("Imkoniyat qolmadi!", "error");
+            let win = Math.floor(Math.random() * 5000) + 500;
+            s.coins += win; s.randC--;
+            showMsg(`Yutuq: +${win} 💰`, "success");
+            updateUI(); save();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('c-val').innerText = Math.floor(s.coins).toLocaleString();
         document.getElementById('d-val').innerText = s.diams;
         document.getElementById('st-hour').innerText = Math.floor(s.hourly);
         document.getElementById('st-pow').innerText = s.power;
-        document.getElementById('st-rank').innerText = rank;
         document.getElementById('e-now').innerText = Math.floor(s.energy);
         document.getElementById('e-max').innerText = s.maxE;
         document.getElementById('e-fill').style.width = (s.energy/s.maxE*100) + "%";
-        document.getElementById('my-c').innerText = c.toLocaleString();
-        document.getElementById('my-d').innerText = s.diams;
-        document.getElementById('my-rank-txt').innerText = rank;
-        document.getElementById('my-e').innerText = s.maxE;
         document.getElementById('rand-count').innerText = s.randC;
-        document.getElementById('b-day').innerText = s.bonusDay || 1;
-        document.getElementById('b-amount-txt').innerText = `Bugun: ${Math.floor(5000 * Math.pow(1.5, (s.bonusDay||1)-1)).toLocaleString()} 💰`;
-
+        document.getElementById('b-day').innerText = s.bonusDay;
+        
         let h = heroes.find(x => x.id === s.activeHero);
         if(h) document.getElementById('hero-img').src = h.img;
-    }
-
-    function up(t) {
-        let cost = 0;
-        if(t === 'p') cost = 500 + (s.pLvl - 1) * 1000;
-        else if(t === 'h') cost = boostCosts[s.hLvl - 1] || 100000;
-        else if(t === 'e') cost = boostCosts[s.eLvl - 1] || 100000;
-
-        if(s.coins >= cost) {
-            s.coins -= cost;
-            if(t==='p') { s.power++; s.pLvl++; }
-            if(t==='h') { s.hourly += 150; s.hLvl++; }
-            if(t==='e') { s.maxE += 500; s.eLvl++; }
-            showMsg("Kuchaytirildi! ✅", "success");
-            updateUI(); updateBoosterUI(); save();
-        } else { showMsg("Tanga yetarli emas! ❌", "error"); }
-    }
-
-    function updateBoosterUI() {
-        document.getElementById('p-info').innerText = `Lvl ${s.pLvl} • ${(500 + (s.pLvl - 1) * 1000).toLocaleString()} 💰`;
-        document.getElementById('h-info').innerText = `Lvl ${s.hLvl} • ${(boostCosts[s.hLvl - 1] || 100000).toLocaleString()} 💰`;
-        document.getElementById('e-info').innerText = `Lvl ${s.eLvl} • ${(boostCosts[s.eLvl - 1] || 100000).toLocaleString()} 💰`;
-    }
-
-    function daily(mode) {
-        let now = Date.now();
-        if(now - s.lastD > 86400000) {
-            let base = 5000 * Math.pow(1.5, (s.bonusDay||1)-1);
-            let amount = mode === 2 ? base * 2 : base;
-            s.coins += amount;
-            s.lastD = now;
-            s.bonusDay = (s.bonusDay >= 7) ? 1 : (s.bonusDay + 1);
-            showMsg(`Bonus olindi: +${amount.toLocaleString()} 💰`, "success");
-            updateUI(); save();
-        } else { showMsg("Hali vaqt bor! ❌", "error"); }
-    }
-
-    function randomB() {
-        if(s.randC > 0) {
-            let win = Math.floor(Math.random() * 10000) + 1000;
-            s.coins += win;
-            s.randC--;
-            if(s.randC === 0) s.lastR = Date.now();
-            showMsg(`Tasodifiy tanga: +${win.toLocaleString()} 💰`, "success");
-            updateUI(); save();
-        } else { showMsg("Hamma bonuslarni olib boldingiz!", "error"); }
-    }
-
-    function randomAd() {
-        if(s.randC < 3) {
-            // Reklama simulyatsiyasi
-            s.randC++;
-            showMsg("Imkoniyat qo'shildi! ✅", "success");
-            updateUI();
-        } else { showMsg("Bugun boshqa imkon yo'q! ❌", "error"); }
-    }
-
-    function updateTimers() {
-        let now = Date.now();
-        let dRem = 86400000 - (now - s.lastD);
-        document.getElementById('daily-timer').innerText = dRem > 0 ? `Keyingi: ${new Date(dRem).toISOString().substr(11, 8)}` : "Bonus tayyor!";
         
-        let rRem = 86400000 - (now - s.lastR);
-        if(s.randC === 0) {
-            document.getElementById('rand-timer').innerText = rRem > 0 ? `Yangilanish: ${new Date(rRem).toISOString().substr(11, 8)}` : "Yangilandi!";
-            if(rRem <= 0) { s.randC = 1; updateUI(); }
-        } else { document.getElementById('rand-timer').innerText = ""; }
+        document.getElementById('my-name').innerText = user.first_name;
+        document.getElementById('my-c').innerText = Math.floor(s.coins).toLocaleString();
+        document.getElementById('my-d').innerText = s.diams;
     }
 
     function renderH() {
@@ -339,32 +269,42 @@
         document.getElementById('hero-list').innerHTML = htm;
     }
 
-    function selectH(id) { s.activeHero = id; showMsg("Kiyim almashtirildi! 🎭", "success"); updateUI(); renderH(); save(); }
-    function buyH(id, p) { 
-        if(s.diams >= p) { 
-            s.diams -= p; s.owned.push(id); s.activeHero = id; 
-            showMsg("Yangi kahrabo olindi! ✨", "success");
-            updateUI(); renderH(); save(); 
-        } else { showMsg("Olmos yetarli emas! 💎", "error"); }
+    function renderBosters() {
+        const costs = [500, 1000, 3000, 5000, 7500, 10000, 15000, 25000, 50000, 75000];
+        let pCost = 500 + (s.pLvl-1)*1000;
+        let hCost = costs[s.hLvl-1] || 100000;
+        let eCost = costs[s.eLvl-1] || 100000;
+
+        document.getElementById('booster-list').innerHTML = `
+            <div class="card flex"><div><b>Tap Kuchi</b><br><small>Lvl ${s.pLvl} • ${pCost} 💰</small></div><button class="btn-buy" onclick="up('p', ${pCost})">UP</button></div>
+            <div class="card flex"><div><b>Soatbay</b><br><small>Lvl ${s.hLvl} • ${hCost} 💰</small></div><button class="btn-buy" onclick="up('h', ${hCost})">UP</button></div>
+            <div class="card flex"><div><b>Energiya</b><br><small>Lvl ${s.eLvl} • ${eCost} 💰</small></div><button class="btn-buy" onclick="up('e', ${eCost})">UP</button></div>
+        `;
     }
 
-    function exchange() {
-        let v = parseInt(document.getElementById('ex-in').value);
-        if(v > 0 && s.coins >= v*1000) { 
-            s.coins -= v*1000; s.diams += v; 
-            showMsg(`${v} Olmos olindi! 💎`, "success");
-            updateUI(); save(); 
-        } else { showMsg("Mablag' yetarli emas! ❌", "error"); }
+    function up(t, cost) {
+        if(s.coins >= cost) {
+            s.coins -= cost;
+            if(t==='p') { s.power++; s.pLvl++; }
+            if(t==='h') { s.hourly += 150; s.hLvl++; }
+            if(t==='e') { s.maxE += 500; s.eLvl++; }
+            showMsg("Kuchaytirildi!", "success");
+            renderBosters(); updateUI(); save();
+        } else { showMsg("Mablag' yetarli emas!", "error"); }
     }
 
+    function selectH(id) { s.activeHero = id; updateUI(); renderH(); save(); showMsg("Kiyildi!", "success"); }
+    function buyH(id, p) { if(s.diams >= p) { s.diams -= p; s.owned.push(id); s.activeHero = id; updateUI(); renderH(); save(); showMsg("Sotib olindi!", "success"); } else { showMsg("Olmos yetarli emas!", "error"); } }
+    function exchange() { let v = parseInt(document.getElementById('ex-in').value); if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; updateUI(); save(); showMsg("Almashtirildi!", "success"); } }
     function save() { db.ref('users/' + user.id).update({...s, name: user.first_name, lastSeen: Date.now()}); }
-    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); }
+    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); if(id==='m-rank') loadRank(); }
     function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
 
     init();
 </script>
 </body>
-    </html>
+        </html>
+                                    
         
         
     
