@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cat Kombat - Legendary Edition</title>
+    <title>Oltin Tanga - Cat & Hero Edition</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -11,320 +11,379 @@
 
     <style>
         :root {
-            --cat-gold: #ff9f43;
-            --cat-dark: #0a0b10;
-            --cat-card: #151921;
-            --neon-blue: #00d2ff;
+            --gold: #f1c40f;
+            --bg: #050a12;
+            --card: #111827;
+            --accent: #3498db;
+            --eff-color: rgba(241, 196, 15, 0.4);
         }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            font-family: 'Inter', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: var(--cat-dark);
-            color: white;
-            overflow: hidden;
-            height: 100vh;
+            background-color: var(--bg);
+            background-image: url('https://w0.peakpx.com/wallpaper/434/938/HD-wallpaper-night-sky-moon-stars-clouds.jpg'); /* Tolin oy va yulduzlar */
+            background-size: cover;
+            color: white; font-family: 'Segoe UI', sans-serif;
+            height: 100vh; overflow: hidden;
         }
 
-        /* Top Bar */
-        .top-info {
-            display: flex; justify-content: space-around;
-            padding: 15px; background: rgba(0,0,0,0.5);
-            border-bottom: 2px solid #222;
+        /* Statuslar (Tepada) */
+        .status-header {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 5px; padding: 10px; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
         }
-        .info-box { text-align: center; }
-        .info-box span { display: block; font-size: 10px; color: #888; }
-        .info-box b { color: var(--cat-gold); font-size: 14px; }
+        .st-box { background: var(--card); padding: 5px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .st-box small { font-size: 9px; color: #aaa; display: block; }
+        .st-box b { font-size: 13px; color: var(--gold); }
 
-        /* Main Game Area */
-        .game-area {
-            height: 60vh;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            position: relative;
+        /* O'yin maydoni */
+        .main-game {
+            height: 60vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; position: relative;
         }
 
-        .cat-balance {
-            font-size: 48px; font-weight: 900;
-            margin-bottom: 20px; text-shadow: 0 0 15px var(--cat-gold);
-        }
+        .balance-main { font-size: 42px; font-weight: 900; margin-bottom: 10px; text-shadow: 0 0 10px var(--gold); }
 
-        .cat-circle {
-            width: 250px; height: 250px;
-            background: radial-gradient(circle, #2c3e50, #000);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 120px;
-            border: 8px solid #1a1a1a;
-            box-shadow: 0 0 50px rgba(255, 159, 67, 0.2);
-            cursor: pointer;
-            transition: transform 0.05s;
-            position: relative;
+        /* Tanga va Karta foni */
+        .coin-wrapper {
+            position: relative; width: 220px; height: 220px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 8px solid var(--eff-color); 
+            box-shadow: 0 0 30px var(--eff-color);
+            transition: transform 0.05s; cursor: pointer;
+            background-size: cover; background-position: center;
         }
-        .cat-circle:active { transform: scale(0.95); }
+        .coin-wrapper:active { transform: scale(0.95); }
+        .coin-img { width: 80%; height: 80%; pointer-events: none; }
 
-        /* Multi-tap Effect */
-        .tap-num {
-            position: absolute; color: var(--cat-gold);
-            font-size: 28px; font-weight: bold;
-            animation: fly 0.6s ease-out forwards;
-            pointer-events: none;
+        /* Yon tugmalar (Tasodifiy va Bonus) */
+        .side-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.7); padding: 10px; border-radius: 12px;
+            border: 1px solid var(--gold); text-align: center; width: 70px;
         }
-        @keyframes fly { 0%{opacity:1; transform:translateY(0);} 100%{opacity:0; transform:translateY(-100px);} }
+        .btn-left { left: 10px; }
+        .btn-right { right: 10px; }
+        .side-btn small { font-size: 9px; display: block; margin-top: 4px; }
 
-        /* Navigation */
+        /* Energiya (Tanga pastida) */
+        .energy-container { width: 70%; margin-top: 20px; text-align: center; }
+        .energy-bar { height: 10px; background: #222; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
+        #energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #f1c40f, #e67e22); transition: 0.3s; }
+
+        /* Navigatsiya */
         nav {
-            position: fixed; bottom: 0; width: 100%; height: 85px;
-            background: var(--cat-card); display: flex;
-            border-top: 1px solid #333; padding-bottom: 10px;
+            position: fixed; bottom: 0; width: 100%; height: 80px;
+            background: var(--card); display: flex; border-top: 1px solid #333;
         }
-        .nav-btn {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            font-size: 11px; color: #777; cursor: pointer;
-        }
-        .nav-btn i { font-style: normal; font-size: 24px; margin-bottom: 5px; }
-        .nav-btn.active { color: var(--cat-gold); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #888; }
+        .nav-item.active { color: var(--gold); }
+        .nav-item i { font-size: 20px; font-style: normal; margin-bottom: 3px; }
 
-        /* Modals */
+        /* Modallar */
         .modal {
-            display: none; position: fixed; inset: 0;
-            background: var(--cat-dark); z-index: 2000;
-            padding: 20px; overflow-y: auto;
+            display: none; position: fixed; inset: 0; background: var(--bg);
+            z-index: 1000; padding: 20px; overflow-y: auto;
         }
-        .modal-active { display: block; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from{transform:translateY(100%);} to{transform:translateY(0);} }
+        .modal.active { display: block; }
+        .close-m { float: right; font-size: 30px; }
+        .tab-header { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; background: #222; border: none; color: white; border-radius: 8px; }
+        .tab-btn.active { background: var(--gold); color: black; }
 
-        .card {
-            background: var(--cat-card); border-radius: 15px;
-            padding: 15px; margin-bottom: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid #2d3436;
+        .item-card {
+            background: var(--card); border-radius: 12px; padding: 15px;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid #333;
         }
-        .btn-buy {
-            background: var(--cat-gold); color: black;
-            border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold;
-        }
+        .hero-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
+        .btn-action { background: var(--gold); color: black; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; }
 
-        /* Progress Bar */
-        .energy-bar {
-            width: 80%; height: 12px; background: #222;
-            border-radius: 10px; margin-top: 25px; overflow: hidden;
-        }
-        #energy-lvl { width: 100%; height: 100%; background: linear-gradient(90deg, #ff9f43, #ff6b6b); }
+        /* Floating Text */
+        .pop { position: absolute; color: white; font-weight: bold; animation: up 0.7s forwards; pointer-events: none; }
+        @keyframes up { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-100px); opacity: 0; } }
     </style>
 </head>
 <body>
 
-    <audio id="cat-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3"></audio>
+<audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
 
-    <div class="top-info">
-        <div class="info-box"><span>Soatiga daromad</span><b id="st-hourly">+0</b></div>
-        <div class="info-box"><span>Energiya</span><b id="st-energy">1000</b></div>
-        <div class="info-box"><span>Level</span><b id="st-lvl">1 (Kitten)</b></div>
+<div class="status-header">
+    <div class="st-box"><small>Soatiga</small><b id="st-hourly">0</b></div>
+    <div class="st-box"><small>Olmos</small><b>💎 <span id="st-diams">0</span></b></div>
+    <div class="st-box"><small>Tap Kuchi</small><b id="st-power">1</b></div>
+</div>
+
+<div class="main-game">
+    <div class="balance-main">💰 <span id="p-balance">0</span></div>
+    
+    <div class="side-btn btn-left" onclick="openM('m-daily')">📅<small>Bonus</small></div>
+    
+    <div class="coin-wrapper" id="tap-area">
+        <img src="https://i.ibb.co/L6M7v0m/gold-coin.png" class="coin-img" id="main-coin-img">
     </div>
 
-    <div class="game-area">
-        <div class="cat-balance">🪙 <span id="p-balance">0</span></div>
-        <div class="cat-circle" id="tap-cat">🐱</div>
-        <div class="energy-bar"><div id="energy-lvl"></div></div>
-    </div>
+    <div class="side-btn btn-right" onclick="getTasodif()">🎁<small id="taso-timer">Tayyor</small></div>
 
-    <div id="m-mine" class="modal">
-        <h2 style="margin-bottom:20px">⛏️ Mining (Kartalar)</h2>
-        <div id="cards-container"></div>
-        <button class="btn-buy" style="width:100%; margin-top:20px; background:#444; color:white;" onclick="closeM()">YOPISH</button>
+    <div class="energy-container">
+        <div class="energy-bar"><div id="energy-fill"></div></div>
+        <small>⚡ <span id="p-energy">1000</span> / <span id="p-max-energy">1000</span></small>
     </div>
+</div>
 
-    <div id="m-rank" class="modal">
-        <h2 style="margin-bottom:20px">📊 Global Reyting</h2>
-        <div id="rank-list"></div>
-        <button class="btn-buy" style="width:100%; margin-top:20px; background:#444; color:white;" onclick="closeM()">YOPISH</button>
+<div id="m-market" class="modal">
+    <span class="close-m" onclick="closeM()">×</span>
+    <div class="tab-header">
+        <button class="tab-btn active" onclick="switchTab('tanga')">💰 Almashtirish</button>
+        <button class="tab-btn" onclick="switchTab('karta')">🃏 Kartalar</button>
     </div>
-
-    <div id="m-earn" class="modal">
-        <h2 style="margin-bottom:20px">🎁 Bonus & Vazifalar</h2>
-        <div class="card">
-            <div><b>📺 Reklama ko'rish</b><br><small>+2,000 CatCoin</small></div>
-            <button class="btn-buy" onclick="watchAd()">KO'RISH</button>
+    
+    <div id="tab-tanga">
+        <div class="item-card">
+            <div><b>💎 Olmosni Tangaga</b><br><small>1 Olmos = 1000 Tanga</small></div>
+            <button class="btn-action" onclick="swapDiams()">ALMASHTIRISH</button>
         </div>
-        <div class="card">
-            <div><b>🎡 Kunlik Spin</b><br><small>Yutuq: 500 - 10,000</small></div>
-            <button class="btn-buy" onclick="dailySpin()">SPIN</button>
-        </div>
+        <p style="color: #666; font-size: 12px;">Taxminiy: 100💎 = 100,000💰</p>
     </div>
 
-    <nav>
-        <div class="nav-btn" onclick="openM('m-mine')"><i>⛏️</i>MINE</div>
-        <div class="nav-btn" onclick="openM('m-earn')"><i>🎁</i>EARN</div>
-        <div class="nav-btn" onclick="openM('m-rank')"><i>📊</i>RANK</div>
-        <div class="nav-btn" onclick="closeM()"><i>🐱</i>MAIN</div>
-    </nav>
+    <div id="tab-karta" style="display:none;">
+        <h3>1-Daraja (Anime)</h3>
+        <div class="item-card">
+            <img src="goku.webp" class="hero-img">
+            <div><b>Goku</b><br><small>100 💎</small></div>
+            <button class="btn-action" onclick="buyHero('Goku', 100, 1, 'goku.webp')">SOTIB OLISH</button>
+        </div>
+        <div class="item-card">
+            <img src="sungjinwo.jpg" class="hero-img">
+            <div><b>Sung Jinwoo</b><br><small>500 💎</small></div>
+            <button class="btn-action" onclick="buyHero('SungJinwoo', 500, 1, 'sungjinwo.jpg')">SOTIB OLISH</button>
+        </div>
+        
+        <h3>2-Daraja (Futbol)</h3>
+        <div class="item-card">
+            <img src="messi.jpg" class="hero-img">
+            <div><b>Messi</b><br><small>5000 💎</small></div>
+            <button class="btn-action" onclick="buyHero('Messi', 5000, 2, 'messi.jpg')">SOTIB OLISH</button>
+        </div>
+        
+        <h3>3-Daraja (Marvel)</h3>
+        <div class="item-card">
+            <img src="spidermen.jpg" class="hero-img">
+            <div><b>Spider-Man</b><br><small>50,000 💎</small></div>
+            <button class="btn-action" onclick="buyHero('Spiderman', 50000, 3, 'spidermen.jpg')">SOTIB OLISH</button>
+        </div>
+    </div>
+</div>
+
+<div id="m-refral" class="modal">
+    <span class="close-m" onclick="closeM()">×</span>
+    <h2>👥 Referal</h2>
+    <div class="item-card">
+        <div><b>Taklif qiling</b><br><small>+25,000 💰 va 100 💎</small></div>
+        <button class="btn-action" onclick="copyRef()">NUSXALASH</button>
+    </div>
+    <p>Havola: t.me/OltinTanga1_bot?start=ref_id</p>
+</div>
+
+<div id="m-rank" class="modal">
+    <span class="close-m" onclick="closeM()">×</span>
+    <h2>📊 Reyting</h2>
+    <div id="rank-list"></div>
+</div>
+
+<div id="m-boost" class="modal">
+    <span class="close-m" onclick="closeM()">×</span>
+    <h2>⚡ Boosterlar</h2>
+    <div id="boost-list"></div>
+</div>
+
+<div id="m-uy" class="modal">
+    <span class="close-m" onclick="closeM()">×</span>
+    <h2>🏠 Uyim</h2>
+    <div class="item-card" id="user-info"></div>
+    <button class="btn-action" style="width:100%" onclick="alert('Tez kunda Tonga almashtirish boshlanadi!')">AIRDROP</button>
+</div>
+
+<nav>
+    <div class="nav-item" onclick="openM('m-market')"><i>🛒</i>BOZOR</div>
+    <div class="nav-item" onclick="openM('m-refral')"><i>👥</i>REFRAL</div>
+    <div class="nav-item" onclick="openM('m-rank')"><i>📊</i>RANK</div>
+    <div class="nav-item" onclick="openM('m-boost')"><i>⚡</i>BOOST</div>
+    <div class="nav-item" onclick="openM('m-uy')"><i>🏠</i>UYIM</div>
+</nav>
 
 <script>
-    // FIREBASE & TG INITIALIZATION
+    // FIREBASE SOZLAMALARI (O'zingiznikini qo'ying)
     const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
-    const user = tg.initDataUnsafe.user || { id: "user_cat_88", first_name: "CatMaster" };
+    const user = tg.initDataUnsafe.user || { id: "GUEST_123", first_name: "O'yinchi" };
 
     let s = {
-        coins: 0, power: 1, hourly: 0, energy: 1000, maxE: 1000,
-        lvl: 1, lastS: 0, owned: []
+        coins: 0, diams: 0, energy: 1000, maxE: 1000, power: 1, 
+        hourly: 0, eRegen: 1, lastTaso: 0, lastDaily: 0,
+        currentHero: null, ownedHeroes: [],
+        levels: { energy: 1, regen: 1, hourly: 1, power: 1 }
     };
-
-    const cards = [
-        { id: 'c1', name: 'Sutli Idish', price: 1000, inc: 100, icon: '🥛' },
-        { id: 'c2', name: 'Yumshoq Yotoq', price: 5000, inc: 450, icon: '🛌' },
-        { id: 'c3', name: 'Cat Casino', price: 25000, inc: 2500, icon: '🎰' },
-        { id: 'c4', name: 'Cat Rocket', price: 100000, inc: 12000, icon: '🚀' }
-    ];
 
     function init() {
         tg.expand();
         db.ref('users/' + user.id).on('value', snap => {
-            if(snap.exists()) s = {...s, ...snap.val()};
-            updateUI();
+            if(snap.exists()) {
+                s = {...s, ...snap.val()};
+                updateUI();
+            }
         });
-        
-        // Musiqa foydalanuvchi bosganda boshlanadi
-        document.body.onclick = () => { document.getElementById('cat-music').play().catch(()=>{}); };
 
+        // Looplar
         setInterval(() => {
+            if(s.energy < s.maxE) s.energy = Math.min(s.maxE, s.energy + s.eRegen);
             s.coins += (s.hourly / 3600);
-            if(s.energy < s.maxE) s.energy += 2;
             updateUI();
         }, 1000);
 
-        renderCards();
+        setInterval(save, 10000);
+        renderBoosters();
         loadRank();
     }
 
     function updateUI() {
         document.getElementById('p-balance').innerText = Math.floor(s.coins).toLocaleString();
-        document.getElementById('st-hourly').innerText = "+" + s.hourly.toLocaleString();
-        document.getElementById('st-energy').innerText = Math.floor(s.energy);
-        
-        // Level Tizimi
-        let lvlName = "Kitten";
-        let emoji = "🐱";
-        if(s.hourly > 1000) { lvlName = "Cool Cat"; emoji = "😎"; }
-        if(s.hourly > 10000) { lvlName = "Tiger"; emoji = "🐯"; }
-        if(s.hourly > 50000) { lvlName = "Lion King"; emoji = "🦁"; }
-        
-        document.getElementById('st-lvl').innerText = lvlName;
-        document.getElementById('tap-cat').innerText = emoji;
-        
-        const enPerc = (s.energy / s.maxE) * 100;
-        document.getElementById('energy-lvl').style.width = enPerc + "%";
+        document.getElementById('st-diams').innerText = Math.floor(s.diams).toLocaleString();
+        document.getElementById('st-hourly').innerText = s.hourly;
+        document.getElementById('p-energy').innerText = Math.floor(s.energy);
+        document.getElementById('p-max-energy').innerText = s.maxE;
+        document.getElementById('energy-fill').style.width = (s.energy / s.maxE * 100) + "%";
+        document.getElementById('st-power').innerText = s.power;
+        document.getElementById('user-info').innerHTML = `<b>ID: ${user.id}</b><br>Ism: ${user.first_name}`;
+
+        if(s.currentHero) {
+            document.getElementById('main-coin-img').style.display = 'none';
+            document.getElementById('tap-area').style.backgroundImage = `url(${s.currentHero})`;
+        }
     }
 
-    document.getElementById('tap-cat').addEventListener('touchstart', (e) => {
+    // CLICK
+    document.getElementById('tap-area').addEventListener('touchstart', (e) => {
         if(s.energy >= s.power) {
             s.coins += s.power;
             s.energy -= s.power;
             
-            // Tap Effect
             const t = e.touches[0];
-            const el = document.createElement('div');
-            el.className = 'tap-num';
-            el.innerText = `+${s.power}`;
-            el.style.left = t.clientX + 'px';
-            el.style.top = t.clientY + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 600);
+            const p = document.createElement('div');
+            p.className = 'pop';
+            p.innerText = "+" + s.power;
+            p.style.left = t.clientX + 'px';
+            p.style.top = t.clientY + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 700);
             
-            tg.HapticFeedback.impactOccurred('light');
-            updateUI();
-            save();
+            tg.HapticFeedback.impactOccurred('medium');
+            document.getElementById('bg-music').play().catch(()=>{});
         }
     });
 
-    function renderCards() {
-        let htm = "";
-        cards.forEach(c => {
-            htm += `<div class="card">
-                <div><i>${c.icon}</i> <b>${c.name}</b><br><small>+${c.inc}/soat</small></div>
-                <button class="btn-buy" onclick="buyCard('${c.id}')">${c.price.toLocaleString()}</button>
+    // TASODIFIY TANGA
+    function getTasodif() {
+        const now = Date.now();
+        if(now - s.lastTaso > 86400000) {
+            const win = Math.floor(Math.random() * 24000) + 1000;
+            s.coins += win;
+            s.lastTaso = now;
+            alert(`Sizga ${win} tanga berildi!`);
+            save();
+        } else {
+            alert("Hali vaqt bor! Reklama ko'rib olishni xohlaysizmi?");
+            // Bu yerga Monetag reklama funksiyasini qo'shish mumkin
+        }
+    }
+
+    // BOOSTERLAR
+    function renderBoosters() {
+        const bList = [
+            { id: 'power', name: 'Tap Kuchi', key: 'power' },
+            { id: 'energy', name: 'Energiya Sigimi', key: 'maxE' },
+            { id: 'regen', name: 'Energiya Tiklanishi', key: 'eRegen' }
+        ];
+        let h = "";
+        bList.forEach(b => {
+            let cost = 500 + (s.levels[b.id] * 2000);
+            h += `<div class="item-card">
+                <div><b>${b.name}</b><br><small>Daraja: ${s.levels[b.id]}</small></div>
+                <button class="btn-action" onclick="buyBoost('${b.id}')">${cost} 💰</button>
             </div>`;
         });
-        document.getElementById('cards-container').innerHTML = htm;
+        document.getElementById('boost-list').innerHTML = h;
     }
 
-    function buyCard(id) {
-        const c = cards.find(x => x.id === id);
-        if(s.coins >= c.price) {
-            s.coins -= c.price;
-            s.hourly += c.inc;
-            tg.HapticFeedback.notificationOccurred('success');
+    function buyBoost(id) {
+        let cost = 500 + (s.levels[id] * 2000);
+        if(s.coins >= cost) {
+            s.coins -= cost;
+            s.levels[id]++;
+            if(id==='power') s.power += 1;
+            if(id==='energy') s.maxE += 500;
+            if(id==='regen') s.eRegen += 1;
+            renderBoosters();
             save();
-        } else {
-            tg.showAlert("CatCoin yetarli emas!");
         }
     }
 
-    function watchAd() {
-        if(typeof show_10558007 === 'function') {
-            show_10558007().then(() => {
-                s.coins += 2000;
-                save();
-                tg.showAlert("Tabriklaymiz! +2,000 CatCoin");
-            });
+    // KARTALAR SOTIB OLISH
+    function buyHero(name, price, level, img) {
+        if(s.diams >= price) {
+            s.diams -= price;
+            s.currentHero = img;
+            // Mining effektlari
+            if(level === 2) s.hourly += 300;
+            if(level === 3) {
+                s.hourly += 700;
+                document.getElementById('tap-area').style.borderColor = name === 'Spiderman' ? 'red' : 'blue';
+            }
+            alert(name + " faollashdi!");
+            save();
+        } else {
+            alert("Olmos yetarli emas!");
         }
     }
 
-    function dailySpin() {
-        const now = Date.now();
-        if(now - s.lastS > 86400000) {
-            const win = Math.floor(Math.random() * 9500) + 500;
-            s.coins += win;
-            s.lastS = now;
-            save();
-            tg.showAlert(`Sizga ${win} CatCoin chiqdi!`);
-        } else {
-            tg.showAlert("Bugungi spin ishlatilgan!");
+    function swapDiams() {
+        if(s.diams >= 1) {
+            s.coins += 1000;
+            s.diams -= 1;
+            updateUI();
         }
     }
 
     function loadRank() {
-        db.ref('users').orderByChild('hourly').limitToLast(10).once('value', snap => {
-            let htm = "";
-            let data = [];
-            snap.forEach(u => { data.push(u.val()); });
-            data.reverse().forEach((u, i) => {
-                htm += `<div class="card"><span>#${i+1} ${u.name || 'User'}</span><b>${u.hourly} /s</b></div>`;
+        db.ref('users').orderByChild('coins').limitToLast(10).once('value', snap => {
+            let h = "";
+            snap.forEach(child => {
+                const u = child.val();
+                h = `<div class="item-card"><span>${u.name || 'User'}</span><b>${Math.floor(u.coins)} 💰</b></div>` + h;
             });
-            document.getElementById('rank-list').innerHTML = htm;
+            document.getElementById('rank-list').innerHTML = h;
         });
     }
 
-    function save() {
-        db.ref('users/' + user.id).set({
-            ...s,
-            name: user.first_name
-        });
-    }
-
-    function openM(id) {
-        closeM();
-        document.getElementById(id).classList.add('modal-active');
-    }
-
-    function closeM() {
-        document.querySelectorAll('.modal').forEach(m => m.classList.remove('modal-active'));
+    function save() { db.ref('users/' + user.id).set(s); }
+    function openM(id) { document.getElementById(id).classList.add('active'); }
+    function closeM() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
+    function switchTab(t) {
+        document.getElementById('tab-tanga').style.display = t === 'tanga' ? 'block' : 'none';
+        document.getElementById('tab-karta').style.display = t === 'karta' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
     }
 
     init();
 </script>
 </body>
-    </html>
-
-                                                                        </html>
+        </html>
+    
             
     
         
