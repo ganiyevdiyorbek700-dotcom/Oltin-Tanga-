@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga - Ultimate Edition</title>
+    <title>Oltin Tanga - Premium</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -12,47 +12,28 @@
     <style>
         :root { --bg: #0b111d; --card: rgba(28, 37, 51, 0.9); --accent: #f1c40f; --blue: #3498db; --green: #2ecc71; --red: #e74c3c; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; transition: 0.5s ease; }
-        
-        /* Darajalar bo'yicha fonlar */
         .bg-tier-1 { background: radial-gradient(circle, #2c3e50, #000); }
         .bg-tier-2 { background: radial-gradient(circle, #1a5276, #000); }
         .bg-tier-3 { background: radial-gradient(circle, #78281f, #000); }
-
-        #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 85%; padding: 15px; border-radius: 12px; color: white; font-weight: bold; z-index: 10000; transition: 0.5s; text-align: center; }
+        #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 85%; padding: 15px; border-radius: 12px; color: white; font-weight: bold; z-index: 10000; transition: 0.5s; }
         .show-notif { top: 20px !important; }
         .notif-success { background: var(--green); box-shadow: 0 0 20px var(--green); }
         .notif-error { background: var(--red); box-shadow: 0 0 20px var(--red); }
-
-        .status-header { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.6); border-bottom: 1px solid #333; }
-        .status-box { background: var(--card); padding: 5px 10px; border-radius: 8px; border: 1px solid #444; min-width: 70px; font-size: 12px; }
-        
-        .score-main { font-size: 44px; font-weight: 900; margin-top: 15px; color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        .level-text { font-size: 14px; color: #aaa; margin-bottom: 10px; }
-
-        .coin-area { position: relative; width: 250px; height: 250px; margin: 25px auto; cursor: pointer; transition: transform 0.1s; }
-        .coin-area:active { transform: scale(0.95); }
-        #hero-img { width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--accent); box-shadow: 0 0 40px var(--accent); object-fit: cover; }
-
+        .status-header { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.6); }
+        .status-box { background: var(--card); padding: 5px 12px; border-radius: 10px; border: 1px solid #333; min-width: 80px; }
+        .score-main { font-size: 42px; font-weight: 900; margin-top: 10px; color: var(--accent); }
+        .coin-area { position: relative; width: 240px; height: 240px; margin: 20px auto; cursor: pointer; transition: transform 0.1s; }
+        #hero-img { width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--accent); box-shadow: 0 0 30px var(--accent); object-fit: cover; }
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #080c14; padding: 10px 0; border-top: 1px solid #222; height: 75px; z-index: 2000; }
-        .nav-btn { flex: 1; font-size: 10px; color: #888; cursor: pointer; transition: 0.3s; }
-        .nav-btn.active { color: var(--accent); }
-        .nav-btn i { font-style: normal; font-size: 24px; display: block; margin-bottom: 5px; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(11, 17, 29, 0.98); z-index: 3000; padding: 20px; overflow-y: auto; text-align: left; padding-bottom: 100px; }
-        .active-modal { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #444; }
-        .tier-title { color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; }
+        .nav-btn { flex: 1; font-size: 11px; color: #888; cursor: pointer; }
+        .nav-btn i { font-style: normal; font-size: 20px; display: block; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(11, 17, 29, 0.98); z-index: 3000; padding: 20px; overflow-y: auto; text-align: left; }
+        .active-modal { display: block; }
+        .card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid #444; }
         .flex-row { display: flex; justify-content: space-between; align-items: center; }
-        
-        button { border: none; border-radius: 8px; font-weight: bold; padding: 10px; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-buy { background: var(--accent); color: black; min-width: 80px; }
+        button { border: none; border-radius: 8px; font-weight: bold; padding: 10px; cursor: pointer; }
+        .btn-buy { background: var(--accent); color: black; width: 80px; }
         .btn-close { background: #444; color: white; width: 100%; padding: 15px; margin-top: 10px; }
-
-        .rank-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
-        .rank-num { width: 30px; font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body id="game-body">
@@ -63,92 +44,66 @@
 <div class="status-header">
     <div class="status-box"><small>Soatiga</small><br><b id="st-hour">0</b></div>
     <div class="status-box"><small>Energiya</small><br><b id="st-en">1000</b></div>
-    <div class="status-box"><small>Tap Kuchi</small><br><b id="st-pow">1</b></div>
 </div>
 
 <div class="score-main" id="c-val">0</div>
-<div style="color:var(--blue); font-size: 20px; margin-bottom: 5px;">💎 <span id="d-val">0</span></div>
-<div class="level-text" id="user-level">Daraja: Bronza</div>
+<div style="color:var(--blue); font-size: 18px; margin-bottom: 10px;">💎 <span id="d-val">0</span></div>
 
 <div class="coin-area" onclick="handleTap(event)">
     <img id="hero-img" src="">
 </div>
 
 <div id="m-market" class="modal">
-    <h2>🛒 Bozor</h2>
+    <h2>🛒 Market & Ayirboshlash</h2>
     <div class="card">
-        <h3>🔄 Olmos Ayirboshlash</h3>
-        <p>1000 Tanga = 1 💎</p>
-        <button class="btn-buy" style="width:100%" onclick="exchange()">ALMASHTIRISH</button>
+        <h3>🔄 TON Ayirboshlash</h3>
+        <p>1,000,000 Tanga = 0.1 TON</p>
+        <button class="btn-buy" style="width:100%" onclick="exchangeTON()">ALMASHTIRISH</button>
     </div>
-    
-    <div class="tier-title">1-Daraja (Anime)</div>
-    <div id="tier-1-list"></div>
-    
-    <div class="tier-title">2-Daraja (Futbol)</div>
-    <div id="tier-2-list"></div>
-    
-    <div class="tier-title">3-Daraja (Marvel)</div>
-    <div id="tier-3-list"></div>
-    
+    <div id="hero-list"></div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
 
-<div id="m-booster" class="modal">
-    <h2>⚡ Boosterlar</h2>
-    <div class="card flex-row">
-        <div><b>Tap Kuchi</b><br><small id="p-price">500</small> Tanga</div>
-        <button class="btn-buy" onclick="upgrade('power')">YAXSHILASH</button>
+<div id="m-bonus" class="modal">
+    <h2>🎁 Bonus Bolimi</h2>
+    <div class="card">
+        <h3>📅 Kunlik Sovg'a</h3>
+        <p>Har 24 soatda 5,000 tanga!</p>
+        <button class="btn-buy" style="width:100%" onclick="claimDaily()">OLISH</button>
     </div>
-    <div class="card flex-row">
-        <div><b>Soatbay Daromad</b><br><small id="h-price">1000</small> Tanga</div>
-        <button class="btn-buy" onclick="upgrade('hourly')">YAXSHILASH</button>
+    <div class="card">
+        <h3>📺 Reklama Ko'rish</h3>
+        <p>Reklama evaziga 1,000 tanga!</p>
+        <button class="btn-buy" style="width:100%; background:var(--blue); color:white" onclick="showAds()">KO'RISH</button>
     </div>
-    <div class="card flex-row">
-        <div><b>Max Energiya</b><br><small id="e-price">2000</small> Tanga</div>
-        <button class="btn-buy" onclick="upgrade('energy')">YAXSHILASH</button>
-    </div>
-    <button class="btn-close" onclick="closeAll()">YOPISH</button>
-</div>
-
-<div id="m-rank" class="modal">
-    <h2>📊 Global Reyting</h2>
-    <div id="rank-list" class="card">Yuklanmoqda...</div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
 
 <div id="m-uyim" class="modal">
     <h2>🏠 Mening Uyim</h2>
-    <div class="card" id="my-info"></div>
+    <div class="card" id="user-stats"></div>
     <div class="card">
         <h3>👛 Hamyon</h3>
-        <button id="w-btn" class="btn-buy" style="width:100%; background:#0088cc; color:white;" onclick="connectWallet()">HAMYONNI ULASH</button>
-        <p id="w-status" style="display:none; color:var(--green); text-align:center; margin-top:10px;"><b>Hamyon ulandi! Tez kunda TON to'lovlari...</b></p>
-    </div>
-    <div class="card">
-        <h3>ℹ️ O'yin Haqida</h3>
-        <p>Oltin Tanga - bu Telegram mini-o'yini bo'lib, unda siz tanga yig'asiz, qahramonlarni ochasiz va real Stars yutib olishingiz mumkin.</p>
+        <button class="btn-buy" style="width:100%; background:#0088cc; color:white;" onclick="connectWallet()">TON HAMYON ULASH</button>
     </div>
     <button class="btn-close" onclick="closeAll()">YOPISH</button>
 </div>
 
 <nav>
-    <div class="nav-btn" onclick="openM('m-market')"><i>🛒</i>BOZOR</div>
-    <div class="nav-btn" onclick="openM('m-booster')"><i>⚡</i>BOOST</div>
-    <div class="nav-btn" onclick="openM('m-rank')"><i>📊</i>RANK</div>
+    <div class="nav-btn" onclick="openM('m-market')"><i>🛒</i>MARKET</div>
+    <div class="nav-btn" onclick="openM('m-bonus')"><i>🎁</i>BONUS</div>
     <div class="nav-btn" onclick="openM('m-uyim')"><i>🏠</i>UYIM</div>
 </nav>
 
 <script>
-    // FIREBASE KONFIGURATSIYASI
     const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
-    const user = tg.initDataUnsafe.user || { id: "GUEST_123", first_name: "O'yinchi" };
+    const user = tg.initDataUnsafe.user || { id: "8009403510", first_name: "User" };
 
+    // Skrinshotdagi GitHub nomlariga 100% moslangan ro'yxat
     const raw = "https://raw.githubusercontent.com/ganiyevdiyorbek700-dotcom/Oltin-Tanga-essets/main/";
-    
     const heroes = [
         { id: "goku", name: "Goku", tier: 1, price: 0, curr: "diam", img: raw + "goku.webp" },
         { id: "jinwoo", name: "Sung Jinwoo", tier: 1, price: 500, curr: "diam", img: raw + "sungjinwoo.jpg" },
@@ -156,16 +111,12 @@
         { id: "neymar", name: "Neymar", tier: 2, price: 2000, curr: "diam", img: raw + "neymar.jpg" },
         { id: "messi", name: "Messi", tier: 2, price: 5000, curr: "diam", img: raw + "messi.jpg" },
         { id: "ronaldo", name: "Ronaldo", tier: 2, price: 10000, curr: "diam", img: raw + "ronaldo.jpg" },
-        { id: "spiderman", name: "O'rgimchak Odam", tier: 3, price: 50, curr: "stars", img: raw + "spidermen.jpg" },
-        { id: "captain", name: "Kapitan Amerika", tier: 3, price: 100, curr: "stars", img: raw + "kapitanamerika.jpg" },
-        { id: "ironman", name: "Temir Odam", tier: 3, price: 200, curr: "stars", img: raw + "ironman.jpg" }
+        { id: "spiderman", name: "Spiderman", tier: 3, price: 50, curr: "stars", img: raw + "spidermen.jpg" },
+        { id: "captain", name: "Captain", tier: 3, price: 100, curr: "stars", img: raw + "kapitanamerika.jpg" },
+        { id: "ironman", name: "Ironman", tier: 3, price: 200, curr: "stars", img: raw + "ironman.jpg" }
     ];
 
-    let s = { 
-        coins: 0, diams: 0, power: 1, hourly: 0, energy: 1000, maxE: 1000, 
-        activeHero: "goku", owned: ["goku"], wallet: false,
-        p_lvl: 0, h_lvl: 0, e_lvl: 0, lastSave: Date.now()
-    };
+    let s = { coins: 0, diams: 0, power: 1, hourly: 3600, energy: 1000, activeHero: "goku", owned: ["goku"], lastDaily: 0 };
 
     function init() {
         tg.expand();
@@ -178,50 +129,34 @@
                 // NaN himoyasi
                 s.coins = Number(s.coins) || 0;
                 s.diams = Number(s.diams) || 0;
-            } else {
-                save(); // Yangi foydalanuvchi
             }
             updateUI();
-            renderMarket();
-            loadRank();
+            renderH();
         });
 
         setInterval(() => {
             s.coins += (s.hourly / 3600);
-            if(s.energy < s.maxE) s.energy += 1;
+            if(s.energy < 1000) s.energy += 1;
             updateUI();
         }, 1000);
-
-        setInterval(save, 10000);
     }
 
     function updateUI() {
-        document.getElementById('c-val').innerText = Math.floor(s.coins).toLocaleString();
+        let coinVal = isNaN(s.coins) ? 0 : Math.floor(s.coins);
+        document.getElementById('c-val').innerText = coinVal.toLocaleString();
         document.getElementById('d-val').innerText = s.diams;
-        document.getElementById('st-hour').innerText = Math.floor(s.hourly);
+        document.getElementById('st-hour').innerText = s.hourly;
         document.getElementById('st-en').innerText = Math.floor(s.energy);
-        document.getElementById('st-pow').innerText = s.power;
 
-        // Narxlarni yangilash (500, 1000, 3000, 5000...)
-        document.getElementById('p-price').innerText = (500 + (s.p_lvl * 2000));
-        document.getElementById('h-price').innerText = (1000 + (s.h_lvl * 2000));
-        document.getElementById('e-price').innerText = (2000 + (s.e_lvl * 2000));
-
-        let h = heroes.find(x => x.id === s.activeHero) || heroes[0];
+        const h = heroes.find(x => x.id === s.activeHero) || heroes[0];
         document.getElementById('hero-img').src = h.img;
         document.getElementById('game-body').className = `bg-tier-${h.tier}`;
 
-        // Daraja aniqlash
-        let lvl = "Bronza";
-        if(s.coins > 1000000) lvl = "Oltin";
-        else if(s.coins > 100000) lvl = "Kumush";
-        document.getElementById('user-level').innerText = "Daraja: " + lvl;
-
-        document.getElementById('my-info').innerHTML = `
+        document.getElementById('user-stats').innerHTML = `
             <p><b>Ism:</b> ${user.first_name}</p>
             <p><b>ID:</b> ${user.id}</p>
-            <p><b>Tangalar:</b> ${Math.floor(s.coins).toLocaleString()}</p>
-            <p><b>Olmoslar:</b> ${s.diams}</p>
+            <p><b>Tanga:</b> ${coinVal.toLocaleString()}</p>
+            <p><b>Olmos:</b> ${s.diams}</p>
         `;
     }
 
@@ -230,97 +165,71 @@
             s.coins += s.power;
             s.energy -= s.power;
             tg.HapticFeedback.impactOccurred('light');
-            
-            // Monetag reklamasi (tasodifiy)
-            if(Math.random() < 0.01) { // 1% imkoniyat bilan reklama
-                if(typeof show_10558007 === 'function') show_10558007();
-            }
             updateUI();
         } else {
-            showMsg("Energiya yetarli emas!", "error");
+            showMsg("Energiya tugadi!", "error");
         }
     }
 
-    function upgrade(type) {
-        let price = 0;
-        if(type === 'power') price = 500 + (s.p_lvl * 2000);
-        if(type === 'hourly') price = 1000 + (s.h_lvl * 2000);
-        if(type === 'energy') price = 2000 + (s.e_lvl * 2000);
-
-        if(s.coins >= price) {
-            s.coins -= price;
-            if(type === 'power') { s.power += 1; s.p_lvl++; }
-            if(type === 'hourly') { s.hourly += 100; s.h_lvl++; }
-            if(type === 'energy') { s.maxE += 500; s.e_lvl++; }
-            showMsg("Muvaffaqiyatli yaxshilandi!", "success");
-            updateUI(); save();
-        } else {
-            showMsg("Mablag' yetarli emas!", "error");
-        }
-    }
-
-    function renderMarket() {
-        for(let i=1; i<=3; i++) {
-            let htm = "";
-            heroes.filter(x => x.tier === i).forEach(h => {
-                let isOwned = s.owned.includes(h.id);
-                htm += `<div class="card flex-row">
-                    <img src="${h.img}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
-                    <div style="flex:1;margin-left:10px"><b>${h.name}</b><br><small>${isOwned ? 'Sizda bor' : (h.curr=='stars'?'⭐ ':'💎 ')+h.price}</small></div>
-                    <button class="btn-buy" onclick="buyH('${h.id}')">${isOwned?'KIYISH':'SOTIB OLISH'}</button>
-                </div>`;
-            });
-            document.getElementById(`tier-${i}-list`).innerHTML = htm;
-        }
+    function renderH() {
+        let htm = "";
+        heroes.forEach(h => {
+            let isOwned = s.owned.includes(h.id);
+            htm += `<div class="card flex-row">
+                <img src="${h.img}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+                <div style="flex:1;margin-left:10px"><b>${h.name}</b><br><small>${isOwned?'Sizda bor':(h.curr==='stars'?'⭐ ':'💎 ')+h.price}</small></div>
+                <button class="btn-buy" onclick="buyH('${h.id}')">${isOwned?'KIYISH':'OLISH'}</button>
+            </div>`;
+        });
+        document.getElementById('hero-list').innerHTML = htm;
     }
 
     function buyH(id) {
         let h = heroes.find(x => x.id === id);
         if(s.owned.includes(id)) {
             s.activeHero = id;
-            showMsg("Qahramon almashtirildi!");
+            showMsg("Kiyim almashtirildi!");
         } else {
-            if(h.curr === 'stars') {
-                showMsg("Stars to'lovi tez kunda!", "error");
-            } else {
-                if(s.diams >= h.price) {
-                    s.diams -= h.price;
-                    s.owned.push(id);
-                    s.activeHero = id;
-                    showMsg("Muborak bo'lsin!", "success");
-                } else { showMsg("Olmos yetarli emas!", "error"); }
-            }
+            if(s.diams >= h.price) {
+                s.diams -= h.price; s.owned.push(id); s.activeHero = id;
+                showMsg("Sotib olindi!", "success");
+            } else { showMsg("Olmos yetarli emas!", "error"); }
         }
-        renderMarket(); updateUI(); save();
+        renderH(); updateUI(); save();
     }
 
-    function exchange() {
-        if(s.coins >= 1000) {
-            s.coins -= 1000;
-            s.diams += 1;
-            showMsg("+1 Olmos olindi!", "success");
-            updateUI(); save();
-        } else { showMsg("Tanga yetarli emas (Kamida 1000 ta bo'lishi kerak)", "error"); }
+    function exchangeTON() {
+        if(s.coins >= 1000000) {
+            s.coins -= 1000000;
+            showMsg("Ayirboshlash so'rovi yuborildi!", "success");
+            save();
+        } else { showMsg("1,000,000 tanga kerak!", "error"); }
     }
 
-    function loadRank() {
-        db.ref('users').orderByChild('coins').limitToLast(10).once('value', snap => {
-            let list = [];
-            snap.forEach(x => { list.push({name: x.val().name || "O'yinchi", coins: x.val().coins}); });
-            list.reverse();
-            let htm = "";
-            list.forEach((u, i) => {
-                htm += `<div class="rank-item"><div class="rank-num">${i+1}</div> <div>${u.name}<br><small>${Math.floor(u.coins).toLocaleString()} tanga</small></div></div>`;
+    function claimDaily() {
+        let now = Date.now();
+        if(now - s.lastDaily > 86400000) {
+            s.coins += 5000;
+            s.lastDaily = now;
+            showMsg("+5,000 tanga olindi!", "success");
+            save();
+        } else { showMsg("Bugun olib bo'ldingiz!", "error"); }
+    }
+
+    function showAds() {
+        if(typeof show_10558007 === 'function') {
+            show_10558007().then(() => {
+                s.coins += 1000;
+                showMsg("+1,000 tanga!", "success");
+                save();
             });
-            document.getElementById('rank-list').innerHTML = htm;
-        });
+        } else {
+            showMsg("Reklama yuklanmoqda...", "error");
+        }
     }
 
     function connectWallet() {
-        s.wallet = true;
-        document.getElementById('w-btn').innerText = "ULANDI ✅";
-        document.getElementById('w-status').style.display = "block";
-        save();
+        showMsg("Tez kunda TON ulanadi!", "success");
     }
 
     function showMsg(t, type) {
@@ -329,19 +238,15 @@
         setTimeout(() => n.classList.remove('show-notif'), 2500);
     }
 
-    function save() { 
-        s.name = user.first_name;
-        s.lastSave = Date.now(); 
-        db.ref('users/' + user.id).set(s); 
-    }
-
-    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); if(id==='m-rank') loadRank(); }
+    function save() { db.ref('users/' + user.id).set(s); }
+    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); }
     function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
 
     init();
 </script>
 </body>
-        </html>
+    </html>
+        
     
         
                                                        
