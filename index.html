@@ -3,161 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga - VIP Edition</title>
+    <title>Oltin Tanga - Neon Empire</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://alwingulla.com/88/pfe/current/tag.min.js?z=10558007" data-cfasync="false" async></script>
+
     <style>
-        :root { --bg: #0b111d; --card: #1c2533; --accent: #f39c12; --blue: #3498db; --green: #2ecc71; --red: #e74c3c; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow: hidden; user-select: none; }
-        
-        #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 85%; padding: 15px; border-radius: 12px; color: white; font-weight: bold; z-index: 10000; transition: 0.5s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .show-notif { top: 20px !important; }
-        .notif-success { background: var(--green); border: 2px solid #27ae60; }
-        .notif-error { background: var(--red); border: 2px solid #c0392b; }
+        :root {
+            --gold: #f1c40f;
+            --bg: #050a12;
+            --card: #111827;
+            --text: #ffffff;
+            --neon: 0 0 15px rgba(241, 196, 15, 0.5);
+        }
 
-        .status-header { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.5); }
-        .status-box { background: var(--card); padding: 5px 12px; border-radius: 10px; border: 1px solid #2c3e50; min-width: 80px; }
-        .status-box small { font-size: 10px; color: #888; display: block; }
-        .status-box b { color: var(--accent); font-size: 13px; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* KO'K TO'RTBURCHAKNI YO'QOTADI */
+            outline: none;
+        }
 
-        .score-main { font-size: 48px; font-weight: 900; margin-top: 15px; text-shadow: 0 0 15px rgba(243,156,18,0.4); }
-        .diam-main { color: var(--blue); font-size: 20px; margin-bottom: 10px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            user-select: none;
+        }
 
-        .coin-area { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        #coin-ring { position: absolute; width: 100%; height: 100%; border: 8px solid #f1c40f; border-radius: 50%; box-shadow: 0 0 30px rgba(241,196,15,0.4); transition: 0.1s; }
-        #hero-img { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; z-index: 5; border: 2px solid #000; }
+        /* Header Statlar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 1px solid #222;
+        }
 
-        .energy-wrap { width: 85%; margin: 25px auto; }
-        .progress-bar { height: 14px; background: #162130; border-radius: 10px; overflow: hidden; border: 1px solid #2c3e50; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #f39c12, #e67e22); width: 100%; transition: 0.2s; }
+        .stat-box { text-align: center; flex: 1; }
+        .stat-box small { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box b { display: block; font-size: 16px; color: var(--gold); }
 
-        /* Kattalashtirilgan Menu */
-        nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #080c14; padding: 15px 0; border-top: 1px solid #1a2533; height: 85px; z-index: 2000; }
-        .nav-btn { flex: 1; font-size: 12px; color: #888; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: bold; }
-        .nav-btn i { font-style: normal; font-size: 24px; }
-        .nav-btn.active { color: var(--accent); }
+        /* Asosiy Tanga Maydoni */
+        .clicker-section {
+            height: 65vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-        .modal { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 3000; padding: 20px 15px 100px; overflow-y: auto; text-align: left; }
-        .active-modal { display: block; }
-        .card { background: var(--card); border-radius: 15px; padding: 18px; margin-bottom: 12px; border: 1px solid #2c3e50; }
-        .flex { display: flex; justify-content: space-between; align-items: center; }
-        
-        button { border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-buy { background: var(--accent); color: #000; padding: 10px 18px; }
-        .btn-full { background: var(--accent); color: #000; padding: 16px; width: 100%; font-size: 16px; margin: 8px 0; }
-        .btn-close { background: #2c3e50; color: white; width: 100%; padding: 16px; margin-top: 10px; }
-        .timer-txt { font-size: 13px; color: var(--accent); margin-top: 6px; font-weight: bold; }
-        input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin: 10px 0; box-sizing: border-box; }
+        .balance-main {
+            font-size: 52px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: var(--neon);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .coin-glow {
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, #f39c12 0%, #d35400 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            box-shadow: 0 0 40px rgba(243, 156, 18, 0.3), inset 0 0 20px rgba(255,255,255,0.2);
+            border: 10px solid rgba(255,255,255,0.05);
+            transition: transform 0.05s;
+            cursor: pointer;
+        }
+
+        .coin-glow:active { transform: scale(0.94); }
+
+        /* Tapping Effect */
+        .plus-one {
+            position: absolute;
+            color: var(--gold);
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 0.7s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-120px); opacity: 0; }
+        }
+
+        /* Navigatsiya */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--card);
+            display: flex;
+            border-top: 1px solid #333;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .nav-item.active { color: var(--gold); }
+        .nav-item i { font-size: 24px; margin-bottom: 4px; font-style: normal; }
+
+        /* Modallar */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 2000;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .modal.active { display: block; animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .card {
+            background: #1f2937;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #374151;
+        }
+
+        .card-info b { font-size: 18px; display: block; }
+        .card-info small { color: #9ca3af; }
+
+        .btn-action {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .close-bar { width: 100%; height: 5px; background: #333; border-radius: 10px; margin-bottom: 20px; }
+
+        #toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(52, 152, 219, 0.9); padding: 10px 25px;
+            border-radius: 20px; font-size: 14px; display: none; z-index: 9999;
+        }
     </style>
 </head>
 <body>
 
-<div id="notif">Xabar!</div>
-<audio id="music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
+<div id="toast">Habar!</div>
+<audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3"></audio>
 
-<div class="status-header">
-    <div class="status-box"><small>Status</small><b id="st-rank">Bronza</b></div>
-    <div class="status-box"><small>Soatiga</small><b id="st-hour">0</b></div>
-    <div class="status-box"><small>Tap Kuchi</small><b id="st-pow">1</b></div>
+<div class="stats-bar">
+    <div class="stat-box"><small>Soatiga</small><b id="st-hourly">0</b></div>
+    <div class="stat-box"><small>Energiya</small><b id="st-energy">1000</b></div>
+    <div class="stat-box"><small>💎 Olmos</small><b id="st-diams">0</b></div>
 </div>
 
-<div class="score-main" id="c-val">0</div>
-<div class="diam-main">💎 <span id="d-val">0</span></div>
-
-<div class="coin-area" onclick="handleTap(event)">
-    <div id="coin-ring"></div>
-    <img id="hero-img" src="">
-</div>
-
-<div class="energy-wrap">
-    <div style="font-size:14px; margin-bottom:6px;">⚡ <span id="e-now">500</span> / <span id="e-max">500</span></div>
-    <div class="progress-bar"><div id="e-fill" class="progress-fill"></div></div>
+<div class="clicker-section">
+    <div class="balance-main">💰 <span id="p-balance">0</span></div>
+    <div class="coin-glow" id="click-area">📀</div>
 </div>
 
 <div id="m-market" class="modal">
-    <h2>🛒 Market</h2>
+    <div class="close-bar" onclick="closeModal()"></div>
+    <h2>🛒 Bozor</h2>
     <div class="card">
-        <h3>💎 Olmos Ayirboshlash</h3>
-        <input type="number" id="ex-in" placeholder="Olmos miqdorini yozing">
-        <button class="btn-full" onclick="exchange()">ALMASHTIRISH (1,000 = 1 💎)</button>
+        <div class="card-info"><b>🚜 Kichik Fermer</b><small>Daromad: +100/soat</small></div>
+        <button class="btn-action" onclick="buyCard(1000, 100)">1000 💰</button>
     </div>
-    <h3>🎭 Anime Kartalar</h3>
-    <div id="hero-list"></div>
-    <button class="btn-close" onclick="closeAll()">YOPISH</button>
+    <div class="card">
+        <div class="card-info"><b>🏢 Biznes Markaz</b><small>Daromad: +500/soat</small></div>
+        <button class="btn-action" onclick="buyCard(5000, 500)">5000 💰</button>
+    </div>
+    <button class="btn-action" style="width:100%; margin-top:20px; background:#444; color:white;" onclick="closeModal()">YOPISH</button>
+</div>
+
+<div id="m-boost" class="modal">
+    <div class="close-bar" onclick="closeModal()"></div>
+    <h2>⚡ Kuchaytirish</h2>
+    <div class="card">
+        <div class="card-info"><b>👆 Tap Kuchi</b><small>Daraja: <span id="tap-lvl">1</span></small></div>
+        <button class="btn-action" onclick="buyBoost('tap')"><span id="tap-price">500</span> 💰</button>
+    </div>
+    <div class="card">
+        <div class="card-info"><b>🔋 Max Energiya</b><small>+500 hajm</small></div>
+        <button class="btn-action" onclick="buyBoost('energy')"><span id="en-price">1000</span> 💰</button>
+    </div>
+    <button class="btn-action" style="width:100%; margin-top:20px; background:#444; color:white;" onclick="closeModal()">YOPISH</button>
 </div>
 
 <div id="m-bonus" class="modal">
-    <h2>🎁 Bonuslar</h2>
+    <div class="close-bar" onclick="closeModal()"></div>
+    <h2>🎡 Bonuslar</h2>
     <div class="card">
-        <h3>📅 Kunlik Bonus (5,000 💰)</h3>
-        <button id="daily-btn" class="btn-full" onclick="daily()">OLISH</button>
-        <div id="daily-timer" class="timer-txt"></div>
+        <div class="card-info"><b>🎁 Kunlik Sovg'a</b><small>Har 24 soatda</small></div>
+        <button class="btn-action" onclick="claimDaily()">OLISH</button>
     </div>
     <div class="card">
-        <h3>🎲 Tasodifiy Tanga</h3>
-        <p id="rand-txt">3 ta imkoniyat bor</p>
-        <button class="btn-full" style="background:var(--green); color:white" onclick="randomB()">OMADNI SINASH</button>
+        <div class="card-info"><b>🎰 Omadli Spin</b><small>Yutuq: 0 - 5000</small></div>
+        <button class="btn-action" onclick="spin()">1000 💰</button>
     </div>
-    <button class="btn-close" onclick="closeAll()">YOPISH</button>
-</div>
-
-<div id="m-rank" class="modal">
-    <h2>📊 Reyting</h2>
-    <div id="rank-list"></div>
-    <button class="btn-close" onclick="closeAll()">YOPISH</button>
-</div>
-
-<div id="m-booster" class="modal">
-    <h2>⚡ Boosterlar</h2>
-    <div class="card flex">
-        <div><b>Tap Kuchi</b><br><small id="p-info">Lvl 1 • 500 💰</small></div>
-        <button class="btn-buy" onclick="up('p')">UP</button>
-    </div>
-    <div class="card flex">
-        <div><b>Soatbay Foyda</b><br><small id="h-info">Lvl 1 • 1,000 💰</small></div>
-        <button class="btn-buy" onclick="up('h')">UP</button>
-    </div>
-    <div class="card flex">
-        <div><b>Max Energiya</b><br><small id="e-info">Lvl 1 • 2,000 💰</small></div>
-        <button class="btn-buy" onclick="up('e')">UP</button>
-    </div>
-    <button class="btn-close" onclick="closeAll()">YOPISH</button>
+    <button class="btn-action" style="width:100%; margin-top:20px; background:#444; color:white;" onclick="closeModal()">YOPISH</button>
 </div>
 
 <div id="m-uyim" class="modal">
+    <div class="close-bar" onclick="closeModal()"></div>
     <h2>🏠 Mening Uyim</h2>
+    <div class="card" id="user-info">Yuklanmoqda...</div>
     <div class="card">
-        <b id="my-name" style="font-size: 20px; color: var(--accent);">...</b><br>
-        <small id="my-id" style="color: #888;"></small>
-        <hr style="border: 0; border-top: 1px solid #2c3e50; margin: 15px 0;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div class="status-box"><small>💰 Tanga</small><b id="my-c">0</b></div>
-            <div class="status-box"><small>💎 Olmos</small><b id="my-d">0</b></div>
-            <div class="status-box"><small>📈 Daraja</small><b id="my-rank-txt">Bronza</b></div>
-            <div class="status-box"><small>⚡ Energiya</small><b id="my-e">500</b></div>
-        </div>
+        <div class="card-info"><b>👛 Hamyon</b><small>TON ulanmagan</small></div>
+        <button class="btn-action" style="background:#0088cc; color:white;">ULASH</button>
     </div>
-    
-    <div class="card">
-        <h3>👥 Referal Tizimi</h3>
-        <p style="font-size: 12px; color: #888;">Do'stlaringizni taklif qiling va har biri uchun 2,000 💰 oling!</p>
-        <input type="text" id="ref-link" readonly value="https://t.me/OltinTanga_bot?start=user">
-        <button class="btn-full" onclick="copyRef()">LİNKNI NUSXALASH</button>
-    </div>
-
-    <button class="btn-full" style="background: linear-gradient(45deg, #e74c3c, #f39c12); color:white; height: 65px; font-size: 18px; letter-spacing: 1px;" onclick="showMsg('Tez kunda Tonga almashtirilish boshlandi!', 'success')">🚀 AIRDROP (TEZ KUNDA)</button>
-    
-    <button class="btn-close" onclick="closeAll()">YOPISH</button>
+    <button class="btn-action" style="width:100%; margin-top:20px; background:#444; color:white;" onclick="closeModal()">YOPISH</button>
 </div>
 
 <nav>
-    <div class="nav-btn" onclick="openM('m-market')"><i>🛒</i>MARKET</div>
-    <div class="nav-btn" onclick="openM('m-bonus')"><i>🎁</i>BONUS</div>
-    <div class="nav-btn" onclick="openM('m-rank')"><i>📊</i>REYTING</div>
-    <div class="nav-btn" onclick="openM('m-booster')"><i>⚡</i>BOOSTER</div>
-    <div class="nav-btn" onclick="openM('m-uyim')"><i>🏠</i>UYIM</div>
+    <div class="nav-item" onclick="showModal('m-market')"><i>🛒</i>MARKET</div>
+    <div class="nav-item" onclick="showModal('m-boost')"><i>⚡</i>BOOST</div>
+    <div class="nav-item" onclick="showModal('m-bonus')"><i>🎡</i>BONUS</div>
+    <div class="nav-item" onclick="showModal('m-uyim')"><i>🏠</i>UYIM</div>
 </nav>
 
 <script>
@@ -165,164 +252,115 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
-    const user = tg.initDataUnsafe.user || { id: "8009403510", first_name: "Ganiyev" };
+    const user = tg.initDataUnsafe.user || { id: "GUEST_000", first_name: "O'yinchi" };
 
-    const raw = "https://raw.githubusercontent.com/ganiyevdiyorbek700-dotcom/Oltin-Tanga-essets/main/";
-    const heroes = [
-        { id: "goku", name: "Goku", price: 0, img: raw + "goku.webp" },
-        { id: "jinwo", name: "Jinwoo", price: 50, img: raw + "sungjinwo.jpg" },
-        { id: "gojo", name: "Gojo", price: 500, img: raw + "gojo.jpg" },
-    ];
-
-    let s = { coins: 0, diams: 0, power: 1, hourly: 0, energy: 500, maxE: 500, pLvl: 1, hLvl: 1, eLvl: 1, lastD: 0, randC: 3, activeHero: "goku", owned: ["goku"], lastSeen: Date.now() };
+    let s = { 
+        coins: 0, diams: 0, power: 1, hourly: 0, 
+        energy: 1000, maxE: 1000, lastD: 0,
+        tLvl: 1, eLvl: 1
+    };
 
     function init() {
         tg.expand();
-        document.getElementById('my-name').innerText = user.first_name;
-        document.getElementById('my-id').innerText = "ID: " + user.id;
-        document.getElementById('ref-link').value = "https://t.me/OltinTanga1_bot?start=" + user.id;
+        // Musiqa boshlash
+        document.body.onclick = () => { document.getElementById('bg-music').play(); };
 
-        db.ref('users/' + user.id).on('value', snap => {
+        db.ref('users/' + user.id).once('value', snap => {
             if(snap.exists()) {
                 let d = snap.val();
-                let now = Date.now();
-                let diff = (now - (d.lastSeen || now)) / 1000;
-                s = {...s, ...d};
-                s.coins += (s.hourly / 3600) * diff;
-                s.energy = Math.min(s.maxE, s.energy + (diff * 0.5));
-                updateUI(); renderH();
+                s = {
+                    coins: Number(d.coins) || 0,
+                    diams: Number(d.diams) || 0,
+                    power: Number(d.power) || 1,
+                    hourly: Number(d.hourly) || 0,
+                    energy: Number(d.energy) || 1000,
+                    maxE: Number(d.maxE) || 1000,
+                    lastD: d.lastD || 0,
+                    tLvl: d.tLvl || 1,
+                    eLvl: d.eLvl || 1
+                };
             }
-        });
-
-        setInterval(() => { 
-            s.coins += (s.hourly/3600); 
-            if(s.energy < s.maxE) s.energy += 0.5;
-            updateUI(); 
-            updateBonusTimer();
-        }, 1000);
-        setInterval(save, 5000);
-    }
-
-    function showMsg(txt, type) {
-        const b = document.getElementById('notif');
-        b.innerText = txt; b.className = type === 'success' ? 'notif-success show-notif' : 'notif-error show-notif';
-        tg.HapticFeedback.notificationOccurred(type);
-        setTimeout(() => b.classList.remove('show-notif'), 3000);
-    }
-
-    function handleTap(e) {
-        let m = document.getElementById('music');
-        if(m.paused) m.play().catch(()=>{});
-        if(s.energy >= s.power) {
-            s.coins += s.power; s.energy -= s.power;
-            tg.HapticFeedback.impactOccurred('medium');
             updateUI();
-        } else showMsg("Energiya yetarli emas!", "error");
+            startLoops();
+        });
     }
 
     function updateUI() {
-        let c = Math.floor(s.coins);
-        let rank = c > 1000000 ? "Afsona" : (c > 100000 ? "Oltin" : "Bronza");
-        
-        document.getElementById('c-val').innerText = c.toLocaleString();
-        document.getElementById('d-val').innerText = s.diams;
-        document.getElementById('st-hour').innerText = s.hourly;
-        document.getElementById('st-pow').innerText = s.power;
-        document.getElementById('st-rank').innerText = rank;
-        document.getElementById('e-now').innerText = Math.floor(s.energy);
-        document.getElementById('e-max').innerText = s.maxE;
-        document.getElementById('e-fill').style.width = (s.energy/s.maxE*100) + "%";
-        
-        // Uyim UI
-        document.getElementById('my-c').innerText = c.toLocaleString();
-        document.getElementById('my-d').innerText = s.diams;
-        document.getElementById('my-rank-txt').innerText = rank;
-        document.getElementById('my-e').innerText = s.maxE;
-
-        document.getElementById('p-info').innerText = `Lvl ${s.pLvl} • ${Math.floor(500 * Math.pow(1.3, s.pLvl-1))} 💰`;
-        document.getElementById('h-info').innerText = `Lvl ${s.hLvl} • ${Math.floor(1000 * Math.pow(1.5, s.hLvl-1))} 💰`;
-        document.getElementById('e-info').innerText = `Lvl ${s.eLvl} • ${Math.floor(2000 * Math.pow(1.4, s.eLvl-1))} 💰`;
-
-        let h = heroes.find(x => x.id === s.activeHero);
-        if(h) document.getElementById('hero-img').src = h.img;
+        document.getElementById('p-balance').innerText = Math.floor(s.coins).toLocaleString();
+        document.getElementById('st-hourly').innerText = s.hourly;
+        document.getElementById('st-energy').innerText = Math.floor(s.energy);
+        document.getElementById('st-diams').innerText = s.diams;
+        document.getElementById('tap-lvl').innerText = s.tLvl;
+        document.getElementById('tap-price').innerText = s.tLvl * 500;
+        document.getElementById('en-price').innerText = s.eLvl * 1000;
+        document.getElementById('user-info').innerHTML = `<b>${user.first_name}</b><br>Tanga: ${Math.floor(s.coins).toLocaleString()}`;
     }
 
-    function updateBonusTimer() {
-        let remain = 86400000 - (Date.now() - s.lastD);
-        let btn = document.getElementById('daily-btn');
-        let div = document.getElementById('daily-timer');
-        if(remain > 0) {
-            btn.disabled = true; btn.style.opacity = "0.5";
-            let h = Math.floor(remain/3600000), m = Math.floor((remain%3600000)/60000), sec = Math.floor((remain%60000)/1000);
-            div.innerText = `Keyingi bonus: ${h}s ${m}m ${sec}s`;
+    // CLICK LOGIC
+    document.getElementById('click-area').addEventListener('touchstart', (e) => {
+        if(s.energy >= s.power) {
+            s.coins += s.power;
+            s.energy -= s.power;
+            
+            // Effekt yaratish
+            const touch = e.touches[0];
+            const p = document.createElement('div');
+            p.className = 'plus-one';
+            p.innerText = `+${s.power}`;
+            p.style.left = touch.clientX + 'px';
+            p.style.top = touch.clientY + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 700);
+
+            tg.HapticFeedback.impactOccurred('medium');
+            updateUI();
         } else {
-            btn.disabled = false; btn.style.opacity = "1";
-            div.innerText = "Bonus tayyor!";
+            showToast("Energiya kam!");
         }
+    });
+
+    function buyCard(p, i) {
+        if(s.coins >= p) {
+            s.coins -= p; s.hourly += i;
+            showToast("Muvaffaqiyatli!");
+            updateUI(); save();
+        } else { showToast("Mablag' yetarli emas!"); }
     }
 
-    function daily() {
-        if(Date.now() - s.lastD > 86400000) {
-            s.coins += 5000; s.lastD = Date.now();
-            showMsg("5,000 💰 olindi!", "success"); save();
-        }
+    function buyBoost(t) {
+        let price = t==='tap' ? s.tLvl*500 : s.eLvl*1000;
+        if(s.coins >= price) {
+            s.coins -= price;
+            if(t==='tap') { s.power++; s.tLvl++; }
+            else { s.maxE += 500; s.energy += 500; s.eLvl++; }
+            updateUI(); save();
+        } else { showToast("Mablag' yetarli emas!"); }
     }
 
-    function loadRank() {
-        db.ref('users').orderByChild('coins').limitToLast(15).once('value', snap => {
-            let l = `<div class="card" style="border:2px solid var(--accent)"><b>1. 👑 Ganiyev (Admin)</b><br>💰 999,999,999 | 💎 99,999</div>`;
-            let users = [];
-            snap.forEach(p => { if(p.key !== "8009403510") users.push(p.val()); });
-            users.reverse().forEach((u, i) => {
-                l += `<div class="card"><b>${i+2}. ${u.name || 'O\'yinchi'}</b><br>💰 ${Math.floor(u.coins).toLocaleString()}</div>`;
-            });
-            document.getElementById('rank-list').innerHTML = l;
-        });
+    function startLoops() {
+        setInterval(() => {
+            s.coins += (s.hourly / 3600);
+            if(s.energy < s.maxE) s.energy += 1;
+            updateUI();
+        }, 1000);
+        setInterval(save, 10000);
     }
 
-    function up(t) {
-        let cost = 0;
-        if(t==='p') { cost=Math.floor(500*Math.pow(1.3,s.pLvl-1)); if(s.coins>=cost){s.coins-=cost; s.power++; s.pLvl++; showMsg("Tap kuchaytirildi!", "success");} else showMsg("Mablag' yetarli emas!", "error"); }
-        if(t==='h') { cost=Math.floor(1000*Math.pow(1.5,s.hLvl-1)); if(s.coins>=cost){s.coins-=cost; s.hourly+=150; s.hLvl++; showMsg("Soatbay daromad oshdi!", "success");} else showMsg("Mablag' yetarli emas!", "error"); }
-        if(t==='e') { cost=Math.floor(2000*Math.pow(1.4,s.eLvl-1)); if(s.coins>=cost){s.coins-=cost; s.maxE+=500; s.eLvl++; showMsg("Max energiya oshdi!", "success");} else showMsg("Mablag' yetarli emas!", "error"); }
-        save(); updateUI();
+    function showToast(m) {
+        let t = document.getElementById('toast');
+        t.innerText = m; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2000);
     }
 
-    function exchange() {
-        let v = parseInt(document.getElementById('ex-in').value);
-        if(v > 0 && s.coins >= v*1000) { s.coins -= v*1000; s.diams += v; showMsg("Olmos sotib olindi!", "success"); save(); }
-        else showMsg("Tanga yetarli emas!", "error");
-    }
-
-    function renderH() {
-        let htm = "";
-        heroes.forEach(h => {
-            let own = s.owned.includes(h.id);
-            htm += `<div class="card flex">
-                <img src="${h.img}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border: 2px solid #333;">
-                <div style="flex:1; margin-left:15px;"><b>${h.name}</b><br><small>${own ? 'Sotib olingan' : h.price+' 💎'}</small></div>
-                <button class="btn-buy" onclick="${own ? "selectH('"+h.id+"')" : "buyH('"+h.id+"',"+h.price+")"}">${own ? (s.activeHero===h.id?'KIYILGAN':'KIYISH') : 'OLISH'}</button>
-            </div>`;
-        });
-        document.getElementById('hero-list').innerHTML = htm;
-    }
-
-    function randomB() {
-        if(s.randC > 0) { let w = Math.floor(Math.random()*2500)+500; s.coins += w; s.randC--; showMsg(`Yutuq: ${w} 💰`, "success"); save(); }
-        else showMsg("Bugungi limit tugadi!", "error");
-    }
-
-    function selectH(id) { s.activeHero = id; save(); renderH(); }
-    function buyH(id, p) { if(s.diams >= p) { s.diams -= p; s.owned.push(id); s.activeHero = id; showMsg("Tabriklaymiz!", "success"); save(); renderH(); } else showMsg("Olmoslar yetarli emas!", "error"); }
-    function copyRef() { let r = document.getElementById("ref-link"); r.select(); document.execCommand("copy"); showMsg("Link nusxalandi!", "success"); }
-    function save() { db.ref('users/' + user.id).update({...s, name: user.first_name, lastSeen: Date.now()}); }
-    function openM(id) { closeAll(); document.getElementById(id).classList.add('active-modal'); if(id==='m-rank') loadRank(); }
-    function closeAll() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active-modal')); }
+    function save() { db.ref('users/' + user.id).set(s); }
+    function showModal(id) { closeModal(); document.getElementById(id).classList.add('active'); }
+    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
 
     init();
 </script>
 </body>
     </html>
+    
         
         
     
