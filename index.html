@@ -145,13 +145,59 @@
 <audio id="click-sound" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
 
 <script>
-const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
+// --- Firebase Config qismini shunday qoldiring ---
+const firebaseConfig = { 
+    databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" 
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const tg = window.Telegram.WebApp;
-const user = tg.initDataUnsafe.user || { id: "Guest", first_name: "O'yinchi" };
+// Foydalanuvchi ID sini tekshirish
+const user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : { id: "000000", first_name: "O'yinchi" };
 
+// Profil bo'limida ID ko'rinishi uchun:
+document.getElementById('u-id').innerText = user.id;
+document.getElementById('u-name').innerText = user.first_name;
+
+// --- REYTING BO'LIMI (Undefined muammosini tuzatish) ---
+function loadRank() {
+    const listDiv = document.getElementById('leaderboard-list');
+    listDiv.innerHTML = "Yuklanmoqda...";
+    
+    db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
+        if(!snap.exists()) {
+            listDiv.innerHTML = "Hozircha hech kim yo'q";
+            return;
+        }
+        
+        let list = []; 
+        snap.forEach(u => {
+            let data = u.val();
+            // Agar ism undefined bo'lsa "Noma'lum" deb yozadi
+            list.push({
+                name: data.first_name || "Noma'lum",
+                coins: data.coins || 0
+            });
+        });
+
+        // Kattadan kichikka saralash
+        list.sort((a, b) => b.coins - a.coins);
+        
+        let html = '';
+        list.forEach((u, i) => {
+            let cls = i === 0 ? 'rank-1' : (i === 1 ? 'rank-2' : (i === 2 ? 'rank-3' : ''));
+            html += `<div class="rank-row ${cls}">
+                <span>${i+1}. ${u.name}</span>
+                <b>${Math.floor(u.coins).toLocaleString()}</b>
+            </div>`;
+        });
+        listDiv.innerHTML = html;
+    }).catch(err => {
+        listDiv.innerHTML = "Xatolik: " + err.message;
+    });
+    }
+                                                               
 let s = {
     coins: 0, diamonds: 0, ton: 0,
     lvl: 1, pphDiam: 0, pphCoin: 0,
