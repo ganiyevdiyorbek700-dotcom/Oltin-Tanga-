@@ -31,11 +31,8 @@
         .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; position: relative; }
         #balance-main { color: var(--gold); font-size: 44px; margin-bottom: 5px; font-weight: bold; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
         
-        .lvl-progress-container { width: 60%; height: 6px; background: #222; border-radius: 10px; margin-bottom: 20px; overflow: hidden; border: 1px solid #333; }
-        #lvl-fill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--gold)); width: 0%; transition: width 0.3s; }
-
         .coin-wrapper { width: 250px; height: 250px; cursor: pointer; transition: transform 0.05s; position: relative; }
-        .coin-main { width: 100%; height: 100%; background: radial-gradient(circle, #ffe066, #ffb300); border-radius: 50%; border: 10px solid #cc8e00; display: flex; align-items: center; justify-content: center; font-size: 50px; box-shadow: 0 0 50px rgba(255,215,0,0.2); }
+        .coin-main { width: 100%; height: 100%; background: radial-gradient(circle, #ffe066, #ffb300); border-radius: 50%; border: 10px solid #cc8e00; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #000; font-weight: 900; box-shadow: 0 0 50px rgba(255,215,0,0.2); }
         .coin-wrapper:active { transform: scale(0.95); }
 
         .energy-container { width: 80%; text-align: center; margin-top: 25px; }
@@ -45,16 +42,17 @@
         .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(7, 9, 12, 0.95); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 15px 5px; border-top: 1px solid var(--glass); z-index: 100; }
         .nav-btn { color: #888; text-align: center; font-size: 11px; flex: 1; transition: 0.3s; cursor: pointer; }
         .nav-btn i { font-size: 24px; display: block; margin-bottom: 4px; }
-        .nav-btn.active { color: var(--gold); transform: translateY(-5px); }
+        .nav-btn.active { color: var(--gold); }
 
         .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 200; padding: 20px; display: none; overflow-y: auto; padding-bottom: 120px; }
         .card { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--glass); position: relative; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; background: var(--gold); color: #000; cursor: pointer; font-size: 15px; box-shadow: 0 4px 15px rgba(255,215,0,0.2); }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; background: var(--gold); color: #000; cursor: pointer; font-size: 15px; }
+        .btn:disabled { background: #444; color: #888; cursor: not-allowed; }
         
-        .ex-input { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 10px; margin: 10px 0; text-align: center; font-size: 18px; }
-        .lock-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; border-radius:20px; z-index:5; color:#ff4d4d; font-weight:bold; font-size: 14px; text-align: center; padding: 10px; }
-
-        #notify { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 30px; z-index: 3000; display: none; font-weight: bold; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .rank-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--card); margin-bottom: 8px; border-radius: 15px; }
+        .rank-item.top1 { border: 2px solid #ffd700; background: linear-gradient(90deg, #1c222d, #2d2610); }
+        .ex-input { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 10px; margin: 10px 0; text-align: center; }
+        #notify { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 30px; z-index: 3000; display: none; font-weight: bold; backdrop-filter: blur(10px); }
     </style>
 </head>
 <body>
@@ -65,15 +63,16 @@
 <div class="top-stats">
     <div class="stat-box"><small>📀 Tanga/soat</small><b id="coin-pph-val">0</b></div>
     <div class="stat-box"><small>💎 Olmos/soat</small><b id="diam-pph-val">0</b></div>
-    <div class="stat-box" style="grid-column: span 2;"><small id="lvl-name-tag">Daraja 1: Yangi boshlovchi</small>
-        <div class="lvl-progress-container" style="width:100%; margin: 5px 0 0 0;"><div id="lvl-fill"></div></div>
+    <div class="stat-box" style="grid-column: span 2;">
+        <small id="lvl-name-tag">Daraja 1: Yangi boshlovchi</small>
+        <div style="width:100%; height:4px; background:#222; border-radius:10px; margin-top:5px;"><div id="lvl-fill" style="height:100%; background:var(--gold); width:0%;"></div></div>
     </div>
 </div>
 
 <div class="game-area">
     <div id="balance-main">0</div>
     <div class="coin-wrapper" id="coin-btn">
-        <div class="coin-main">📀</div>
+        <div class="coin-main" id="center-tap-val">+1</div>
     </div>
     <div class="energy-container">
         <span>⚡ <span id="e-text">500/500</span></span>
@@ -94,10 +93,7 @@
     <h2>Market 🛒</h2>
     <div class="card"><b>🟫 Bronza Konchi</b><p>+10 💎/soat. Narxi: 100 💎</p><button class="btn" onclick="buyItem('bronze', 100)">Sotib olish</button></div>
     <div class="card"><b>⬜ Kumush Konchi</b><p>+15 💎/soat. Narxi: 200 💎</p><button class="btn" onclick="buyItem('silver', 200)">Sotib olish</button></div>
-    <div class="card"><div id="lock-gold" class="lock-overlay">Daraja 3 kerak!</div><b>🟨 Oltin Konchi</b><p>+25 💎/soat. Fon: Oy. Narxi: 350 💎</p><button class="btn" onclick="buyItem('gold', 350)">Sotib olish</button></div>
-    <div class="card"><div id="lock-emerald" class="lock-overlay">Daraja 3 kerak!</div><b>🟩 Zumrad Konchi</b><p>+35 💎/soat. Narxi: 500 💎</p><button class="btn" onclick="buyItem('emerald', 500)">Sotib olish</button></div>
-    <div class="card"><div id="lock-platinum" class="lock-overlay">Daraja 7 kerak!</div><b>💎 Platina Konchi</b><p>+100 💎/soat. Fon: Muz. Narxi: 1000 💎</p><button class="btn" onclick="buyItem('platinum', 1000)">Sotib olish</button></div>
-    <div class="card"><div id="lock-cosmic" class="lock-overlay">Daraja 7 kerak!</div><b>🌌 Kosmik Konchi</b><p>+250 💎/soat. Fon: Kosmos. Narxi: 5000 💎</p><button class="btn" onclick="buyItem('cosmic', 5000)">Sotib olish</button></div>
+    <div class="card"><b>🟨 Oltin Konchi</b><p>+25 💎/soat. Narxi: 350 💎</p><button class="btn" onclick="buyItem('gold', 350)">Sotib olish</button></div>
 </div>
 
 <div id="p-rank" class="page">
@@ -109,104 +105,106 @@
 <div id="p-boost" class="page">
     <span style="float:right; font-size:30px;" onclick="closePage('p-boost')">✖</span>
     <h2>Bosterlar ⚡</h2>
-    <div class="card"><b>⛏ Tanga Mining</b><p>Lvl: <span id="b-pph-lvl">1</span></p><button class="btn" onclick="buyBoost('pph')">Narxi: <span id="b-pph-cost">500</span> 📀</button></div>
-    <div class="card"><b>👆 Tap Kuchi</b><p>Lvl: <span id="b-tap-lvl">1</span></p><button class="btn" onclick="buyBoost('tap')">Narxi: <span id="b-tap-cost">500</span> 📀</button></div>
+    <div class="card"><b>⛏ Tanga Mining</b><p>Daraja: <span id="b-pph-lvl">1</span></p><button class="btn" onclick="buyBoost('pph')">Narxi: <span id="b-pph-cost">500</span> 📀</button></div>
+    <div class="card"><b>👆 Tap Kuchi</b><p>Daraja: <span id="b-tap-lvl">1</span></p><button class="btn" onclick="buyBoost('tap')">Narxi: <span id="b-tap-cost">500</span> 📀</button></div>
+    <div class="card"><b>🔋 Max Energy</b><p>Daraja: <span id="b-e-lvl">1</span></p><button class="btn" onclick="buyBoost('energy')">Narxi: <span id="b-e-cost">500</span> 📀</button></div>
 </div>
 
 <div id="p-home" class="page">
     <span style="float:right; font-size:30px;" onclick="closePage('p-home')">✖</span>
     <h2>Profil 👤</h2>
     <div class="card"><p>Ism: <b id="u-name">...</b></p><p>Tangalar: <b id="p-coins">0</b> 📀</p><p>Olmoslar: <b id="p-diams">0</b> 💎</p></div>
-    <div class="card" style="border: 1px solid var(--gold);">
-        <h3>💱 Birja (Exchange)</h3>
-        <div style="display:flex; gap:5px; margin-bottom:10px;">
-            <button class="btn" style="padding:8px; font-size:11px;" onclick="setExMode('c2d')">📀 ➔ 💎</button>
-            <button class="btn" style="padding:8px; font-size:11px; background:#444; color:#fff;" onclick="setExMode('d2c')">💎 ➔ 📀</button>
-        </div>
-        <p id="ex-info" style="font-size:12px; color:#aaa;">Kurs: 10,000 📀 = 1 💎</p>
-        <input type="number" id="ex-amount" class="ex-input" placeholder="Miqdorni kiriting">
-        <button class="btn" onclick="executeExchange()">Almashtirish</button>
+    
+    <div class="card" style="border:1px solid #0088cc;">
+        <h3>💎 TON Chiqarish</h3>
+        <p style="font-size:12px; color:#aaa;">Minimal: 5 TON<br>Kurs: 2M tanga + 2k olmos = 1 TON</p>
+        <button class="btn" style="background:#0088cc; color:white;" onclick="showNotify('Tez Kunda...', 'orange')">Pulni Chiqarish</button>
+    </div>
+
+    <div class="card">
+        <h3>💱 Birja</h3>
+        <button class="btn" style="margin-bottom:5px;" onclick="executeExchange()">10k 📀 ➔ 1 💎</button>
     </div>
 </div>
 
 <div id="p-bonus" class="page">
     <span style="float:right; font-size:30px;" onclick="closePage('p-bonus')">✖</span>
     <h2>Bonuslar 🎁</h2>
-    <div class="card"><h3>Kunlik Bonus</h3><button class="btn" onclick="claimDaily()">Olish (5k 📀) 🎬</button></div>
+    <div class="card">
+        <h3>Kunlik Sovg'a</h3>
+        <p id="bonus-timer">Bugungi imkoniyat: <span id="bonus-count">3</span>/3</p>
+        <button id="bonus-btn" class="btn" onclick="claimDaily()">Reklama ko'rib olish 🎬</button>
+    </div>
 </div>
 
 <script>
 const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
 const tg = window.Telegram.WebApp;
 const user = tg.initDataUnsafe?.user || { id: "GUEST_" + Math.floor(Math.random()*9999), first_name: "O'yinchi" };
 
 let s = {
     coins: 0, diamonds: 0, lvl: 1, pphDiam: 0, pphCoin: 0,
     energy: 500, maxE: 500, tap: 1, tapLvl: 1, pphLvl: 1, eLvl: 1,
-    lastD: 0, luckyC: 3, skin: 'default', lastSeen: Date.now()
+    lastD: 0, bonusC: 3, skin: 'default', lastSeen: Date.now()
 };
-let exMode = 'c2d';
 
-db.ref('users/' + user.id).on('value', snap => {
-    if(snap.exists()) { 
+let isDataLoaded = false;
+
+// MA'LUMOTLARNI YUKLASH
+db.ref('users/' + user.id).once('value', snap => {
+    if(snap.exists()) {
         let data = snap.val();
         let now = Date.now();
+        // Offline mining hisobi
         if(data.lastSeen) {
             let diff = Math.floor((now - data.lastSeen) / 1000);
-            let col = Math.min(diff, 10800);
-            if(col > 10) {
-                let oc = (data.pphCoin / 3600) * col;
-                let od = (data.pphDiam / 3600) * col;
-                s.coins = (data.coins || 0) + oc;
-                s.diamonds = (data.diamonds || 0) + od;
-                s.energy = Math.min(data.maxE || 500, (data.energy || 0) + col * 0.5);
-                showNotify(`Offline: +${Math.floor(oc)}📀, +${Math.floor(od)}💎`, "green");
-            } else Object.assign(s, data);
-        } else Object.assign(s, data);
-        updateUI(); 
-    } else save();
+            let limit = Math.min(diff, 10800); // Max 3 soat
+            data.coins = (data.coins || 0) + (data.pphCoin / 3600) * limit;
+            data.diamonds = (data.diamonds || 0) + (data.pphDiam / 3600) * limit;
+            data.energy = Math.min(data.maxE || 500, (data.energy || 0) + limit * 0.8);
+        }
+        s = {...s, ...data};
+    }
+    isDataLoaded = true;
+    updateUI();
 });
 
 function updateUI() {
-    const lvls = [0, 50000, 500000, 5000000, 50000000, 500000000];
-    const nms = ["Yangi boshlovchi", "Ishchi", "Tadbirkor", "Millioner", "Milliarder", "Tanga Qiroli"];
-    let cl = 1; for(let i=0; i<lvls.length; i++) { if(s.coins >= lvls[i]) cl = i+1; }
+    if(!isDataLoaded) return;
+    const lvls = [0, 50000, 500000, 5000000, 50000000];
+    const nms = ["Yangi boshlovchi", "Ishchi", "Tadbirkor", "Millioner", "Milliarder"];
+    let cl = 1; for(let i=0; i<lvls.length; i++) if(s.coins >= lvls[i]) cl = i+1;
     s.lvl = cl;
 
     document.getElementById('balance-main').innerText = Math.floor(s.coins).toLocaleString();
+    document.getElementById('center-tap-val').innerText = "+" + s.tap;
     document.getElementById('coin-pph-val').innerText = Math.floor(s.pphCoin);
     document.getElementById('diam-pph-val').innerText = Math.floor(s.pphDiam);
-    document.getElementById('lvl-name-tag').innerText = `Daraja ${s.lvl}: ${nms[s.lvl-1] || "Afsona"}`;
-    
-    let next = lvls[s.lvl] || lvls[s.lvl-1]*10;
-    document.getElementById('lvl-fill').style.width = Math.min(100, ((s.coins-lvls[s.lvl-1])/(next-lvls[s.lvl-1]))*100) + "%";
+    document.getElementById('lvl-name-tag').innerText = `Daraja ${s.lvl}: ${nms[s.lvl-1]}`;
     document.getElementById('e-text').innerText = `${Math.floor(s.energy)}/${s.maxE}`;
     document.getElementById('energy-fill').style.width = (s.energy/s.maxE*100) + "%";
+    
+    // Booster darajalari
+    document.getElementById('b-tap-lvl').innerText = s.tapLvl;
+    document.getElementById('b-pph-lvl').innerText = s.pphLvl;
+    document.getElementById('b-e-lvl').innerText = s.eLvl;
+    document.getElementById('b-tap-cost').innerText = (500 * Math.pow(2, s.tapLvl-1)).toLocaleString();
+    document.getElementById('b-pph-cost').innerText = (1000 * Math.pow(2, s.pphLvl-1)).toLocaleString();
+    document.getElementById('b-e-cost').innerText = (800 * Math.pow(2, s.eLvl-1)).toLocaleString();
+
     document.getElementById('p-coins').innerText = Math.floor(s.coins).toLocaleString();
     document.getElementById('p-diams').innerText = Math.floor(s.diamonds).toLocaleString();
     document.getElementById('u-name').innerText = user.first_name;
-    document.getElementById('b-tap-cost').innerText = (500 * Math.pow(2, s.tapLvl-1)).toLocaleString();
-    document.getElementById('b-pph-cost').innerText = (500 * Math.pow(2, s.pphLvl-1)).toLocaleString();
-
-    document.getElementById('lock-gold').style.display = s.lvl >= 3 ? 'none' : 'flex';
-    document.getElementById('lock-emerald').style.display = s.lvl >= 3 ? 'none' : 'flex';
-    document.getElementById('lock-platinum').style.display = s.lvl >= 7 ? 'none' : 'flex';
-    document.getElementById('lock-cosmic').style.display = s.lvl >= 7 ? 'none' : 'flex';
-
-    const bg = document.getElementById('bg-fx'); bg.className = 'bg-overlay';
-    if(s.skin === 'gold') bg.classList.add('moon-bg');
-    if(s.skin === 'platinum') bg.classList.add('ice-bg');
-    if(s.skin === 'cosmic') bg.classList.add('space-bg');
+    document.getElementById('bonus-count').innerText = s.bonusC;
 }
 
 function handleTap(e) {
     if(s.energy >= s.tap) {
         s.coins += s.tap; s.energy -= s.tap;
         createFx(e); updateUI();
-    } else { showNotify("Energiya tugadi!", "red"); runAd(() => { s.energy = s.maxE; updateUI(); }); }
+    } else { showNotify("Energiya yo'q!", "red"); }
 }
 
 function createFx(e) {
@@ -217,72 +215,95 @@ function createFx(e) {
     document.body.appendChild(div); setTimeout(() => div.remove(), 700);
 }
 
-function setExMode(m) { exMode = m; document.getElementById('ex-info').innerText = m === 'c2d' ? "Kurs: 10,000 📀 = 1 💎" : "Kurs: 1 💎 = 8,000 📀"; }
+function buyBoost(type) {
+    let cost = 0;
+    if(type==='tap') cost = 500 * Math.pow(2, s.tapLvl-1);
+    else if(type==='pph') cost = 1000 * Math.pow(2, s.pphLvl-1);
+    else if(type==='energy') cost = 800 * Math.pow(2, s.eLvl-1);
+
+    if(s.coins >= cost) {
+        s.coins -= cost;
+        if(type==='tap') { s.tapLvl++; s.tap++; }
+        if(type==='pph') { s.pphLvl++; s.pphCoin += 150; }
+        if(type==='energy') { s.eLvl++; s.maxE += 500; s.energy = s.maxE; }
+        save(); updateUI();
+        showNotify("Muvaffaqiyatli!", "green");
+    } else showNotify("Mablag' kam!", "red");
+}
+
+function claimDaily() {
+    let now = Date.now();
+    if(now - s.lastD < 86400000 && s.bonusC <= 0) {
+        showNotify("Ertaga kiring!", "red"); return;
+    }
+    if(now - s.lastD > 86400000) { s.bonusC = 3; s.lastD = now; }
+
+    if(s.bonusC > 0) {
+        runAd(() => {
+            let win = Math.floor(Math.random() * (10000 - 500 + 1)) + 500;
+            s.coins += win; s.bonusC--;
+            showNotify(`+${win} tanga!`, "green");
+            save(); updateUI();
+        });
+    }
+}
+
+function loadRank() {
+    db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
+        let list = [];
+        snap.forEach(child => {
+            let d = child.val();
+            list.push({ n: d.first_name || "O'yinchi", c: d.coins || 0, d: d.diamonds || 0, l: d.lvl || 1 });
+        });
+        list.sort((a,b) => b.c - a.c);
+        let h = '';
+        list.forEach((u, i) => {
+            let icon = i===0?'🥇':(i===1?'🥈':(i===2?'🥉':(i+1+'.')));
+            h += `<div class="rank-item ${i===0?'top1':''}">
+                <span>${icon} <b>${u.n}</b> (Lvl ${u.l})</span>
+                <span style="color:var(--gold)">${Math.floor(u.c).toLocaleString()} 📀 | ${Math.floor(u.d)} 💎</span>
+            </div>`;
+        });
+        document.getElementById('leaderboard-list').innerHTML = h;
+    });
+}
 
 function executeExchange() {
-    let amt = parseInt(document.getElementById('ex-amount').value);
-    if(!amt || amt <= 0) return;
-    if(exMode === 'c2d') {
-        if(s.coins >= amt && amt >= 10000) { let g = Math.floor(amt/10000); s.coins -= g*10000; s.diamonds += g; showNotify(`+${g} 💎`, "green"); }
-        else showNotify("Kamida 10,000!", "red");
-    } else {
-        if(s.diamonds >= amt) { let g = amt*8000; s.diamonds -= amt; s.coins += g; showNotify(`+${g} 📀`, "green"); }
-        else showNotify("Olmos yetarli emas!", "red");
-    }
-    save(); updateUI();
+    if(s.coins >= 10000) { s.coins -= 10000; s.diamonds += 1; showNotify("+1 💎", "green"); save(); updateUI(); }
+    else showNotify("Kamida 10k tanga!", "red");
 }
 
 function buyItem(id, p) {
     if(s.diamonds >= p) {
         s.diamonds -= p;
-        if(id==='bronze') s.pphDiam+=10; else if(id==='silver') s.pphDiam+=15;
-        else if(id==='gold') { s.pphDiam+=25; s.skin='gold'; }
-        else if(id==='emerald') s.pphDiam+=35;
-        else if(id==='platinum') { s.pphDiam+=100; s.skin='platinum'; }
-        else if(id==='cosmic') { s.pphDiam+=250; s.skin='cosmic'; }
-        showNotify("Sotib olindi!", "green"); save(); updateUI();
-    } else showNotify("Olmos yetarli emas!", "red");
+        if(id==='bronze') s.pphDiam += 10;
+        if(id==='silver') s.pphDiam += 15;
+        if(id==='gold') s.pphDiam += 25;
+        save(); updateUI(); showNotify("Sotib olindi!", "green");
+    } else showNotify("Olmos kam!", "red");
 }
 
-function buyBoost(t) {
-    let c = t==='tap' ? 500*Math.pow(2, s.tapLvl-1) : 500*Math.pow(2, s.pphLvl-1);
-    if(s.coins >= c) {
-        s.coins -= c;
-        if(t==='tap') { s.tapLvl++; s.tap++; } else { s.pphLvl++; s.pphCoin+=100; }
-        showNotify("Oshirildi!", "green"); save(); updateUI();
-    } else showNotify("Tanga yetarli emas!", "red");
-}
+function save() { if(isDataLoaded) { s.lastSeen = Date.now(); db.ref('users/' + user.id).set(s); } }
+function openPage(id) { document.querySelectorAll('.page').forEach(p => p.style.display='none'); document.getElementById(id).style.display='block'; if(id==='p-rank') loadRank(); }
+function closePage(id) { document.getElementById(id).style.display='none'; }
+function showNotify(m, c) { let n = document.getElementById('notify'); n.innerText = m; n.style.background = c==='green'?'#2ecc71':(c==='orange'?'#ffa500':'#e74c3c'); n.style.display='block'; setTimeout(()=>n.style.display='none', 2000); }
+function runAd(cb) { if(typeof show_10558007 === 'function') show_10558007().then(cb).catch(cb); else cb(); }
 
-function loadRank() {
-    db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
-        let l = []; snap.forEach(c => { l.push({ n: c.val().first_name || "O'yinchi", c: c.val().coins || 0 }); });
-        l.sort((a,b) => b.c - a.c);
-        let h = ''; l.forEach((u, i) => { h += `<div style="display:flex; justify-content:space-between; padding:10px; background:#161b22; margin-bottom:5px; border-radius:10px; border:${i===0?'1px solid gold':'none'}"><b>${i+1}. ${u.n}</b><b>${Math.floor(u.c).toLocaleString()}</b></div>`; });
-        document.getElementById('leaderboard-list').innerHTML = h;
-    });
-}
-
-function claimDaily() {
-    let now = Date.now();
-    if(now - s.lastD > 86400000) { runAd(() => { s.coins += 5000; s.lastD = now; showNotify("+5k tanga!", "green"); save(); }); }
-    else showNotify("Ertaga kiring!", "red");
-}
-
-function openPage(id) { document.querySelectorAll('.page').forEach(p => p.style.display = 'none'); document.getElementById(id).style.display = 'block'; if(id === 'p-rank') loadRank(); runAd(); }
-function closePage(id) { document.getElementById(id).style.display = 'none'; }
-function save() { s.lastSeen = Date.now(); db.ref('users/' + user.id).update({...s, first_name: user.first_name}); }
-function showNotify(m, c) { let n = document.getElementById('notify'); n.innerText = m; n.style.background = c==='green'?'#2ecc71':(c==='orange'?'#ffa500':'#e74c3c'); n.style.display='block'; setTimeout(()=>n.style.display='none', 3000); }
-function runAd(cb) { if(typeof show_10558007 === 'function') show_10558007().then(cb).catch(cb); else if(cb) cb(); }
-
-document.getElementById('coin-btn').addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); });
-document.getElementById('coin-btn').addEventListener('click', (e) => handleTap(e));
-
-setInterval(() => { s.energy = Math.min(s.maxE, s.energy + 0.5); if(s.pphCoin > 0) s.coins += (s.pphCoin / 3600); if(s.pphDiam > 0) s.diamonds += (s.pphDiam / 3600); updateUI(); }, 1000);
-setInterval(save, 15000);
+document.getElementById('coin-btn').addEventListener('click', e => handleTap(e));
+setInterval(() => { 
+    if(isDataLoaded) {
+        s.energy = Math.min(s.maxE, s.energy + 1);
+        s.coins += (s.pphCoin / 3600);
+        s.diamonds += (s.pphDiam / 3600);
+        updateUI();
+    }
+}, 1000);
+setInterval(save, 15000); // Har 15 sekunda avto-saqlash
 tg.expand();
 </script>
 </body>
         </html>
+            
                                                                                                                                                               
         
     
