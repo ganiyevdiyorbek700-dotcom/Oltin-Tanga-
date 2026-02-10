@@ -11,80 +11,101 @@
     <script src="//libtl.com/sdk.js" data-zone="10558007" data-sdk="show_10558007"></script>
 
     <style>
-        :root { --gold: #ffd700; --bg: #0b0d17; --card: #1c222d; --green: #2ecc71; --red: #e74c3c; --blue: #0088cc; --glass: rgba(255, 255, 255, 0.05); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --gold: #ffd700; --bg: #0b0d17; --card: #1c222d; --green: #2ecc71; --red: #e74c3c; --blue: #0088cc; --orange: #ffa500; --glass: rgba(255, 255, 255, 0.05); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
 
-        /* Asosiy Tanga - DUMALOQ VA ISHLAYDIGAN */
-        .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55vh; gap: 20px; }
-        #balance-main { color: var(--gold); font-size: 45px; font-weight: 900; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
+        .floating-text { position: fixed; color: white; font-weight: bold; font-size: 32px; pointer-events: none; animation: floatUp 0.6s ease-out forwards; z-index: 1000; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
         
-        .coin-wrapper { 
-            width: 240px; height: 240px; 
-            position: relative; cursor: pointer;
-            transition: transform 0.1s active;
-        }
+        /* Header Stats */
+        .top-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; }
+        .stat-box { background: var(--card); padding: 12px; border-radius: 15px; text-align: center; border: 1px solid var(--glass); }
+        .stat-box small { font-size: 10px; color: #888; display: block; margin-bottom: 3px; }
+        .stat-box b { font-size: 16px; color: var(--gold); }
+
+        /* Progress Bar */
+        .lvl-container { padding: 0 15px; margin-top: 5px; }
+        .lvl-info { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-bottom: 4px; }
+        .lvl-bar { width: 100%; height: 8px; background: #222; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        #lvl-fill { height: 100%; background: linear-gradient(90deg, #f39c12, #ffd700); width: 0%; transition: width 0.5s; }
+
+        /* Game Area */
+        .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; position: relative; }
+        #balance-main { color: var(--gold); font-size: 48px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        
+        /* DUMALOQ TANGA */
+        .coin-wrapper { width: 240px; height: 240px; cursor: pointer; position: relative; z-index: 10; }
         .coin-main { 
             width: 100%; height: 100%; 
             background: radial-gradient(circle, #ffe066, #ffb300); 
-            border-radius: 50%; /* DUMALOQ */
+            border-radius: 50%; /* Dumaloq */
             border: 10px solid #cc8e00; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 40px; color: #000; font-weight: 900;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.6);
+            transition: transform 0.05s;
         }
-        .coin-wrapper:active { transform: scale(0.95); }
-
-        /* Reyting - IXCHAM VA MEDAL BILAN */
-        .rank-item { 
-            display: flex; align-items: center; background: var(--card); 
-            padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; font-size: 14px;
-        }
-        .rank-medal { width: 30px; font-size: 20px; }
-        .rank-info { flex: 1; margin-left: 10px; }
-        .rank-stats { text-align: right; font-size: 12px; color: var(--gold); }
-
-        /* Navigatsiya */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #07090c; display: flex; padding: 10px 0; border-top: 1px solid #1c222d; }
-        .nav-btn { flex: 1; text-align: center; font-size: 10px; color: #888; text-decoration: none; }
-        .nav-btn i { display: block; font-size: 20px; margin-bottom: 3px; font-style: normal; }
-
-        /* Sahifalar */
-        .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 200; padding: 20px; display: none; overflow-y: auto; padding-bottom: 80px; }
-        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid var(--glass); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; background: var(--gold); color: #000; cursor: pointer; }
+        .coin-wrapper:active .coin-main { transform: scale(0.95); }
         
-        .floating-text { position: fixed; color: white; font-weight: bold; font-size: 24px; pointer-events: none; animation: floatUp 0.6s ease-out forwards; z-index: 1000; }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
-        
-        .top-stats { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.3); }
-        .stat { text-align: center; font-size: 12px; }
-        .stat b { display: block; color: var(--gold); }
+        /* Tanga ortidagi tap kuchi */
+        .tap-power-bg { position: absolute; font-size: 120px; color: rgba(255,255,255,0.03); font-weight: 900; z-index: 1; pointer-events: none; }
+
+        /* Energy Section */
+        .energy-section { width: 80%; margin-top: 25px; text-align: center; }
+        .energy-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .energy-bar { width: 100%; height: 10px; background: #222; border-radius: 10px; border: 1px solid #444; overflow: hidden; }
+        #energy-fill { height: 100%; background: var(--gold); width: 100%; transition: width 0.2s; }
+
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #07090c; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1c222d; z-index: 1000; }
+        .nav-btn { color: #666; text-align: center; font-size: 11px; flex: 1; cursor: pointer; }
+        .nav-btn i { font-size: 20px; display: block; margin-bottom: 2px; font-style: normal; }
+        .nav-btn.active { color: var(--gold); }
+
+        /* Pages */
+        .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; padding: 20px; display: none; overflow-y: auto; padding-bottom: 80px; }
+        .card { background: var(--card); padding: 18px; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--glass); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; background: var(--gold); color: #000; cursor: pointer; font-size: 15px; }
+        .btn:active { transform: scale(0.98); }
+
+        /* Rank List */
+        .rank-item { display: flex; align-items: center; padding: 12px; background: var(--glass); border-radius: 12px; margin-bottom: 8px; }
+        .rank-medal { width: 35px; font-size: 20px; }
+        .rank-name { flex: 1; font-weight: bold; }
+        .rank-vals { text-align: right; font-size: 12px; }
+
+        /* Exchange UI */
+        .ex-box { display: flex; gap: 10px; margin-top: 10px; }
+        .ex-input { flex: 1; background: #000; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; text-align: center; }
     </style>
 </head>
 <body>
 
-<div id="notify" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; padding:10px 20px; border-radius:20px; display:none;"></div>
+<div id="notify" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; padding:12px 24px; border-radius:30px; display:none; font-weight:bold; color:white;"></div>
 <audio id="bg-music" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg"></audio>
 
 <div class="top-stats">
-    <div class="stat">📀 Tanga/S<b id="coin-pph-val">0</b></div>
-    <div class="stat">💎 Olmos/S<b id="diam-pph-val">0</b></div>
-    <div class="stat">🏆 Daraja<b id="lvl-val">1</b></div>
+    <div class="stat-box"><small>📀 TANGA/SOAT</small><b id="coin-pph-val">0</b></div>
+    <div class="stat-box"><small>💎 OLMOS/SOAT</small><b id="diam-pph-val">0</b></div>
+</div>
+
+<div class="lvl-container">
+    <div class="lvl-info">
+        <span id="lvl-text">DARAJA 1</span>
+        <span id="lvl-percent">0%</span>
+    </div>
+    <div class="lvl-bar"><div id="lvl-fill"></div></div>
 </div>
 
 <div class="game-area">
+    <div class="tap-power-bg" id="bg-tap-val">1</div>
     <div id="balance-main">0</div>
     <div class="coin-wrapper" id="coin-btn">
-        <div class="coin-main" id="center-tap-val">+1</div>
+        <div class="coin-main" id="coin-ui">📀</div>
     </div>
-    <div style="width:80%">
-        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-            <span>Energiya</span><span id="e-text">500/500</span>
-        </div>
-        <div style="width:100%; height:8px; background:#222; border-radius:5px;">
-            <div id="energy-fill" style="height:100%; background:var(--gold); width:100%; border-radius:5px;"></div>
-        </div>
+    <div class="energy-section">
+        <div class="energy-text"><span id="e-text">500/500</span> ⚡</div>
+        <div class="energy-bar"><div id="energy-fill"></div></div>
     </div>
 </div>
 
@@ -96,27 +117,22 @@
     <div class="nav-btn" onclick="openPage('p-home')"><i>👤</i>Profil</div>
 </div>
 
-<div id="p-home" class="page">
-    <div style="display:flex; justify-content:space-between;"><h2>Profil</h2><h2 onclick="closePage('p-home')">×</h2></div>
-    <div class="card">
-        <p>Ism: <b id="u-name">...</b></p>
-        <p>Tangalar: <b id="p-coins">0</b> 📀</p>
-        <p>Olmoslar: <b id="p-diams">0</b> 💎</p>
-    </div>
+<div id="p-market" class="page">
+    <div style="display:flex; justify-content:space-between;"><h2>Market 🛒</h2><h2 onclick="closePage('p-market')">×</h2></div>
+    <div id="market-list"></div>
+</div>
 
-    <div class="card" style="border: 1px solid var(--blue);">
-        <h3>💱 Birja (Exchange)</h3>
-        <p>10,000 📀 → 1 💎</p>
-        <button class="btn" onclick="exchange('c2d')" style="background:var(--blue); color:white; margin-bottom:10px;">Tanga → Olmos</button>
-        <p>10 💎 → 5,000 📀</p>
-        <button class="btn" onclick="exchange('d2c')" style="background:var(--blue); color:white;">Olmos → Tanga</button>
-    </div>
-
+<div id="p-bonus" class="page">
+    <div style="display:flex; justify-content:space-between;"><h2>Bonuslar 🎁</h2><h2 onclick="closePage('p-bonus')">×</h2></div>
     <div class="card">
-        <h3>💎 TON Chiqarish</h3>
-        <p>100M 📀 + 10k 💎 = 1 TON</p>
-        <p>Minimal: 5 TON</p>
-        <button class="btn" onclick="withdraw()">PULNI CHIQARISH</button>
+        <b>📅 Kunlik Bonus</b>
+        <p>Har 24 soatda olinadi.</p>
+        <button class="btn" onclick="claimDailyBonus()">OLISH</button>
+    </div>
+    <div class="card">
+        <b>🎲 Tasodifiy Tanga</b>
+        <p>Imkoniyat: <span id="bonus-count">3</span>/3 (Reklama 🎬)</p>
+        <button class="btn" onclick="claimLuckyBonus()">REKLAMA BILAN OLISH</button>
     </div>
 </div>
 
@@ -126,20 +142,48 @@
 </div>
 
 <div id="p-boost" class="page">
-    <div style="display:flex; justify-content:space-between;"><h2>Bosterlar</h2><h2 onclick="closePage('p-boost')">×</h2></div>
-    <div class="card"><b>⛏ Tanga Mining</b><p>Lvl: <span id="b-pph-lvl">1</span></p><button class="btn" onclick="buyBoost('pph')">Narxi: <span id="b-pph-cost">1000</span></button></div>
-    <div class="card"><b>👆 Tap Kuchi</b><p>Lvl: <span id="b-tap-lvl">1</span></p><button class="btn" onclick="buyBoost('tap')">Narxi: <span id="b-tap-cost">500</span></button></div>
-    <div class="card"><b>🔋 Energiya Sig'imi</b><p>Lvl: <span id="b-energy-lvl">1</span></p><button class="btn" onclick="buyBoost('energy')">Narxi: <span id="b-energy-cost">1500</span></button></div>
+    <div style="display:flex; justify-content:space-between;"><h2>Booster ⚡</h2><h2 onclick="closePage('p-boost')">×</h2></div>
+    <div class="card">
+        <b>⛏ Tanga Mining</b>
+        <p>Lvl: <span id="b-pph-lvl">1</span> | +250/soat</p>
+        <button class="btn" onclick="buyBoost('pph')">NARX: <span id="b-pph-cost">1000</span></button>
+    </div>
+    <div class="card">
+        <b>👆 Tap Kuchi</b>
+        <p>Lvl: <span id="b-tap-lvl">1</span> | +1 Har tap</p>
+        <button class="btn" onclick="buyBoost('tap')">NARX: <span id="b-tap-cost">500</span></button>
+    </div>
+    <div class="card">
+        <b>🔋 Energiya Sig'imi</b>
+        <p>Lvl: <span id="b-energy-lvl">1</span> | +500 Limit</p>
+        <button class="btn" onclick="buyBoost('energy')">NARX: <span id="b-energy-cost">1500</span></button>
+    </div>
 </div>
 
-<div id="p-market" class="page">
-    <div style="display:flex; justify-content:space-between;"><h2>Market</h2><h2 onclick="closePage('p-market')">×</h2></div>
-    <div id="market-items"></div>
-</div>
+<div id="p-home" class="page">
+    <div style="display:flex; justify-content:space-between;"><h2>Profil 👤</h2><h2 onclick="closePage('p-home')">×</h2></div>
+    <div class="card">
+        <p>Ism: <b id="u-name">...</b></p>
+        <p>Daraja: <b id="u-lvl">1</b></p>
+        <p>📀 Tangalar: <b id="u-coins">0</b></p>
+        <p>💎 Olmoslar: <b id="u-diams">0</b></p>
+    </div>
 
-<div id="p-bonus" class="page">
-    <div style="display:flex; justify-content:space-between;"><h2>Bonuslar</h2><h2 onclick="closePage('p-bonus')">×</h2></div>
-    <div class="card"><b>Kunlik Bonus</b><button class="btn" onclick="claimDailyBonus()">OLISH</button></div>
+    <div class="card">
+        <h3>💱 Ayirboshlash</h3>
+        <p>10k Tanga = 1 Olmos | 10 Olmos = 5k Tanga</p>
+        <div class="ex-box">
+            <input type="number" id="ex-amount" class="ex-input" placeholder="Miqdor...">
+            <button class="btn" style="width:auto;" onclick="doExchange('c2d')">📀→💎</button>
+            <button class="btn" style="width:auto;" onclick="doExchange('d2c')">💎→📀</button>
+        </div>
+    </div>
+
+    <div class="card" style="border: 1px solid var(--blue);">
+        <h3>💰 TON Chiqarish</h3>
+        <p>100M 📀 + 10k 💎 = 1 TON</p>
+        <button class="btn" style="background:var(--blue); color:white;" onclick="showNotify('Tez kunda...', 'orange')">CHIQARISH (MIN 5 TON)</button>
+    </div>
 </div>
 
 <script>
@@ -150,70 +194,88 @@ const tg = window.Telegram.WebApp;
 const user = tg.initDataUnsafe?.user || { id: "12345", first_name: "O'yinchi" };
 
 let s = {
-    coins: 0, diamonds: 0, lvl: 1, pphDiam: 0, pphCoin: 0,
-    energy: 500, maxE: 500, tap: 1, tapLvl: 1, pphLvl: 1, energyLvl: 1, lastSeen: Date.now()
+    coins: 0, diamonds: 0, lvl: 1, pphCoin: 0, pphDiam: 0,
+    energy: 500, maxE: 500, tap: 1, tapLvl: 1, pphLvl: 1, energyLvl: 1,
+    skin: "#ffd700", bonusC: 3, lastD: "", lastSeen: Date.now()
 };
 
-// Ma'lumotlarni yuklash va Mining (Offline ishlaydi)
+const marketItems = [
+    { id:'m1', n:'Bronza Tanga', p:100, c:'#cd7f32', lvl:1 },
+    { id:'m2', n:'Kumush Tanga', p:500, c:'#c0c0c0', lvl:2 },
+    { id:'m3', n:'Oltin Tanga', p:2000, c:'#ffd700', lvl:3 },
+    { id:'m4', n:'Platina Tanga', p:10000, c:'#e5e4e2', lvl:5 },
+    { id:'m5', n:'Zumrad Tanga', p:50000, c:'#50c878', lvl:7 },
+    { id:'m6', n:'Brilliant Tanga', p:200000, c:'#b9f2ff', lvl:10 }
+];
+
+let musicStarted = false;
+
+// Load Data
 db.ref('users/' + user.id).once('value', snap => {
     if(snap.exists()) {
         let data = snap.val();
         let diff = Math.floor((Date.now() - (data.lastSeen || Date.now())) / 1000);
-        let offlineLimit = Math.min(diff, 7200); // Max 2 soat offline mining
-        data.coins = (data.coins || 0) + (data.pphCoin / 3600) * offlineLimit;
-        data.diamonds = (data.diamonds || 0) + (data.pphDiam / 3600) * offlineLimit;
+        let offMining = Math.min(diff, 7200); // 2 soat max offline
+        data.coins = (data.coins || 0) + (data.pphCoin / 3600) * offMining;
         s = {...s, ...data};
     }
+    renderMarket();
     updateUI();
 });
 
 function updateUI() {
+    const nextLvl = s.lvl * 10000 * Math.pow(2, s.lvl);
+    let prog = (s.coins / nextLvl) * 100;
+    if(s.coins >= nextLvl) { s.lvl++; showNotify("Daraja ko'tarildi!", "green"); }
+
     document.getElementById('balance-main').innerText = Math.floor(s.coins).toLocaleString();
     document.getElementById('coin-pph-val').innerText = s.pphCoin;
     document.getElementById('diam-pph-val').innerText = s.pphDiam;
-    document.getElementById('lvl-val').innerText = s.lvl;
-    document.getElementById('p-coins').innerText = Math.floor(s.coins).toLocaleString();
-    document.getElementById('p-diams').innerText = Math.floor(s.diamonds).toLocaleString();
-    document.getElementById('u-name').innerText = user.first_name;
+    document.getElementById('lvl-text').innerText = `DARAJA ${s.lvl}`;
+    document.getElementById('lvl-percent').innerText = Math.floor(prog) + "%";
+    document.getElementById('lvl-fill').style.width = Math.min(prog, 100) + "%";
+    
+    document.getElementById('bg-tap-val').innerText = s.tap;
     document.getElementById('e-text').innerText = `${Math.floor(s.energy)}/${s.maxE}`;
     document.getElementById('energy-fill').style.width = (s.energy/s.maxE*100) + "%";
     
-    // Bosterlar darajasi va narxi
+    document.getElementById('u-name').innerText = user.first_name;
+    document.getElementById('u-lvl').innerText = s.lvl;
+    document.getElementById('u-coins').innerText = Math.floor(s.coins).toLocaleString();
+    document.getElementById('u-diams').innerText = Math.floor(s.diamonds).toLocaleString();
+
     document.getElementById('b-tap-lvl').innerText = s.tapLvl;
     document.getElementById('b-tap-cost').innerText = (500 * Math.pow(2, s.tapLvl-1)).toLocaleString();
     document.getElementById('b-pph-lvl').innerText = s.pphLvl;
     document.getElementById('b-pph-cost').innerText = (1000 * Math.pow(2, s.pphLvl-1)).toLocaleString();
     document.getElementById('b-energy-lvl').innerText = s.energyLvl;
     document.getElementById('b-energy-cost').innerText = (1500 * Math.pow(2, s.energyLvl-1)).toLocaleString();
+    
+    document.getElementById('bonus-count').innerText = s.bonusC;
+    document.getElementById('coin-ui').style.background = `radial-gradient(circle, #fff, ${s.skin})`;
+    document.getElementById('coin-ui').style.borderColor = s.skin;
 }
 
-// TAP ISHLASHI
-document.getElementById('coin-btn').addEventListener('click', (e) => {
+// TAP
+document.getElementById('coin-btn').addEventListener('click', e => {
+    if(!musicStarted) { document.getElementById('bg-music').play(); musicStarted = true; }
     if(s.energy >= s.tap) {
-        s.coins += s.tap;
-        s.energy -= s.tap;
-        createFx(e);
-        updateUI();
-        // Musiqani birinchi bosishda chalish
-        let music = document.getElementById('bg-music');
-        if(music.paused) music.play();
-    } else {
-        showNotify("Energiya yetarli emas!", "red");
-    }
+        s.coins += s.tap; s.energy -= s.tap;
+        createFx(e); updateUI();
+    } else showNotify("Energiya tugadi!", "red");
 });
 
 function createFx(e) {
     let x = e.clientX || e.touches[0].clientX;
     let y = e.clientY || e.touches[0].clientY;
-    let div = document.createElement('div');
-    div.className = 'floating-text';
-    div.innerText = `+${s.tap}`;
-    div.style.left = x + 'px'; div.style.top = y + 'px';
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 600);
+    let d = document.createElement('div');
+    d.className = 'floating-text'; d.innerText = `+${s.tap}`;
+    d.style.left = x + 'px'; d.style.top = y + 'px';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 600);
 }
 
-// BOSTERLAR DARAJASI ISHLASHI
+// BOOSTERS
 function buyBoost(type) {
     let cost = 0;
     if(type==='tap') cost = 500 * Math.pow(2, s.tapLvl-1);
@@ -225,72 +287,111 @@ function buyBoost(type) {
         if(type==='tap') { s.tapLvl++; s.tap++; }
         else if(type==='pph') { s.pphLvl++; s.pphCoin += 250; }
         else { s.energyLvl++; s.maxE += 500; s.energy = s.maxE; }
-        save(); updateUI();
-        showNotify("Daraja oshirildi!", "green");
+        save(); updateUI(); showNotify("Muvaffaqiyatli!", "green");
     } else showNotify("Mablag' yetarli emas!", "red");
 }
 
-// EXCHANGE (BIRJA)
-function exchange(type) {
-    if(type === 'c2d') {
-        if(s.coins >= 10000) { s.coins -= 10000; s.diamonds += 1; showNotify("+1 💎 olindi!", "green"); }
-        else showNotify("10,000 tanga kerak!", "red");
+// MARKET
+function renderMarket() {
+    let h = '';
+    marketItems.forEach(i => {
+        h += `<div class="card" style="border-left: 5px solid ${i.c}">
+            <b>${i.n}</b>
+            <p>Narxi: ${i.p} 💎 | Daraja: ${i.lvl}+</p>
+            <button class="btn" onclick="buySkin('${i.c}', ${i.p}, ${i.lvl})">SOTIB OLISH</button>
+        </div>`;
+    });
+    document.getElementById('market-list').innerHTML = h;
+}
+
+function buySkin(color, price, minLvl) {
+    if(s.lvl < minLvl) return showNotify(`Kamida ${minLvl}-daraja kerak!`, "orange");
+    if(s.diamonds >= price) {
+        s.diamonds -= price; s.skin = color;
+        save(); updateUI(); showNotify("Yangi skin o'rnatildi!", "green");
+    } else showNotify("Olmos yetarli emas!", "red");
+}
+
+// EXCHANGE
+function doExchange(type) {
+    let amt = parseInt(document.getElementById('ex-amount').value);
+    if(!amt || amt <= 0) return showNotify("Miqdorni kiriting!", "orange");
+    
+    if(type==='c2d') {
+        if(s.coins >= amt * 10000) { s.coins -= amt * 10000; s.diamonds += amt; }
+        else return showNotify("Tangalar yetarli emas!", "red");
     } else {
-        if(s.diamonds >= 10) { s.diamonds -= 10; s.coins += 5000; showNotify("+5,000 📀 olindi!", "green"); }
-        else showNotify("10 olmos kerak!", "red");
+        if(s.diamonds >= amt) { s.diamonds -= amt; s.coins += amt * 5000; }
+        else return showNotify("Olmoslar yetarli emas!", "red");
     }
-    save(); updateUI();
+    save(); updateUI(); showNotify("Ayirboshlandi!", "green");
 }
 
-function withdraw() {
-    showNotify("Tez kunda...", "orange");
-}
-
-// REYTING - IXCHAM
+// RANK
 function loadRank() {
     db.ref('users').orderByChild('coins').limitToLast(20).once('value', snap => {
-        let list = [];
-        snap.forEach(child => { list.push(child.val()); });
+        let list = []; snap.forEach(c => list.push(c.val()));
         list.sort((a,b) => b.coins - a.coins);
         let h = '';
         list.forEach((u, i) => {
-            let medal = i===0?'🥇':(i===1?'🥈':(i===2?'🥉':(i+1+'.')));
+            let m = i===0?'🥇':(i===1?'🥈':(i===2?'🥉':(i+1+'.')));
             h += `<div class="rank-item">
-                <div class="rank-medal">${medal}</div>
-                <div class="rank-info"><b>${u.first_name || 'O\'yinchi'}</b><br><small>Daraja: ${u.lvl || 1}</small></div>
-                <div class="rank-stats">📀 ${Math.floor(u.coins).toLocaleString()}<br>💎 ${Math.floor(u.diamonds || 0)}</div>
+                <div class="rank-medal">${m}</div>
+                <div class="rank-name">${u.first_name} <br><small>Lvl: ${u.lvl || 1}</small></div>
+                <div class="rank-vals">📀 ${Math.floor(u.coins).toLocaleString()}<br>💎 ${Math.floor(u.diamonds || 0)}</div>
             </div>`;
         });
         document.getElementById('leaderboard-list').innerHTML = h;
     });
 }
 
+// BONUS
+async function runAd(cb) {
+    if(typeof show_10558007 === 'function') { await show_10558007(); cb(); } else cb();
+}
+
+function claimDailyBonus() {
+    let d = new Date().toDateString();
+    if(s.lastD === d) return showNotify("Bugun olib bo'ldingiz!", "orange");
+    s.coins += 5000 * s.lvl; s.lastD = d;
+    save(); updateUI(); showNotify("Kunlik bonus olindi!", "green");
+}
+
+function claimLuckyBonus() {
+    if(s.bonusC <= 0) return showNotify("Imkoniyat qolmadi!", "red");
+    runAd(() => {
+        let win = Math.floor(Math.random() * 10000) + 1000;
+        s.coins += win; s.bonusC--;
+        save(); updateUI(); showNotify(`+${win} tanga yutdingiz!`, "green");
+    });
+}
+
 function openPage(id) { 
-    document.querySelectorAll('.page').forEach(p => p.style.display='none'); 
+    document.querySelectorAll('.page').forEach(p => p.style.display='none');
     document.getElementById(id).style.display='block';
     if(id==='p-rank') loadRank();
 }
 function closePage(id) { document.getElementById(id).style.display='none'; }
 function save() { s.lastSeen = Date.now(); db.ref('users/' + user.id).set(s); }
 function showNotify(m, c) { 
-    let n = document.getElementById('notify'); n.innerText = m; 
+    let n = document.getElementById('notify'); n.innerText = m;
     n.style.background = c==='green'?'#2ecc71':(c==='orange'?'#ffa500':'#e74c3c');
-    n.style.display='block'; setTimeout(()=>n.style.display='none', 2000); 
+    n.style.display='block'; setTimeout(() => n.style.display='none', 2000);
 }
 
-// Avtomatik Mining va Energiya tiklanishi
+// Loop
 setInterval(() => {
-    s.energy = Math.min(s.maxE, s.energy + 1);
+    s.energy = Math.min(s.maxE, s.energy + 1.5);
     s.coins += (s.pphCoin / 3600);
     s.diamonds += (s.pphDiam / 3600);
     updateUI();
 }, 1000);
-
 setInterval(save, 15000);
 tg.expand();
 </script>
 </body>
     </html>
+    
     
     
     
