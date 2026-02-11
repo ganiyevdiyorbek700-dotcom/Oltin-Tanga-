@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga: Web3 Edition</title>
+    <title>Oltin Tanga: Pro Edition</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -13,394 +13,279 @@
 
     <style>
         :root {
-            --gold: #ffd700; --bg: #0b0d17; --card: #1c222d; --green: #2ecc71; 
-            --blue: #0088cc; --purple: #9b59b6; --ruby: #e74c3c; --platinum: #e5e4e2;
+            --gold: #ffd700; --bg: #0b0d17; --card: #1c222d; 
+            --cyan: #00f2fe; --purple: #a18cd1; --ruby: #ff4757;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Roboto, sans-serif; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: white; overflow: hidden; touch-action: manipulation; }
 
-        /* Background Effects */
-        .stars { position: fixed; width: 100%; height: 100%; z-index: -1; background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%); overflow: hidden; }
+        /* Level Bar - Tanga tepasida */
+        .level-container { width: 90%; margin: 10px auto 0; }
+        .lvl-text { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: var(--gold); font-weight: bold; }
+        .lvl-bar { width: 100%; height: 8px; background: #222; border-radius: 10px; overflow: hidden; border: 1px solid #444; }
+        #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #00f2fe, #7d5fff); transition: 0.5s; }
 
         /* Top Stats */
-        .top-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #333; }
-        .stat-card { background: var(--card); padding: 5px; border-radius: 8px; text-align: center; font-size: 11px; border: 1px solid #444; }
-        .stat-card b { display: block; color: var(--gold); font-size: 13px; }
+        .top-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px; background: rgba(0,0,0,0.5); }
+        .stat-card { background: var(--card); padding: 5px; border-radius: 8px; text-align: center; border: 1px solid #444; }
+        .stat-card b { display: block; color: var(--gold); font-size: 12px; }
 
-        /* Airdrop Timer Banner */
-        .airdrop-banner { background: linear-gradient(90deg, #9b59b6, #3498db); padding: 8px; text-align: center; font-weight: bold; font-size: 14px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        /* Airdrop Banner */
+        .air-banner { background: linear-gradient(90deg, #9b59b6, #3498db); padding: 8px; text-align: center; font-weight: 900; font-size: 14px; }
 
         /* Main Game Area */
-        .main-container { height: calc(100vh - 180px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .balance-group { text-align: center; margin-bottom: 20px; }
-        .main-balance { font-size: 42px; font-weight: 900; color: var(--gold); text-shadow: 0 0 20px rgba(255,215,0,0.4); }
-        .diamond-balance { font-size: 18px; color: #00f2fe; }
-
-        .coin-btn { width: 220px; height: 220px; position: relative; cursor: pointer; user-select: none; }
+        .main-container { height: calc(100vh - 220px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .main-balance { font-size: 45px; font-weight: 900; color: var(--gold); text-shadow: 0 0 20px rgba(255,215,0,0.4); margin: 0; }
+        
+        .coin-btn { width: 230px; height: 230px; position: relative; cursor: pointer; transition: 0.1s; }
         .coin-circle { 
             width: 100%; height: 100%; border-radius: 50%; 
             background: radial-gradient(circle, #ffe066 0%, #cc8e00 100%);
-            border: 8px solid #8a6200; box-shadow: 0 0 40px rgba(255,215,0,0.2), inset 0 0 20px rgba(0,0,0,0.3);
+            border: 8px solid #8a6200; box-shadow: 0 0 40px rgba(255,215,0,0.2);
             display: flex; align-items: center; justify-content: center; font-size: 80px;
         }
-        .coin-btn:active { transform: scale(0.95); }
-
-        /* Energy Bar */
-        .energy-box { width: 80%; margin-top: 30px; text-align: center; }
-        .energy-bar { width: 100%; height: 12px; background: #222; border-radius: 6px; margin-top: 5px; overflow: hidden; border: 1px solid #444; }
-        #energy-fill { height: 100%; background: linear-gradient(90deg, #ffd700, #f39c12); width: 100%; transition: width 0.2s; }
-
-        /* Pages System */
-        .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; padding: 20px; display: none; overflow-y: auto; padding-bottom: 100px; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .close-btn { font-size: 30px; cursor: pointer; color: #888; }
-
-        /* Cards Grid */
-        .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .card-item { background: var(--card); border-radius: 15px; padding: 15px; text-align: center; border: 1px solid #333; position: relative; }
-        .card-item img { font-size: 40px; margin-bottom: 10px; display: block; }
-        .card-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
-        .card-profit { font-size: 11px; color: #2ecc71; margin-bottom: 8px; }
-        .card-price { font-size: 13px; font-weight: bold; color: var(--gold); }
+        .tap-power-badge { position: absolute; top: -10px; right: 10px; background: var(--ruby); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 900; font-size: 14px; z-index: 10; border: 2px solid white; }
         
-        /* Rarity Colors */
-        .silver-border { border-color: #bdc3c7; }
-        .gold-border { border-color: #f1c40f; }
-        .ruby-border { border-color: #e74c3c; }
-        .premium-border { border-color: #00f2fe; box-shadow: 0 0 10px #00f2fe; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+        /* Dinamik Tanga Effektlari */
+        .coin-evo-1 { filter: hue-rotate(45deg); box-shadow: 0 0 50px #00f2fe !important; }
+        .coin-evo-2 { filter: hue-rotate(280deg); animation: pulse 1s infinite; }
 
-        /* Exchange UI */
-        .exchange-panel { background: #161b22; border-radius: 15px; padding: 20px; text-align: center; border: 1px solid #00d2ff; }
-        .exchange-input { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #0b0d17; color: white; margin: 15px 0; text-align: center; font-size: 18px; }
-
-        /* Navigation Bar */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #07090c; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 500; }
-        .nav-item { text-align: center; font-size: 10px; color: #666; cursor: pointer; flex: 1; }
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #07090c; display: flex; padding: 12px 0; border-top: 1px solid #222; }
+        .nav-item { flex: 1; text-align: center; font-size: 10px; color: #666; cursor: pointer; }
         .nav-item i { font-style: normal; font-size: 22px; display: block; margin-bottom: 4px; }
         .nav-item.active { color: var(--gold); }
 
-        /* Rank Style */
-        .rank-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--card); border-radius: 12px; margin-bottom: 8px; border: 1px solid #333; }
+        /* Pages */
+        .page { position: fixed; inset: 0; background: var(--bg); z-index: 1000; padding: 20px; display: none; overflow-y: auto; padding-bottom: 100px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; }
+        .card-item { background: var(--card); border-radius: 15px; padding: 15px; border: 1px solid #333; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
         
-        /* Utility */
-        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .btn-gold { background: var(--gold); color: black; }
-        .btn-blue { background: var(--blue); color: white; }
-        
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); padding: 10px 20px; border-radius: 20px; border: 1px solid var(--gold); z-index: 5000; display: none; }
+        /* Rank Styles */
+        .rank-row { display: flex; align-items: center; padding: 12px; background: #161b22; border-radius: 12px; margin-bottom: 8px; border-left: 5px solid var(--gold); }
+        .rank-medal { font-size: 24px; width: 40px; }
+        .rank-info { flex: 1; }
+        .rank-val { text-align: right; color: var(--cyan); font-weight: bold; }
+
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); padding: 12px 25px; border-radius: 30px; border: 1px solid var(--gold); z-index: 5000; display: none; font-weight: bold; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
 <div id="toast"></div>
-<div class="stars"></div>
-
-<div class="airdrop-banner" id="airdrop-timer">99d 00h 00m 00s gacha Airdrop! 🚀</div>
+<div class="air-banner" id="air-timer">99d 00h 00m 00s</div>
 
 <div class="top-nav">
-    <div class="stat-card"><small>⚡ PPH</small><b id="stat-pph">0</b></div>
-    <div class="stat-card"><small>💎 Olmos PPH</small><b id="stat-dpph">0</b></div>
-    <div class="stat-card"><small>🏆 Daraja</small><b id="stat-lvl">1</b></div>
+    <div class="stat-card"><small>📀 PPH</small><b id="st-pph">0</b></div>
+    <div class="stat-card"><small>💎 PPH</small><b id="st-dpph">0</b></div>
+    <div class="stat-card"><small>💎 Olmos</small><b id="st-diam">0</b></div>
+</div>
+
+<div class="level-container">
+    <div class="lvl-text"><span id="lvl-name">Bronza Konchi</span><span id="lvl-num">LVL 1</span></div>
+    <div class="lvl-bar"><div id="lvl-fill"></div></div>
 </div>
 
 <div class="main-container">
-    <div class="balance-group">
-        <div class="main-balance" id="coin-balance">0</div>
-        <div class="diamond-balance">💎 <span id="diam-balance">0</span></div>
+    <h1 class="main-balance" id="main-bal">0</h1>
+    <div class="coin-btn" onclick="tap(event)">
+        <div class="tap-power-badge" id="tap-val">+1</div>
+        <div class="coin-circle" id="main-coin">📀</div>
     </div>
-
-    <div class="coin-btn" onclick="handleTap(event)">
-        <div class="coin-circle">📀</div>
-    </div>
-
-    <div class="energy-box">
-        <span id="energy-text">1000/1000</span>
-        <div class="energy-bar"><div id="energy-fill"></div></div>
+    <div style="width:80%; margin-top:20px; text-align:center;">
+        <small id="en-txt" style="font-weight:bold; color:var(--cyan);">1000/1000</small>
+        <div class="lvl-bar" style="height:10px; margin-top:5px;"><div id="en-fill" style="background:var(--gold); width:100%;"></div></div>
     </div>
 </div>
 
 <div class="nav-bar">
-    <div class="nav-item" onclick="openPage('p-cards')"><i>🃏</i>Kartalar</div>
-    <div class="nav-item" onclick="openPage('p-exchange')"><i>💱</i>Birja</div>
-    <div class="nav-item" onclick="openPage('p-game')"><i>🎁</i>O'yin</div>
-    <div class="nav-item" onclick="openPage('p-rank')"><i>🏆</i>Rank</div>
-    <div class="nav-item" onclick="openPage('p-profile')"><i>👤</i>Profil</div>
+    <div class="nav-item" onclick="openP('p-cards')"><i>🃏</i>Kartalar</div>
+    <div class="nav-item" onclick="openP('p-bonus')"><i>🎁</i>Bonus</div>
+    <div class="nav-item" onclick="openP('p-rank')"><i>🏆</i>Rank</div>
+    <div class="nav-item" onclick="openP('p-profile')"><i>👤</i>Profil</div>
 </div>
 
 <div id="p-cards" class="page">
-    <div class="page-header"><h2>Upgrade Kartalar 🃏</h2><span class="close-btn" onclick="closePage('p-cards')">✖</span></div>
-    <div class="cards-grid" id="cards-container">
-        </div>
+    <div class="page-header"><h2>Upgrade Kartalar</h2><h2 onclick="closeP('p-cards')">✖</h2></div>
+    <div id="cards-container"></div>
 </div>
 
-<div id="p-exchange" class="page">
-    <div class="page-header"><h2>Valyuta Ayirboshlash 💱</h2><span class="close-btn" onclick="closePage('p-exchange')">✖</span></div>
-    <div class="exchange-panel">
-        <p>Kurs: 10,000 📀 = 1 💎</p>
-        <input type="number" id="ex-amount" class="exchange-input" placeholder="Miqdorni kiriting">
-        <button class="btn btn-gold" onclick="exchange('c2d')">📀 ➔ 💎 Almashtirish</button>
-        <button class="btn btn-blue" onclick="exchange('d2c')" style="margin-top:10px">💎 ➔ 📀 Almashtirish</button>
+<div id="p-bonus" class="page">
+    <div class="page-header"><h2>Bonus & O'yinlar</h2><h2 onclick="closeP('p-bonus')">✖</h2></div>
+    <div class="card-item" style="flex-direction:column; text-align:center;">
+        <h3>Kunlik Bonus</h3>
+        <button class="btn" style="background:var(--gold); padding:10px; width:100%; border-radius:10px;" onclick="dailyBonus()">Hozir olish 🎬</button>
     </div>
-</div>
-
-<div id="p-game" class="page">
-    <div class="page-header"><h2>Sandiqlar O'yini 🎁</h2><span class="close-btn" onclick="closePage('p-game')">✖</span></div>
-    <div style="text-align:center">
-        <p>Bitta sandiqda 1,000,000 tanga bor!</p>
-        <div style="display:flex; justify-content: space-around; font-size:60px; margin-top:30px;">
-            <div onclick="playChest(1)" id="ch1">📦</div>
-            <div onclick="playChest(2)" id="ch2">📦</div>
-            <div onclick="playChest(3)" id="ch3">📦</div>
+    <div class="card-item" style="flex-direction:column; text-align:center;">
+        <h3>Sandiqlar O'yini</h3>
+        <div style="display:flex; justify-content:space-around; font-size:50px; width:100%; margin:15px 0;">
+            <div onclick="chest(1)" id="ch1">📦</div><div onclick="chest(2)" id="ch2">📦</div><div onclick="chest(3)" id="ch3">📦</div>
         </div>
-        <button id="btn-reset-game" class="btn btn-gold" style="margin-top:40px; display:none" onclick="resetChests()">Reklama ko'rib qayta o'ynash 🎬</button>
+        <button id="res-ch" class="btn" style="background:var(--cyan); display:none" onclick="resChest()">Qayta o'ynash 🎬</button>
     </div>
 </div>
 
 <div id="p-rank" class="page">
-    <div class="page-header"><h2>Global Reyting 🏆</h2><span class="close-btn" onclick="closePage('p-rank')">✖</span></div>
-    <div id="rank-list">Yuklanmoqda...</div>
+    <div class="page-header"><h2>Global Top 50</h2><h2 onclick="closeP('p-rank')">✖</h2></div>
+    <div id="rank-list"></div>
 </div>
 
 <div id="p-profile" class="page">
-    <div class="page-header"><h2>Mening Profilim 👤</h2><span class="close-btn" onclick="closePage('p-profile')">✖</span></div>
-    <div class="card-item" style="text-align:left; margin-bottom:20px">
-        <p>Ism: <b id="prof-name">...</b></p>
-        <p>Telegram ID: <b id="prof-id">...</b></p>
-        <p>Jami Daromad (PPH): <b id="prof-pph">0</b></p>
-    </div>
-
-    <div class="exchange-panel" style="border-color: #9b59b6;">
-        <h3>💎 Airdrop Hamyoni</h3>
-        <p style="font-size:12px; color:#aaa">Hamyonni ulang va 99 kundan keyin reklamadan tushgan 15% pulni TONda oling!</p>
-        <div id="ton-connect-button" style="display:flex; justify-content:center"></div>
+    <div class="page-header"><h2>Profil & Airdrop</h2><h2 onclick="closeP('p-profile')">✖</h2></div>
+    <div class="card-item" style="flex-direction:column; background:linear-gradient(135deg, #1c222d, #0b0d17); border:1px solid var(--purple);">
+        <p style="font-size:14px; text-align:center;">Timer tugagandan keyin o'yinchilarga faolligi, darajasi, olmos va tangalar soni qo'shib hisoblanadi va Airdrop ajratiladi.</p>
+        <div id="ton-connect-button" style="margin-top:10px;"></div>
     </div>
 </div>
 
 <script>
-// --- FIREBASE & TG INIT ---
+const tg = window.Telegram.WebApp;
 const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const tg = window.Telegram.WebApp;
-const user = tg.initDataUnsafe?.user || { id: "GUEST_" + Math.random().toString(36).substr(2, 5), first_name: "O'yinchi" };
+const user = tg.initDataUnsafe?.user || { id: "GUEST_" + Math.random().toString(36).substr(2,5), first_name: "Player" };
 
-// --- GAME STATE ---
-let s = {
-    c: 0, d: 0, pph: 0, dpph: 0, 
-    e: 1000, maxE: 1000, tap: 1,
-    lvl: 1, lastS: Date.now(),
-    wallet: '', items: []
-};
+let s = { c: 0, d: 0, pph: 0, dpph: 0, e: 1000, maxE: 1000, tap: 1, lvl: 1, items: {}, lastS: Date.now() };
 
-// --- CARDS DATA (25 TA) ---
 const cards = [
-    {id:1, n:"Bolg'a", p:500, pr:10, t:"silver", i:"🔨"},
-    {id:2, n:"Kurak", p:2000, pr:50, t:"silver", i:"⛏"},
-    {id:3, n:"Xalta", p:5000, pr:150, t:"silver", i:"💰"},
-    {id:4, n:"Araba", p:10000, pr:350, t:"silver", i:"🛒"},
-    {id:5, n:"G'alvir", p:25000, pr:900, t:"silver", i:"🔍"},
-    {id:6, n:"Konchi", p:60000, pr:2500, t:"gold", i:"👷"},
-    {id:7, n:"Burg'u", p:150000, pr:6500, t:"gold", i:"🚜"},
-    {id:8, n:"Xarita", p:400000, pr:18000, t:"gold", i:"🗺"},
-    {id:9, n:"Sandiq", p:1000000, pr:45000, t:"gold", i:"🎁"},
-    {id:10, n:"Ombor", p:2500000, pr:120000, t:"gold", i:"🏠"},
-    {id:11, n:"Zavod", p:6000000, pr:300000, t:"ruby", i:"🏭"},
-    {id:12, n:"Bank", p:15000000, pr:800000, t:"ruby", i:"🏦"},
-    {id:13, n:"Orol", p:40000000, pr:2000000, t:"ruby", i:"🏝"},
-    {id:14, n:"Piramida", p:100000000, pr:5500000, t:"ruby", i:"🏛"},
-    {id:15, n:"Samolyot", p:250000000, pr:15000000, t:"ruby", i:"🛩"},
-    {id:16, n:"Raketa", p:600000000, pr:40000000, t:"ruby", i:"🚀"},
-    {id:17, n:"Sayyora", p:1500000000, pr:100000000, t:"ruby", i:"🪐"},
-    {id:18, n:"Galaktika", p:4000000000, pr:300000000, t:"ruby", i:"🌌"},
-    {id:19, n:"Vaqt", p:10000000000, pr:800000000, t:"ruby", i:"⏳"},
-    {id:20, n:"Qora Teshik", p:25000000000, pr:2000000000, t:"ruby", i:"🌀"},
-    {id:21, n:"TON King", p:10000, pr:50, t:"premium", i:"💎", cur:"d"},
-    {id:22, n:"Durov's Star", p:50000, pr:300, t:"premium", i:"⭐", cur:"d"},
-    {id:23, n:"Crypto Whale", p:200000, pr:1500, t:"premium", i:"🐋", cur:"d"},
-    {id:24, n:"Web3 God", p:1000000, pr:10000, t:"premium", i:"⚡", cur:"d"},
-    {id:25, n:"Tanga Creator", p:5000000, pr:60000, t:"premium", i:"👑", cur:"d"}
-];
+    {id:1, n:"Ketmon", p:500, pr:15, i:"⛏"}, {id:2, n:"Kurak", p:2500, pr:80, i:"🔨"},
+    {id:3, n:"Araba", p:10000, pr:350, i:"🛒"}, {id:4, n:"Konchi", p:50000, pr:2000, i:"👷"},
+    {id:5, n:"Zavod", p:200000, pr:9000, i:"🏭"}, {id:6, n:"Olmos Burg'u", p:5000, pr:50, i:"💎", cur:"d"}
+]; // Misol tariqasida 6 ta, sizda 25 ta bo'ladi
 
-// --- CORE FUNCTIONS ---
 function init() {
     db.ref('users/' + user.id).on('value', snap => {
-        if(snap.exists()) {
-            s = {...s, ...snap.val()};
-        } else {
-            save();
-        }
-        renderCards();
+        if(snap.exists()) s = {...s, ...snap.val()};
         updateUI();
+        renderCards();
     });
-
-    // TonConnect
-    const tonUI = new TON_CONNECT_UI.TonConnectUI({
-        manifestUrl: 'https://ganiyevdiyorbek700-dotcom.github.io/Oltin-Tanga-/tonconnect-manifest.json',
-        buttonRootId: 'ton-connect-button'
-    });
-    tonUI.onStatusChange(w => { if(w) { s.wallet = w.account.address; save(); notify("Hamyon ulandi!"); }});
 }
 
 function updateUI() {
-    document.getElementById('coin-balance').innerText = Math.floor(s.c).toLocaleString();
-    document.getElementById('diam-balance').innerText = Math.floor(s.d).toLocaleString();
-    document.getElementById('stat-pph').innerText = Math.floor(s.pph).toLocaleString();
-    document.getElementById('stat-dpph').innerText = Math.floor(s.dpph).toLocaleString();
-    document.getElementById('energy-text').innerText = `${Math.floor(s.e)}/${s.maxE}`;
-    document.getElementById('energy-fill').style.width = (s.e/s.maxE*100) + "%";
+    document.getElementById('main-bal').innerText = Math.floor(s.c).toLocaleString();
+    document.getElementById('st-pph').innerText = Math.floor(s.pph).toLocaleString();
+    document.getElementById('st-dpph').innerText = Math.floor(s.dpph).toLocaleString();
+    document.getElementById('st-diam').innerText = Math.floor(s.d).toLocaleString();
+    document.getElementById('tap-val').innerText = "+" + s.tap;
     
-    document.getElementById('prof-name').innerText = user.first_name;
-    document.getElementById('prof-id').innerText = user.id;
-    document.getElementById('prof-pph').innerText = Math.floor(s.pph).toLocaleString();
+    // Level Logic
+    let lvls = [0, 50000, 500000, 5000000, 50000000];
+    let ci = 0; lvls.forEach((v,i) => { if(s.c >= v) ci = i; });
+    s.lvl = ci + 1;
+    let nxt = lvls[ci+1] || s.c;
+    document.getElementById('lvl-fill').style.width = ((s.c - lvls[ci]) / (nxt - lvls[ci]) * 100) + "%";
+    document.getElementById('lvl-num').innerText = "LVL " + s.lvl;
+
+    // Energy
+    document.getElementById('en-fill').style.width = (s.e/s.maxE*100) + "%";
+    document.getElementById('en-txt').innerText = `${Math.floor(s.e)}/${s.maxE}`;
+
+    // Tanga Effektlari (Har sotib olingan karta soniga qarab)
+    let count = Object.keys(s.items || {}).length;
+    let coin = document.getElementById('main-coin');
+    if(count >= 5) coin.classList.add('coin-evo-1');
+    if(count >= 15) coin.classList.add('coin-evo-2');
 }
 
-function handleTap(ev) {
+function tap(ev) {
     if(s.e >= s.tap) {
         s.c += s.tap; s.e -= s.tap;
-        createTapAnim(ev);
+        createPop(ev);
+        tg.HapticFeedback.impactOccurred('light');
         updateUI();
     } else {
-        notify("Energiya yo'q!", "red");
+        notify("Energiya tugadi!", "ruby");
         runAd(() => { s.e = s.maxE; updateUI(); });
     }
 }
 
 function renderCards() {
-    const container = document.getElementById('cards-container');
-    container.innerHTML = '';
-    cards.forEach(card => {
-        const div = document.createElement('div');
-        div.className = `card-item ${card.t}-border`;
-        const costType = card.cur === 'd' ? '💎' : '📀';
-        div.innerHTML = `
-            <img>${card.i}</img>
-            <div class="card-name">${card.n}</div>
-            <div class="card-profit">+${card.pr.toLocaleString()}/s</div>
-            <div class="card-price">${costType} ${card.p.toLocaleString()}</div>
-            <button class="btn btn-gold" onclick="buyCard(${card.id})">Upgrade</button>
-        `;
-        container.appendChild(div);
+    let h = '';
+    cards.forEach(c => {
+        let bought = s.items && s.items[c.id];
+        h += `<div class="card-item">
+            <div style="font-size:30px">${c.i}</div>
+            <div style="flex:1; margin-left:15px"><b>${c.n}</b><br><small>+${c.pr}/s ${c.cur=='d'?'💎':'📀'}</small></div>
+            <button class="btn" style="background:var(--gold); width:auto; padding:8px 15px;" onclick="buyCard(${c.id})" ${bought?'disabled':''}>
+                ${bought?'MAX':(c.cur=='d'?'💎':'📀') + c.p.toLocaleString()}
+            </button>
+        </div>`;
     });
+    document.getElementById('cards-container').innerHTML = h;
 }
 
 function buyCard(id) {
-    const card = cards.find(x => x.id === id);
-    if(card.cur === 'd') {
-        if(s.d >= card.p) { s.d -= card.p; s.dpph += card.pr; notify("Upgrade qilindi!"); save(); }
-        else notify("Olmos yetarli emas!", "red");
-    } else {
-        if(s.c >= card.p) { s.c -= card.p; s.pph += card.pr; notify("Upgrade qilindi!"); save(); }
-        else notify("Tanga yetarli emas!", "red");
-    }
-}
-
-function exchange(type) {
-    let val = parseInt(document.getElementById('ex-amount').value);
-    if(!val || val <= 0) return;
-    if(type === 'c2d') {
-        if(s.c >= val * 10000) { s.c -= (val*10000); s.d += val; notify("Almashtirildi!"); }
-        else notify("Tanga yetarli emas!", "red");
-    } else {
-        if(s.d >= val) { s.d -= val; s.c += (val*8000); notify("Almashtirildi!"); }
-        else notify("Olmos yetarli emas!", "red");
-    }
-    save(); updateUI();
-}
-
-// --- MINI GAME ---
-let chestLock = false;
-function playChest(n) {
-    if(chestLock) return;
-    chestLock = true;
-    const win = Math.floor(Math.random() * 3) + 1;
-    const el = document.getElementById('ch'+n);
-    if(n === win) {
-        el.innerText = "💰"; s.c += 1000000; notify("1,000,000 Tanga yutdingiz! 🎉");
-    } else {
-        el.innerText = "❌"; notify("Bo'sh...");
-    }
-    document.getElementById('btn-reset-game').style.display = 'block';
-    save(); updateUI();
-}
-function resetChests() {
     runAd(() => {
-        chestLock = false;
-        for(let i=1; i<=3; i++) document.getElementById('ch'+i).innerText = "📦";
-        document.getElementById('btn-reset-game').style.display = 'none';
+        let c = cards.find(x => x.id === id);
+        if(c.cur == 'd') {
+            if(s.d >= c.p) { s.d -= c.p; s.dpph += c.pr; finishBuy(id); }
+            else notify("Olmos kam!", "ruby");
+        } else {
+            if(s.c >= c.p) { s.c -= c.p; s.pph += c.pr; finishBuy(id); }
+            else notify("Tanga kam!", "ruby");
+        }
     });
 }
+function finishBuy(id) { if(!s.items) s.items={}; s.items[id]=true; save(); notify("Muvaffaqiyatli!"); }
 
-// --- AIRDROP TIMER ---
-const targetDate = new Date().getTime() + (99 * 24 * 60 * 60 * 1000);
-setInterval(() => {
-    const now = new Date().getTime();
-    const d = targetDate - now;
-    const days = Math.floor(d / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((d % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((d % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((d % (1000 * 60)) / 1000);
-    document.getElementById('airdrop-timer').innerText = `${days}d ${hours}h ${minutes}m ${seconds}s gacha Airdrop! 🚀`;
-}, 1000);
-
-// --- UTILS ---
-function openPage(id) { 
-    document.getElementById(id).style.display = 'block'; 
-    if(id === 'p-rank') loadRank();
-}
-function closePage(id) { document.getElementById(id).style.display = 'none'; }
-
-function notify(m, color = "gold") {
-    const t = document.getElementById('toast');
-    t.innerText = m; t.style.display = 'block'; t.style.borderColor = color === 'red' ? '#e74c3c' : '#ffd700';
-    setTimeout(() => t.style.display = 'none', 2500);
+// BONUS SISTEMASI
+function dailyBonus() {
+    runAd(() => { s.c += 50000; notify("50,000 Tanga olindi! 🎁"); save(); });
 }
 
+function chest(n) {
+    let win = Math.floor(Math.random()*3)+1;
+    if(n == win) { document.getElementById('ch'+n).innerText="💰"; s.c += 1000000; notify("1,000,000 TANGA! 🎉"); }
+    else { document.getElementById('ch'+n).innerText="❌"; notify("Bo'sh..."); }
+    document.getElementById('res-ch').style.display = "block"; save();
+}
+function resChest() { runAd(() => { for(let i=1;i<=3;i++) document.getElementById('ch'+i).innerText="📦"; document.getElementById('res-ch').style.display="none"; }); }
+
+// RANKING
 function loadRank() {
-    db.ref('users').orderByChild('c').limitToLast(10).once('value', snap => {
+    db.ref('users').orderByChild('c').limitToLast(50).once('value', snap => {
+        let l = []; snap.forEach(u => l.push(u.val())); l.reverse();
         let h = '';
-        snap.forEach(u => {
-            const d = u.val();
-            h = `<div class="rank-row"><span>${d.first_name || 'O\'yinchi'}</span><b>${Math.floor(d.c).toLocaleString()} 📀</b></div>` + h;
+        l.forEach((u, i) => {
+            let m = (i+1)==1?'🥇':(i+1)==2?'🥈':(i+1)==3?'🥉':(i+1);
+            h += `<div class="rank-row">
+                <div class="rank-medal">${m}</div>
+                <div class="rank-info"><b>${u.first_name || 'Player'}</b><br><small>LVL ${u.lvl || 1}</small></div>
+                <div class="rank-val">📀 ${Math.floor(u.c).toLocaleString()}</div>
+            </div>`;
         });
         document.getElementById('rank-list').innerHTML = h;
     });
 }
 
-function save() { db.ref('users/' + user.id).update({...s, first_name: user.first_name}); }
+// UTILS
+function save() { s.lastS = Date.now(); db.ref('users/' + user.id).update(s); }
+function openP(id) { runAd(() => { if(id=='p-rank') loadRank(); document.getElementById(id).style.display='block'; }); }
+function closeP(id) { document.getElementById(id).style.display='none'; }
+function notify(m, c) { let t = document.getElementById('toast'); t.innerText=m; t.style.borderColor=c=='ruby'?'red':'var(--gold)'; t.style.display='block'; setTimeout(()=>t.style.display='none', 2500); }
+function createPop(e) { let p = document.createElement('div'); p.innerText="+"+s.tap; p.style.cssText=`position:fixed; left:${e.clientX}px; top:${e.clientY}px; font-weight:900; color:white; pointer-events:none; transition:0.6s; z-index:2000;`; document.body.appendChild(p); setTimeout(()=>{p.style.transform="translateY(-100px)"; p.style.opacity="0";},10); setTimeout(()=>p.remove(), 700); }
+function runAd(cb) { if(typeof show_10558007 === 'function') show_10558007().then(cb).catch(cb); else cb(); }
 
-function createTapAnim(e) {
-    const el = document.createElement('div');
-    el.innerText = `+${s.tap}`;
-    el.style.position = 'fixed'; el.style.left = e.clientX + 'px'; el.style.top = e.clientY + 'px';
-    el.style.color = 'white'; el.style.fontWeight = 'bold'; el.style.pointerEvents = 'none';
-    el.style.zIndex = '2000'; el.style.transition = 'all 0.5s';
-    document.body.appendChild(el);
-    setTimeout(() => { el.style.transform = 'translateY(-50px)'; el.style.opacity = '0'; }, 10);
-    setTimeout(() => el.remove(), 600);
-}
-
-function runAd(cb) {
-    if(typeof show_10558007 === 'function') show_10558007().then(cb).catch(cb);
-    else if(cb) cb();
-}
-
-// Passive Income
+// AIRDROP TIMER
+const target = new Date().getTime() + (99 * 24 * 60 * 60 * 1000);
 setInterval(() => {
-    s.c += (s.pph / 3600);
-    s.d += (s.dpph / 3600);
-    s.e = Math.min(s.maxE, s.e + 1);
-    updateUI();
+    let diff = target - new Date().getTime();
+    let d = Math.floor(diff/86400000), h = Math.floor((diff%86400000)/3600000), m = Math.floor((diff%3600000)/60000), sec = Math.floor((diff%60000)/1000);
+    document.getElementById('air-timer').innerText = `${d}d ${h}h ${m}m ${sec}s Airdrop Countdown!`;
 }, 1000);
 
-// AutoSave
+// Passive & AutoSave
+setInterval(() => { s.c += (s.pph/3600); s.d += (s.dpph/3600); s.e = Math.min(s.maxE, s.e + 1); updateUI(); }, 1000);
 setInterval(save, 30000);
 
+new TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'https://ganiyevdiyorbek700-dotcom.github.io/Oltin-Tanga-/tonconnect-manifest.json', buttonRootId: 'ton-connect-button' });
 init();
 tg.expand();
 </script>
 </body>
         </html>
+        
         
     
         
