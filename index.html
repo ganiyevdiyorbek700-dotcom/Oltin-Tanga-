@@ -3,360 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga Ultra</title>
+    <title>Oltin Tanga: Infinity</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-
-    <script src='https://alwingulla.com/88/p.js' async data-ahasid='10558007'></script>
+    <script src="https://alwingulla.com/88/p.js" async data-ahasid="10558007"></script>
 
     <style>
-        :root { --gold: #fbc531; --bg: #0c111c; --card: #1c2230; --btn: #fbc531; --green: #4cd137; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
+        :root {
+            --p: #fbc531; 
+            --s: #4cd137;
+            --bg: #05080a;
+            --glass: rgba(255, 255, 255, 0.07);
+        }
+
+        body {
+            background: var(--bg);
+            color: white;
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+        }
+
+        /* DYNAMIK FONLAR */
+        .bg-effect { position: fixed; inset: 0; z-index: -1; pointer-events: none; transition: 2s ease; opacity: 0.3; }
+        .lvl-1 { background: radial-gradient(circle at center, #1e3799, #000); }
+        .lvl-2 { background: url('https://i.gifer.com/7S7z.gif') center/cover; } /* Yomg'ir */
+        .lvl-3 { background: url('https://i.gifer.com/7S7y.gif') center/cover; } /* Qor */
+        .lvl-4 { background: url('https://i.gifer.com/7S7x.gif') center/cover; } /* Chaqmoq */
+        .lvl-5 { background: url('https://i.gifer.com/4V0b.gif') center/cover; } /* Kosmos/Olov */
+
+        /* ASOSIY UI */
+        .app { display: flex; flex-direction: column; height: 100vh; padding: 20px; box-sizing: border-box; }
         
-        body { background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: 1s ease; }
-
-        /* Dinamik Fonlar */
-        body.lvl-1 { background: #0c111c; }
-        body.lvl-2 { background: #0a3d62; }
-        body.lvl-3 { background: #1b1464; }
-        body.lvl-4 { background: #440000; }
-        body.lvl-5 { background: #1b5e20; }
-
-        /* Loading */
-        #loader { position: fixed; inset:0; background:#000; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        .spin { width:40px; height:40px; border:4px solid #222; border-top-color:var(--gold); border-radius:50%; animation: s 1s linear infinite; }
-        @keyframes s { to { transform: rotate(360deg); } }
-
-        /* Header & Airdrop Timer */
-        .air-header { background: rgba(0,0,0,0.4); padding: 10px; text-align: center; border-bottom: 1px solid #333; }
-        .air-timer { font-size: 18px; font-weight: 900; color: var(--gold); }
-
-        .top-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .stat-card { background: var(--card); border-radius: 12px; padding: 8px; text-align: center; border: 1px solid #333; }
-
-        /* Main Game */
-        .main-ui { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .balance { font-size: 50px; font-weight: 900; color: var(--gold); }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--glass); padding: 12px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
-        .coin-wrapper { width: 240px; height: 240px; position: relative; }
-        .coin { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #8a6200; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .coin:active { transform: scale(0.92); }
-        
-        /* Nav */
-        .navbar { display: flex; background: #0a0e17; padding: 12px 0; border-top: 1px solid #222; }
-        .nav-item { flex: 1; text-align: center; font-size: 10px; color: #888; cursor: pointer; }
+        .balance-group { text-align: center; margin: 30px 0; }
+        .balance-group h1 { font-size: 55px; margin: 0; color: var(--p); text-shadow: 0 0 30px rgba(251, 197, 49, 0.6); }
+        .balance-group span { font-size: 18px; color: #00d2ff; font-weight: bold; }
 
-        /* Pages */
-        .page { position: fixed; inset: 0; background: var(--bg); z-index: 1000; padding: 20px; display: none; overflow-y: auto; }
-        .p-head { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 20px; }
+        /* MERKAZIY TANGA (SMILE) */
+        .coin-wrap { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        .main-tanga {
+            width: 260px; height: 260px; border-radius: 50%;
+            background: radial-gradient(circle, #222, #000);
+            border: 8px solid var(--p);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 110px; cursor: pointer;
+            box-shadow: 0 0 60px rgba(251, 197, 49, 0.3);
+            transition: 0.1s;
+        }
+        .main-tanga:active { transform: scale(0.9); }
+        .tap-anim { position: absolute; color: white; font-size: 28px; font-weight: 900; animation: flyUp 0.8s forwards; pointer-events: none; }
 
-        /* Card Style (Skrinshotdagi kabi) */
-        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .upgrade-card { background: var(--card); border: 1px solid #333; border-radius: 15px; padding: 15px; text-align: center; }
-        .upgrade-card img { width: 40px; margin-bottom: 5px; }
-        .upgrade-card h4 { font-size: 14px; margin: 5px 0; }
-        .upgrade-card p { font-size: 12px; color: var(--green); margin-bottom: 8px; }
-        .upgrade-btn { background: var(--gold); border: none; width: 100%; padding: 8px; border-radius: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        /* NAVBAR */
+        .nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; background: rgba(0,0,0,0.9); padding: 15px 0; border-top: 2px solid var(--glass); }
+        .nav-btn { flex: 1; text-align: center; font-size: 12px; color: #7f8c8d; cursor: pointer; }
+        .nav-btn.active { color: var(--p); font-weight: bold; }
 
-        /* Aviator */
-        #av-box { background: #000; height: 180px; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #333; margin-top: 10px; }
-        #rocket { position: absolute; bottom: 10px; left: 10%; font-size: 30px; transition: 0.1s; }
-        
-        /* Rank */
-        .rank-item { background: rgba(251,197,49,0.1); border: 1px solid rgba(251,197,49,0.3); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+        /* SAHIFALAR */
+        .page { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: none; padding: 25px; overflow-y: auto; }
+        .card { background: var(--glass); border-radius: 20px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .card:hover { border-color: var(--p); }
+
+        /* PUZZLE BOARD */
+        #puz-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 300px; height: 300px; margin: 20px auto; }
+        .puz-piece { background-size: 300px 300px; border: 1px solid #444; border-radius: 5px; cursor: pointer; }
+
+        /* NOTIFICATION */
+        #alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--p); color: black; padding: 15px 30px; border-radius: 50px; font-weight: bold; z-index: 9999; transition: 0.5s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #alert.show { top: 20px; }
+
+        @keyframes flyUp { to { transform: translateY(-150px); opacity: 0; } }
     </style>
 </head>
-<body class="lvl-1">
+<body>
 
-<div id="loader"><div class="spin"></div><p>Yuklanmoqda...</p></div>
+<div id="bg-layer" class="bg-effect lvl-1"></div>
 
-<div class="air-header">
-    <small>🚀 AIRDROP COUNTDOWN</small>
-    <div class="air-timer" id="air-timer">99 Kun 00:00:00</div>
-</div>
+<audio id="snd-tap" src="https://www.soundjay.com/buttons/button-16.mp3"></audio>
+<audio id="snd-win" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
 
-<div class="top-stats">
-    <div class="stat-card"><small>Mining 📀</small><b id="st-pph">0/s</b></div>
-    <div class="stat-card"><small>Mining 💎</small><b id="st-dph">0/s</b></div>
-</div>
+<div id="alert">Xabar!</div>
 
-<div class="main-ui">
-    <h1 class="balance" id="st-bal">0</h1>
-    <div style="color: #00d2ff; font-weight: bold; margin-bottom: 15px;">💎 <span id="st-diam">0</span></div>
-    <div class="coin-wrapper" onclick="handleTap(event)">
-        <div class="coin" id="main-coin"><span id="st-tap-val" style="font-size:40px; font-weight:900;">+1</span></div>
+<div class="app">
+    <div class="header">
+        <div>🚀 <span id="air-clock">00:00:00</span></div>
+        <div style="text-align: right;">
+            <div>📀 <span id="st-pph">0</span>/s</div>
+            <div>💎 <span id="st-dph">0</span>/s</div>
+        </div>
     </div>
-    <div style="margin-top:20px;">⚡ <b id="st-en">5000/5000</b></div>
-</div>
 
-<div class="navbar">
-    <div class="nav-item" onclick="openP('p-shop')">🛒 Kartalar</div>
-    <div class="nav-item" onclick="openP('p-bonus')">🎁 Bonus</div>
-    <div class="nav-item" onclick="openP('p-games')">🎮 O'yinlar</div>
-    <div class="nav-item" onclick="openP('p-rank')">🏆 Reyting</div>
-    <div class="nav-item" onclick="openP('p-prof')">👤 Profil</div>
-</div>
-
-<div id="p-shop" class="page">
-    <div class="p-head"><b>Upgrade Kartalar</b> <span onclick="closeP('p-shop')">×</span></div>
-    <div class="card-grid" id="shop-list"></div>
-</div>
-
-<div id="p-bonus" class="page">
-    <div class="p-head"><b>Bonus Bo'limi</b> <span onclick="closeP('p-bonus')">×</span></div>
-    <div class="upgrade-card" style="margin-bottom:15px; padding:20px;">
-        <h3>Super Tap 🔥</h3>
-        <p>30 sek: Tap=1000 & No Energy</p>
-        <div id="super-timer" style="color:var(--gold)">Tayyor!</div>
-        <button onclick="ad('super')" id="btn-super" class="upgrade-btn" style="margin-top:10px">REKLAMA VA YOQISH</button>
+    <div class="balance-group">
+        <h1 id="bal">0</h1>
+        <span id="diam">💎 0</span>
     </div>
-    <div class="upgrade-card" style="padding:20px;">
-        <h3>Omadli Sandiq 🎁</h3>
-        <p>0-15K Tanga yoki 10-100 Olmos</p>
-        <div id="chest-timer" style="color:var(--gold)">Tayyor!</div>
-        <button onclick="ad('chest')" id="btn-chest" class="upgrade-btn" style="margin-top:10px">REKLAMA VA OCHISH</button>
+
+    <div class="coin-wrap">
+        <div class="main-tanga" id="main-btn" onclick="handleTap(event)">
+            <span id="smile-img">🌾</span>
+        </div>
     </div>
+
+    <div style="text-align: center; margin-bottom: 80px;">
+        <div style="background: var(--glass); display: inline-block; padding: 10px 30px; border-radius: 50px; border: 1px solid var(--p);">
+            ⚡ <span id="ener">5000</span> / 5000
+        </div>
+    </div>
+</div>
+
+<div class="nav">
+    <div class="nav-btn" onclick="openPage('p-market')">🛒<br>Market</div>
+    <div class="nav-btn" onclick="openPage('p-games')">🎮<br>O'yinlar</div>
+    <div class="nav-btn" onclick="openPage('p-rank')">🏆<br>Reyting</div>
+    <div class="nav-btn" onclick="openPage('p-wallet')">🏠<br>Hamyon</div>
+</div>
+
+<div id="p-market" class="page">
+    <div style="display:flex; justify-content:space-between"><h2>Upgrade Kartalar 🃏</h2> <h2 onclick="closePage('p-market')">✕</h2></div>
+    <div id="market-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;"></div>
 </div>
 
 <div id="p-games" class="page">
-    <div class="p-head"><b>Mini O'yinlar</b> <span onclick="closeP('p-games')">×</span></div>
-    <div id="av-box">
-        <h2 id="av-x" style="text-align:center; margin-top:50px; font-size:40px; color:var(--gold);">1.00x</h2>
-        <div id="rocket">🚀</div>
+    <div style="display:flex; justify-content:space-between"><h2>Mini O'yinlar 🕹️</h2> <h2 onclick="closePage('p-games')">✕</h2></div>
+    
+    <div class="card" style="background: linear-gradient(135deg, #1e3799, #000);">
+        <h3>🚀 Aviator</h3>
+        <p>Tikish: 1,000 - 100,000</p>
+        <button onclick="adStart('aviator')" style="width:100%; padding:12px; border-radius:15px; border:none; background:var(--p); font-weight:bold;">O'YNASH (Reklama)</button>
     </div>
-    <div id="av-hist" style="display:flex; gap:5px; margin-top:5px; overflow-x:auto;"></div>
-    <div style="display:flex; gap:10px; margin-top:10px;">
-        <button id="av-start" onclick="ad('av')" class="upgrade-btn" style="background:var(--green)">BET (1000)</button>
-        <button id="av-cash" onclick="cashAv()" class="upgrade-btn" style="display:none">CASHOUT</button>
+
+    <div class="card" style="background: linear-gradient(135deg, #b71540, #000);">
+        <h3>🧩 Rasm Pazl</h3>
+        <p>2 daqiqa | Yutuq: 50,000 📀 + 50 💎</p>
+        <button onclick="adStart('puzzle')" style="width:100%; padding:12px; border-radius:15px; border:none; background:var(--p); font-weight:bold;">BOSHLASH</button>
     </div>
-    <hr style="margin:20px 0; opacity:0.1;">
-    <h3>🧩 Puzzle 25 (2 min)</h3>
-    <div id="puz-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:2px; margin-top:10px;"></div>
-    <div id="puz-timer" style="text-align:center; margin-top:10px; color:red;"></div>
-    <button id="puz-btn" onclick="ad('puz')" class="upgrade-btn" style="margin-top:10px">O'YINNI BOSHLASH</button>
+
+    <div id="puzzle-area" style="display:none; text-align:center;">
+        <div id="puz-grid"></div>
+        <h3 id="puz-timer">02:00</h3>
+    </div>
 </div>
 
 <div id="p-rank" class="page">
-    <div class="p-head"><b>Global Reyting</b> <span onclick="closeP('p-rank')">×</span></div>
-    <div id="rank-list"></div>
+    <div style="display:flex; justify-content:space-between"><h2>Global Reyting 🏆</h2> <h2 onclick="closePage('p-rank')">✕</h2></div>
+    <div id="rank-box" style="margin-top:20px;"></div>
 </div>
 
-<div id="p-prof" class="page">
-    <div class="p-head"><b>Profil</b> <span onclick="closeP('p-prof')">×</span></div>
-    <div class="upgrade-card" style="text-align:left; line-height:1.8;">
-        <p>👤 Ism: <b id="pr-name">...</b></p>
-        <p>🆔 ID: <span id="pr-id">...</span></p>
-        <p>📀 Tangalar: <b id="pr-c">0</b></p>
-        <p>💎 Olmoslar: <b id="pr-d">0</b></p>
-        <p>⭐ Daraja: <b id="pr-lvl">1</b></p>
-        <hr style="opacity:0.1; margin:10px 0;">
-        <h3>🔗 TON HAMYON</h3>
-        <div id="ton-btn"></div>
-        <hr style="opacity:0.1; margin:10px 0;">
-        <h4>Savol-Javoblar (FAQ)</h4>
-        <p style="font-size:11px; color:#888;">
-            - Tanga qanday yig'iladi? Kartalarni upgrade qiling.<br>
-            - Airdrop qachon? 99 kundan so'ng daraja va olmosga qarab.<br>
-            - Hamyonni nega ulaymiz? Tokenlarni qabul qilish uchun.
-        </p>
+<div id="p-wallet" class="page">
+    <div style="display:flex; justify-content:space-between"><h2>Mening Hamyonim 🏠</h2> <h2 onclick="closePage('p-wallet')">✕</h2></div>
+    <div class="card" style="margin-top:20px; text-align:center;">
+        <h2 id="user-name">Foydalanuvchi</h2>
+        <p style="opacity:0.5">ID: <span id="user-id">0</span></p>
+        <div id="ton-btn" style="margin:20px 0;"></div>
+        <div class="card" style="text-align:left; background:rgba(0,210,255,0.05);">
+            <h4>📢 Airdrop Ma'lumoti</h4>
+            <p style="font-size:13px; opacity:0.8;">
+                Sizning darajangiz: <b id="user-lvl">1-tabaqada</b><br><br>
+                Airdrop 2026-yilda amalga oshadi. Olmoslar (💎) soni eng muhim omil hisoblanadi. Hamyonni hozir ulang va miningni to'xtatmang!
+            </p>
+        </div>
     </div>
 </div>
 
 <script>
-// --- FIREBASE CONFIG (Sizniki) ---
+// --- FIREBASE INTEGRATSIYA ---
 const firebaseConfig = {
-  apiKey: "AIzaSyDbttlr-oGJeDbjMbrubcuspgg9gk-7Gxs",
-  authDomain: "oltin-tanga-d2c80.firebaseapp.com",
-  databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
-  projectId: "oltin-tanga-d2c80",
-  storageBucket: "oltin-tanga-d2c80.firebasestorage.app",
-  messagingSenderId: "954210050924",
-  appId: "1:954210050924:web:f57b75568c66216c49c949"
+    apiKey: "AIzaSyDbttlr-oGJeDbjMbrubcuspgg9gk-7Gxs",
+    databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
+    projectId: "oltin-tanga-d2c80",
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const tg = window.Telegram.WebApp;
-const user = tg.initDataUnsafe?.user || { id: "TEST_ID", first_name: "O'yinchi" };
+const user = tg.initDataUnsafe?.user || { id: 7462622808, first_name: "Ganiyev" };
 
-let s = { c:0, d:0, pph:0, dph:0, e:5000, tap:1, tab:1, sLast:0, cLast:0, pLast:0 };
-let isSuper = false;
+// --- O'YIN HOLATI ---
+let s = { c: 0, d: 0, pph: 0, dph: 0, e: 5000, tap: 1, tab: 1, items: {} };
 
-// --- REKLAMA ---
-function ad(type) {
+function notify(txt) {
+    const a = document.getElementById('alert');
+    a.innerText = txt; a.classList.add('show');
+    setTimeout(() => a.classList.remove('show'), 3000);
+}
+
+// --- REKLAMA VA O'YINLAR ---
+function adStart(type) {
     if(typeof show_10558007 === 'function') {
-        show_10558007().then(() => reward(type));
+        show_10558007().then(() => {
+            if(type === 'puzzle') startPuzzle();
+            if(type === 'aviator') notify("Aviator tez kunda...");
+        });
     } else {
-        reward(type); // Test uchun
+        notify("Reklama yuklanmoqda...");
+        if(type === 'puzzle') startPuzzle(); 
     }
 }
 
-function reward(type) {
-    if(type === 'super') { isSuper=true; s.tap=1000; s.sLast=Date.now()+900000; setTimeout(()=>{isSuper=false; s.tap=1; updateUI();}, 30000); }
-    if(type === 'chest') { 
-        let tc = Math.floor(Math.random()*15000); let td = Math.floor(Math.random()*90)+10;
-        s.c+=tc; s.d+=td; s.cLast=Date.now()+1500000; alert(tc+" tanga va "+td+" olmos!"); 
-    }
-    if(type === 'av') startAv();
-    if(type === 'puz') startPuz();
-    if(type === 'energy') { s.e=5000; updateUI(); }
-}
-
-// --- CORE ---
-function init() {
-    db.ref('users/'+user.id).once('value', snap => {
-        if(snap.val()) s = {...s, ...snap.val()};
-        document.getElementById('loader').style.display = 'none';
-        updateUI(); renderShop();
-        setInterval(loop, 1000);
-        setInterval(save, 10000);
+// --- DYNAMIK PUZZLE ---
+function startPuzzle() {
+    document.getElementById('puzzle-area').style.display = 'block';
+    const grid = document.getElementById('puz-grid');
+    grid.innerHTML = '';
+    let nums = [...Array(16).keys()].sort(() => Math.random() - 0.5);
+    
+    nums.forEach(n => {
+        const d = document.createElement('div');
+        d.className = 'puz-piece';
+        d.style.backgroundImage = "url('https://picsum.photos/300/300?sig="+Math.random()+"')";
+        d.style.backgroundPosition = `-${(n%4)*75}px -${Math.floor(n/4)*75}px`;
+        d.onclick = () => { d.style.opacity = '0.3'; checkPuz(); };
+        grid.appendChild(d);
     });
+    notify("Barcha bo'laklarni bosing!");
 }
 
-function loop() {
-    s.c += (s.pph/3600); s.d += (s.dph/3600);
-    if(s.e < 5000 && !isSuper) s.e = Math.min(5000, s.e+2);
-    updateUI(); timers();
+function checkPuz() {
+    // Soddalashtirilgan yutuq mantiqi
+    s.c += 50000; s.d += 50;
+    document.getElementById('snd-win').play();
+    notify("G'ALABA! +50k Tanga");
+    save();
 }
 
+// --- CORE LOGIC ---
 function handleTap(e) {
-    if(s.e >= s.tap || isSuper) {
-        s.c += s.tap; if(!isSuper) s.e -= s.tap;
+    if(s.e >= s.tap) {
+        s.c += s.tap; s.e -= s.tap;
+        document.getElementById('snd-tap').currentTime = 0;
+        document.getElementById('snd-tap').play();
+        showTapAnim(e);
         updateUI();
-    } else { ad('energy'); }
+    }
+}
+
+function showTapAnim(e) {
+    const div = document.createElement('div');
+    div.className = 'tap-anim';
+    div.innerText = "+" + s.tap;
+    div.style.left = e.clientX + 'px';
+    div.style.top = e.clientY + 'px';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 800);
 }
 
 function updateUI() {
-    document.getElementById('st-bal').innerText = Math.floor(s.c).toLocaleString();
-    document.getElementById('st-diam').innerText = Math.floor(s.d).toLocaleString();
-    document.getElementById('st-pph').innerText = Math.floor(s.pph)+"/s";
-    document.getElementById('st-dph').innerText = Math.floor(s.dph)+"/s";
-    document.getElementById('st-en').innerText = Math.floor(s.e)+"/5000";
-    document.getElementById('st-tap-val').innerText = "+"+s.tap;
-    
-    // Profil
-    document.getElementById('pr-name').innerText = user.first_name;
-    document.getElementById('pr-id').innerText = user.id;
-    document.getElementById('pr-c').innerText = Math.floor(s.c).toLocaleString();
-    document.getElementById('pr-d').innerText = Math.floor(s.d).toLocaleString();
-    document.getElementById('pr-lvl').innerText = s.tab;
+    document.getElementById('bal').innerText = Math.floor(s.c).toLocaleString();
+    document.getElementById('diam').innerText = "💎 " + Math.floor(s.d).toLocaleString();
+    document.getElementById('ener').innerText = Math.floor(s.e);
+    document.getElementById('st-pph').innerText = s.pph;
+    document.getElementById('st-dph').innerText = s.dph;
 
-    document.body.className = "lvl-" + s.tab;
-    
-    // Tanga rangi
-    let colors = ['#8a6200','#00a8ff','#4834d4','#6d0000','#006400'];
-    document.getElementById('main-coin').style.borderColor = colors[s.tab-1] || '#8a6200';
+    const lvls = [
+        {s:"🌾", b:"lvl-1", n:"Dehqon"},
+        {s:"🐪", b:"lvl-2", n:"Savdogar"},
+        {s:"🏰", b:"lvl-3", n:"Boy"},
+        {s:"👑", b:"lvl-4", n:"Sulton"},
+        {s:"🐉", b:"lvl-5", n:"Afsona"}
+    ];
+    let c = lvls[s.tab-1];
+    document.getElementById('smile-img').innerText = c.s;
+    document.getElementById('bg-layer').className = "bg-effect " + c.b;
+    document.getElementById('user-lvl').innerText = c.n + " tabaqasi";
 }
 
 // --- SHOP ---
-const cardData = [
-    {n:"Bolg'a", p:500, inc:10, img:"🔨"}, {n:"Kurak", p:2000, inc:50, img:"⛏️"},
-    {n:"Xalta", p:5000, inc:150, img:"💰"}, {n:"Araba", p:10000, inc:350, img:"🛒"},
-    {n:"G'alvir", p:25000, inc:900, img:"🔍"}, {n:"Konchi", p:60000, inc:2500, img:"👷"},
-    {n:"Olmos Miner 1", p:150000, inc:10, type:'d', img:"💎"}, {n:"Olmos Miner 2", p:500000, inc:50, type:'d', img:"💎"}
+const cards = [
+    {n:"Bolg'a", p:500, i:10, img:"🔨"},
+    {n:"Araba", p:5000, i:120, img:"🛒"},
+    {n:"Konchi", p:50000, i:20, t:'d', img:"👷"},
+    {n:"Zavod", p:200000, i:5000, img:"🏭"}
 ];
 
-function renderShop() {
+function renderMarket() {
     let h = '';
-    cardData.forEach((c, i) => {
-        let cost = Math.floor(c.p * Math.pow(1.5, (s.items?.[i] || 0)));
-        h += `<div class="upgrade-card">
-            <div style="font-size:30px">${c.img}</div>
+    cards.forEach((c, i) => {
+        let cost = Math.floor(c.p * Math.pow(1.5, (s.items[i] || 0)));
+        h += `<div class="card">
+            <span style="font-size:30px">${c.img}</span>
             <h4>${c.n}</h4>
-            <p>+${c.inc}/${c.type=='d'?'d':'s'}</p>
-            <button class="upgrade-btn" onclick="buy(${i},${cost})">📀 ${cost.toLocaleString()}</button>
+            <p>+${c.i}/${c.t=='d'?'d':'s'}</p>
+            <button onclick="buy(${i}, ${cost})" style="width:100%; padding:8px; background:var(--p); border:none; border-radius:10px; font-weight:bold;">${cost}</button>
         </div>`;
     });
-    document.getElementById('shop-list').innerHTML = h;
+    document.getElementById('market-list').innerHTML = h;
 }
 
 function buy(id, cost) {
     if(s.c >= cost) {
         s.c -= cost;
-        if(!s.items) s.items = {};
         s.items[id] = (s.items[id] || 0) + 1;
-        if(cardData[id].type == 'd') s.dph += cardData[id].inc; else s.pph += cardData[id].inc;
-        if(id > 4 && s.tab < 5) s.tab++;
-        updateUI(); renderShop(); save();
+        if(cards[id].t == 'd') s.dph += cards[id].i; else s.pph += cards[id].i;
+        if(id >= s.tab && s.tab < 5) s.tab++;
+        notify("Muvaffaqiyatli!");
+        updateUI(); renderMarket(); save();
     }
 }
 
-// --- AVIATOR ---
-let avX = 1.0, avI;
-function startAv() {
-    if(s.c < 1000) return alert("Kamida 1000 tanga!");
-    s.c -= 1000; document.getElementById('av-start').style.display='none'; document.getElementById('av-cash').style.display='block';
-    avX = 1.0; let crash = (Math.random()*20 + 1).toFixed(2);
-    avI = setInterval(() => {
-        avX += 0.01; document.getElementById('av-x').innerText = avX.toFixed(2)+"x";
-        document.getElementById('rocket').style.left = (10 + avX*2) + "%";
-        if(avX >= crash) { clearInterval(avI); alert("PORTLADI!"); resAv(); }
-    }, 100);
-}
-function cashAv() { clearInterval(avI); s.c += (1000*avX); alert(Math.floor(1000*avX)+" yutdingiz!"); resAv(); }
-function resAv() {
-    document.getElementById('av-start').style.display='block'; document.getElementById('av-cash').style.display='none';
-    let h = document.createElement('span'); h.innerText = avX.toFixed(2)+"x "; h.style.color = avX > 2 ? 'var(--green)' : 'red';
-    document.getElementById('av-hist').prepend(h);
-}
-
-// --- PUZZLE ---
-function startPuz() {
-    if(Date.now() < s.pLast) return;
-    let g = document.getElementById('puz-grid'); g.innerHTML = '';
-    let items = ["🏠","🌳","🚗","🍎","🐶","🐱","🌙","⭐","🔥","🍎","🏠","🌳","🚗","🍎","🐶","🐱","🌙","⭐","🏠","🌳","🚗","🍎","🐶","🐱","🌙"];
-    items.sort(() => Math.random() - 0.5).forEach(e => {
-        let t = document.createElement('div'); t.innerText=e;
-        t.style.cssText = "background:var(--card); aspect-ratio:1; display:flex; align-items:center; justify-content:center; border:1px solid #333; font-size:18px;";
-        g.appendChild(t);
-    });
-    setTimeout(() => { s.c += 100000; s.pLast = Date.now() + 1800000; g.innerHTML = ''; alert("Puzzle tugadi! 100,000 yutuq!"); }, 120000);
-}
-
-// --- RANK ---
+// --- REYTING ---
 function loadRank() {
-    db.ref('users').orderByChild('c').limitToLast(20).once('value', snap => {
-        let l = document.getElementById('rank-list'); l.innerHTML = '';
-        let list = []; snap.forEach(u => list.push(u.val()));
-        list.reverse().forEach((p, i) => {
-            let m = i==0?'🥇':i==1?'🥈':i==2?'🥉':(i+1);
-            l.innerHTML += `<div class="rank-item">
-                <span><b>${m}</b> ${p.first_name || 'User'} (Lvl:${p.tab})</span>
-                <span>${Math.floor(p.c).toLocaleString()} 📀 | ${Math.floor(p.d)} 💎</span>
+    db.ref('users').orderByChild('c').limitToLast(15).once('value', snap => {
+        let r = document.getElementById('rank-box'); r.innerHTML = '';
+        let items = [];
+        snap.forEach(x => items.push(x.val()));
+        items.reverse().forEach((p, i) => {
+            r.innerHTML += `<div class="card" style="display:flex; justify-content:space-between">
+                <span>${i+1}. ${p.first_name || 'User'}</span>
+                <b>${Math.floor(p.c || 0).toLocaleString()} 📀</b>
             </div>`;
         });
     });
 }
 
-// --- HELPERS ---
-function timers() {
-    let now = Date.now();
-    document.getElementById('btn-super').disabled = now < s.sLast;
-    document.getElementById('super-timer').innerText = now < s.sLast ? Math.ceil((s.sLast-now)/1000/60)+" min" : "Tayyor!";
-    document.getElementById('btn-chest').disabled = now < s.cLast;
-    document.getElementById('chest-timer').innerText = now < s.cLast ? Math.ceil((s.cLast-now)/1000/60)+" min" : "Tayyor!";
-    
-    let diff = new Date("2026-05-20") - now;
-    document.getElementById('air-timer').innerText = Math.floor(diff/(1000*60*60*24)) + " Kun " + new Date(diff).toISOString().substr(11,8);
+function save() { 
+    s.first_name = user.first_name; 
+    db.ref('users/' + user.id).set(s); 
 }
 
-function openP(id) { if(id=='p-rank') loadRank(); document.getElementById(id).style.display='block'; }
-function closeP(id) { document.getElementById(id).style.display='none'; }
-function save() { s.first_name = user.first_name; db.ref('users/'+user.id).update(s); }
+function openPage(id) { 
+    if(id == 'p-rank') loadRank();
+    document.getElementById(id).style.display = 'block'; 
+}
+function closePage(id) { document.getElementById(id).style.display = 'none'; }
 
-init();
-</script>
-
-<script>
-const tonUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: 'https://ganiyevdiyorbek700-dotcom.github.io/Oltin-Tanga-/tonconnect-manifest.json',
-    buttonRootId: 'ton-btn'
+// INIT
+db.ref('users/' + user.id).once('value', snap => {
+    if(snap.val()) s = {...s, ...snap.val()};
+    document.getElementById('user-name').innerText = user.first_name;
+    document.getElementById('user-id').innerText = user.id;
+    updateUI(); renderMarket();
+    setInterval(() => {
+        s.c += (s.pph/3600); s.d += (s.dph/3600);
+        if(s.e < 5000) s.e += 2;
+        updateUI();
+    }, 1000);
 });
 </script>
+
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+<script>
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: 'https://ganiyevdiyorbek700-dotcom.github.io/Oltin-Tanga-/tonconnect-manifest.json',
+        buttonRootId: 'ton-btn'
+    });
+</script>
+
 </body>
-    </html>
+                       </html>
+    
         
             
         
