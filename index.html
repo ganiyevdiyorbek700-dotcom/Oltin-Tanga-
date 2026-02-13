@@ -1,4 +1,371 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oltin Tanga - Pro Max</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="//libtl.com/sdk.js" data-zone="10558007" data-sdk="show_10558007"></script>
 
+    <style>
+        :root { --p: #fbc531; --s: #4cd137; --err: #ff4757; --bg: #0a0e17; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: white; height: 100vh; overflow: hidden; transition: 0.8s; background-size: cover; background-position: center; }
+
+        /* DINAMIK FONLAR (10 TA KARTA) */
+        .theme-0 { background: radial-gradient(circle, #2c3e50, #000); }
+        .theme-1 { background: linear-gradient(to bottom, #1e3799, #000); } /* Suvli */
+        .theme-2 { background: linear-gradient(to bottom, #eb4d4b, #000); } /* Olovli */
+        .theme-3 { background: linear-gradient(to bottom, #6ab04c, #000); } /* O'rmon */
+        .theme-4 { background: linear-gradient(to bottom, #f0932b, #000); } /* Cho'l */
+        .theme-5 { background: linear-gradient(to bottom, #be2edd, #000); } /* Neon */
+        .theme-6 { background: linear-gradient(to bottom, #22a6b3, #000); } /* Okean */
+        .theme-7 { background: linear-gradient(to bottom, #535c68, #000); } /* Metall */
+        .theme-8 { background: linear-gradient(to bottom, #badc58, #000); } /* Tabiat */
+        .theme-9 { background: linear-gradient(to bottom, #ff7979, #000); } /* Kristal */
+
+        .header { padding: 15px; display: flex; justify-content: space-between; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); position: relative; z-index: 10; }
+        .stat { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 10px; font-size: 12px; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* LEVEL PROGRESS */
+        .lvl-bar { width: 90%; height: 10px; background: #222; margin: 10px auto; border-radius: 20px; overflow: hidden; border: 1px solid #333; }
+        #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--p), var(--s)); transition: 0.5s; }
+
+        /* MAIN CLICKER */
+        .main { height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #st-bal { font-size: 55px; font-weight: 900; color: var(--p); text-shadow: 0 0 20px rgba(251,197,49,0.3); }
+        .coin-btn { width: 240px; height: 240px; background: radial-gradient(circle, #fbc531, #cc8e00); border-radius: 50%; border: 8px solid #8a6200; display: flex; align-items: center; justify-content: center; font-size: 90px; cursor: pointer; transition: 0.1s; box-shadow: 0 0 60px rgba(251,197,49,0.2); }
+        .coin-btn:active { transform: scale(0.92); }
+
+        /* NAVIGATION */
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #05080f; padding: 15px 0; border-top: 1px solid #222; z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; font-size: 10px; color: #7f8fa6; cursor: pointer; }
+        .nav-item i { font-size: 24px; display: block; margin-bottom: 5px; font-style: normal; }
+        .nav-item.active { color: var(--p); }
+
+        /* PAGES */
+        .page { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; padding: 20px; overflow-y: auto; padding-bottom: 100px; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        
+        /* NOTIFICATIONS */
+        .notif-box { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 50px; font-weight: bold; z-index: 10000; display: none; }
+
+        /* SUBWAY RUNNER MINI-GAME */
+        #game-box { width: 100%; height: 400px; background: #111; border: 3px solid var(--p); border-radius: 20px; position: relative; overflow: hidden; display: none; }
+        .player { width: 45px; height: 45px; background: #3498db; position: absolute; bottom: 20px; transition: 0.2s; border-radius: 10px; box-shadow: 0 0 15px #3498db; }
+        .item { position: absolute; font-size: 25px; animation: itemFall 2s linear forwards; }
+        @keyframes itemFall { to { transform: translateY(450px); } }
+
+        /* CHEST ANIMATION */
+        @keyframes shake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); } }
+        .chest-icon { font-size: 70px; animation: shake 0.6s infinite; cursor: pointer; display: inline-block; }
+    </style>
+</head>
+<body class="theme-0">
+
+<div id="notif" class="notif-box"></div>
+
+<div class="header">
+    <div class="stat">📀 <span id="st-pph">0</span>/s</div>
+    <div class="stat">🤖 Rob: <span id="st-rob">0</span></div>
+    <div class="stat">💎 <span id="st-diam">0</span></div>
+</div>
+
+<div class="lvl-bar"><div id="lvl-fill"></div></div>
+
+<div class="main">
+    <div id="st-bal">0</div>
+    <div class="coin-btn" onclick="handleTap(event)">📀</div>
+    <div style="margin-top: 30px; font-weight: bold; color: var(--p);">⚡ <span id="st-en">5000</span> / 5000</div>
+</div>
+
+<div class="nav">
+    <div class="nav-item" onclick="openPage('p-shop')"><i>🃏</i>Kartalar</div>
+    <div class="nav-item" onclick="openPage('p-bonus')"><i>🎁</i>Bonus</div>
+    <div class="nav-item" onclick="openPage('p-games')"><i>🎮</i>O'yinlar</div>
+    <div class="nav-item" onclick="openPage('p-rank')"><i>🏆</i>Reyting</div>
+    <div class="nav-item" onclick="openPage('p-prof')"><i>👤</i>Profil</div>
+</div>
+
+<div id="p-shop" class="page">
+    <div style="display:flex; justify-content:space-between"><h2>Interfeys Kartalari</h2> <h2 onclick="closePage('p-shop')">✕</h2></div>
+    <div id="shop-list"></div>
+    <h2 style="margin: 20px 0;">Robotlar (Avto-daromad)</h2>
+    <div id="rob-list"></div>
+</div>
+
+<div id="p-bonus" class="page">
+    <div style="display:flex; justify-content:space-between"><h2>Bonuslar</h2> <h2 onclick="closePage('p-bonus')">✕</h2></div>
+    <div class="card">
+        <h3>🔥 Super Tap (10x)</h3>
+        <p>Taymer: <span id="t-super">Tayyor</span></p>
+        <button class="btn" style="background:var(--p)" onclick="runAd('super')">REKLAMA</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <h3>📦 Omadli Sandiq</h3>
+        <p>Taymer: <span id="t-chest">Tayyor</span></p>
+        <div id="chest-ui" style="display:none; margin: 15px 0;"><div class="chest-icon" onclick="openChest()">🎁</div></div>
+        <button id="chest-btn" class="btn" style="background:var(--s)" onclick="runAd('chest')">REKLAMA</button>
+    </div>
+</div>
+
+<div id="p-games" class="page">
+    <div style="display:flex; justify-content:space-between"><h2>O'yinlar</h2> <h2 onclick="closePage('p-games')">✕</h2></div>
+    <div class="card" onclick="runAd('runner')">🏃‍♂️ <b>Subway Runner</b><br><small>Yoldagi olmoslarni yig'ing (Har biri 100 tanga)</small></div>
+    <div id="game-box">
+        <div id="player" class="player"></div>
+        <div id="score-txt" style="position:absolute; top:10px; left:10px; font-weight:bold;">Ball: 0</div>
+    </div>
+    <div class="card" style="margin-top:15px;" onclick="openPage('p-flip')">🪙 <b>Coin Flip</b><br><small>Tavakkal qiling va 2 barobar yuting</small></div>
+</div>
+
+<div id="p-flip" class="page">
+    <div style="display:flex; justify-content:space-between"><h3>Coin Flip</h3> <h2 onclick="closePage('p-flip')">✕</h2></div>
+    <div id="coin-obj" style="width:100px; height:100px; background:var(--p); border-radius:50%; margin:40px auto; display:flex; align-items:center; justify-content:center; font-size:40px; transition: 0.6s;">📀</div>
+    <div style="display:flex; gap:10px;">
+        <button class="btn" id="fs-1" style="background:#333" onclick="fSel=1">GERB</button>
+        <button class="btn" id="fs-2" style="background:#333" onclick="fSel=2">RAQAM</button>
+    </div>
+    <button class="btn" style="background:var(--p); margin-top:20px;" onclick="playFlip()">AYLANTIRISH (1000)</button>
+</div>
+
+<div id="p-rank" class="page">
+    <div style="display:flex; justify-content:space-between"><h2>Top O'yinchilar 🏆</h2> <h2 onclick="closePage('p-rank')">✕</h2></div>
+    <div id="rank-list"></div>
+</div>
+
+<div id="p-prof" class="page">
+    <div style="display:flex; justify-content:space-between"><h2>Profil</h2> <h2 onclick="closePage('p-prof')">✕</h2></div>
+    <div class="card" style="text-align:center;">
+        <h2 id="u-name">Ism</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+            <div class="stat">📀 <b id="u-c">0</b></div>
+            <div class="stat">💎 <b id="u-d">0</b></div>
+            <div class="stat">⭐ Lvl: <b id="u-l">1</b></div>
+            <div class="stat">🤖 Rob: <b id="u-r">0</b></div>
+        </div>
+    </div>
+    <div class="card" style="border: 2px solid var(--s); background: rgba(76,209,55,0.05);">
+        <h3 style="color:var(--s)">🚀 Airdrop Timer</h3>
+        <h2 id="air-timer" style="margin:10px 0;">00:00:00</h2>
+        <p style="font-size:11px; opacity:0.8; line-height:1.5;">O'yindagi faollik, robotlar va yig'ilgan olmoslar airdrop miqdoriga ta'sir qiladi. Hamyoningizni ulashni unutmang!</p>
+    </div>
+</div>
+
+<script>
+// CONFIG & DATA
+const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const tg = window.Telegram.WebApp;
+const user = tg.initDataUnsafe?.user || { id: "7462622808", first_name: "O'yinchi" };
+
+let s = { c:0, d:0, e:5000, tap:1, lvl:1, pph:0, cards:[], robs:{}, lastOff:Date.now(), lastS:0, lastC:0 };
+
+const themes = [
+    { n: "Suvli Karta 💧", p:10000, cls:"theme-1" },
+    { n: "Olovli Karta 🔥", p:50000, cls:"theme-2" },
+    { n: "O'rmon Kartasi 🌳", p:150000, cls:"theme-3" },
+    { n: "Cho'l Kartasi 🏜", p:500000, cls:"theme-4" },
+    { n: "Neon Karta 🌆", p:1500000, cls:"theme-5" },
+    { n: "Okean Kartasi 🌊", p:5000000, cls:"theme-6" },
+    { n: "Metall Karta ⚙️", p:15000000, cls:"theme-7" },
+    { n: "Tabiat Kartasi 🌿", p:50000000, cls:"theme-8" },
+    { n: "Kristal Karta 💎", p:150000000, cls:"theme-9" },
+    { n: "Oltin Karta 👑", p:500000000, cls:"theme-10" }
+];
+
+const robots = [];
+for(let i=1; i<=10; i++) robots.push({ id:i, n:"Robot M-"+i, p:25000*i*i, c:5000*i });
+
+function init() {
+    db.ref('users/' + user.id).once('value', snap => {
+        if(snap.val()) s = {...s, ...snap.val()};
+        calculateOffline();
+        updateUI();
+        renderShop();
+        setInterval(loop, 1000);
+        setInterval(() => db.ref('users/' + user.id).set(s), 15000);
+    });
+    tg.expand();
+}
+
+function loop() {
+    s.c += (s.pph/3600);
+    Object.keys(s.robs).forEach(id => { s.c += robots[id-1].c/3600; });
+    if(s.e < 5000) s.e += 2;
+    updateUI();
+    updateTimers();
+}
+
+function handleTap(e) {
+    if(s.e >= s.tap) {
+        s.c += s.tap; s.e -= s.tap;
+        let next = 100000 * s.lvl;
+        if(s.c >= next && s.lvl < 50) { s.lvl++; notify("YANGI DARAJA!", 'green'); }
+        updateUI(); createTapAnim(e);
+    } else {
+        runAd('energy');
+    }
+}
+
+function updateUI() {
+    document.getElementById('st-bal').innerText = Math.floor(s.c).toLocaleString();
+    document.getElementById('st-diam').innerText = s.d;
+    document.getElementById('st-en').innerText = Math.floor(s.e);
+    document.getElementById('st-pph').innerText = Math.floor(s.pph);
+    document.getElementById('st-rob').innerText = Object.keys(s.robs).length;
+    
+    // Progress Bar
+    let next = 100000 * s.lvl;
+    document.getElementById('lvl-fill').style.width = (s.c % next) / next * 100 + "%";
+
+    // Theme logic
+    if(s.cards.length > 0) document.body.className = themes[s.cards[s.cards.length-1]].cls;
+
+    // Profil
+    document.getElementById('u-name').innerText = user.first_name;
+    document.getElementById('u-c').innerText = Math.floor(s.c).toLocaleString();
+    document.getElementById('u-d').innerText = s.d;
+    document.getElementById('u-l').innerText = s.lvl;
+    document.getElementById('u-r').innerText = Object.keys(s.robs).length;
+
+    // Airdrop Timer
+    let diff = new Date("2026-05-20").getTime() - Date.now();
+    let h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), sec=Math.floor((diff%60000)/1000);
+    document.getElementById('air-timer').innerText = `${h}:${m}:${sec}`;
+}
+
+function renderShop() {
+    let h = '';
+    themes.forEach((t, i) => {
+        let bought = s.cards.includes(i);
+        h += `<div class="card"><b>${t.n}</b><br><small>Narxi: ${t.p.toLocaleString()}</small>
+        <button class="btn" style="background:${bought?'#444':'var(--p)'}" onclick="buyT(${i},${t.p})" ${bought?'disabled':''}>${bought?'SOTIB OLINGAN':'SOTIB OLISH'}</button></div>`;
+    });
+    document.getElementById('shop-list').innerHTML = h;
+
+    let rh = '';
+    robots.forEach(r => {
+        let has = s.robs[r.id];
+        rh += `<div class="card"><b>${r.n}</b><br><small>${r.c}📀/soat</small>
+        <button class="btn" style="background:${has?'#444':'var(--s)'}" onclick="buyR(${r.id},${r.p})" ${has?'disabled':''}>${has?'FAOL':r.p.toLocaleString()}</button></div>`;
+    });
+    document.getElementById('rob-list').innerHTML = rh;
+}
+
+function buyT(i, p) { if(s.c >= p) { s.c -= p; s.cards.push(i); renderShop(); updateUI(); notify("Interfeys o'zgardi!", 'green'); } else notify("Tanga yetarli emas!", 'red'); }
+function buyR(i, p) { if(s.c >= p) { s.c -= p; s.robs[i]=true; renderShop(); updateUI(); notify("Robot ishga tushdi!", 'green'); } else notify("Tanga yetarli emas!", 'red'); }
+
+function updateTimers() {
+    let now = Date.now();
+    let sRem = Math.max(0, 1800000 - (now - s.lastS));
+    let cRem = Math.max(0, 1800000 - (now - s.lastC));
+    document.getElementById('t-super').innerText = sRem > 0 ? Math.floor(sRem/60000) + "m" : "Tayyor";
+    document.getElementById('t-chest').innerText = cRem > 0 ? Math.floor(cRem/60000) + "m" : "Tayyor";
+}
+
+function runAd(type) {
+    if(typeof show_10558007 === 'function') {
+        show_10558007().then(() => {
+            if(type=='super') { s.tap=10; s.lastS=Date.now(); setTimeout(()=>s.tap=1, 60000); notify("SUPER TAP!", 'green'); }
+            if(type=='chest') { document.getElementById('chest-ui').style.display='block'; document.getElementById('chest-btn').style.display='none'; }
+            if(type=='energy') { s.e=5000; notify("ENERGIYA TO'LDI!", 'green'); }
+            if(type=='runner') startRunner();
+        });
+    } else {
+        if(type=='runner') startRunner(); // Test uchun
+        if(type=='chest') { document.getElementById('chest-ui').style.display='block'; document.getElementById('chest-btn').style.display='none'; }
+    }
+}
+
+function openChest() {
+    let w = Math.floor(Math.random()*5000)+1000; s.c += w; s.lastC=Date.now();
+    document.getElementById('chest-ui').style.display='none'; document.getElementById('chest-btn').style.display='block';
+    notify(w + " tanga yutdingiz!", 'green');
+}
+
+// SUBWAY RUNNER
+function startRunner() {
+    document.getElementById('game-box').style.display='block';
+    let score = 0; let pos = 50;
+    document.getElementById('game-box').onclick = (e) => {
+        pos = e.clientX < window.innerWidth/2 ? 15 : 85;
+        document.getElementById('player').style.left = pos + "%";
+    };
+    let gInt = setInterval(() => {
+        let itm = document.createElement('div');
+        itm.className = 'item'; itm.innerText = "💎";
+        itm.style.left = (Math.random() > 0.5 ? 15 : 85) + "%";
+        itm.style.top = "0px";
+        document.getElementById('game-box').appendChild(itm);
+        setTimeout(() => {
+            let top = itm.offsetTop;
+            if(top > 330 && top < 380 && parseInt(itm.style.left) == pos) {
+                s.c += 100; score++; document.getElementById('score-txt').innerText = "Ball: " + score;
+            }
+            itm.remove();
+        }, 2000);
+    }, 800);
+    setTimeout(() => { clearInterval(gInt); document.getElementById('game-box').style.display='none'; notify("O'yin tugadi!", 'green'); }, 20000);
+}
+
+// COIN FLIP
+let fSel = 0;
+function playFlip() {
+    if(s.c >= 1000 && fSel > 0) {
+        s.c -= 1000; let c = document.getElementById('coin-obj');
+        c.style.transform = "rotateY(720deg)";
+        setTimeout(() => {
+            let res = Math.random() > 0.5 ? 1 : 2;
+            c.innerText = res==1?'📀':'🔢'; c.style.transform = "rotateY(0deg)";
+            if(res == fSel) { s.c += 2000; notify("YUTDINGIZ!", 'green'); } else notify("YUTQAZDINGIZ!", 'red');
+            updateUI();
+        }, 600);
+    }
+}
+
+function calculateOffline() {
+    let diff = Math.floor((Date.now() - s.lastOff)/1000);
+    if(diff > 60) {
+        let rc = 0; Object.keys(s.robs).forEach(id => { rc += (robots[id-1].c/3600)*diff; });
+        s.c += rc; if(rc > 1) notify("Robotlar: " + Math.floor(rc), 'green');
+    }
+}
+
+function loadRank() {
+    db.ref('users').orderByChild('c').limitToLast(10).once('value', snap => {
+        let h = ''; let p = []; snap.forEach(x => p.push(x.val()));
+        p.reverse().forEach((x, i) => {
+            h += `<div class="card" style="display:flex; justify-content:space-between"><span>${i+1}. ${x.first_name}</span><b>${Math.floor(x.c).toLocaleString()}</b></div>`;
+        });
+        document.getElementById('rank-list').innerHTML = h;
+    });
+}
+
+function openPage(id) { 
+    if(id=='p-rank') loadRank(); 
+    if(id=='p-shop' || id=='p-games') { /* Reklama chiqishi mumkin */ }
+    document.getElementById(id).style.display = 'block'; 
+}
+function closePage(id) { document.getElementById(id).style.display = 'none'; }
+function notify(m, col) { let n = document.getElementById('notif'); n.innerText = m; n.style.background = col=='green'?'var(--s)':'var(--err)'; n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
+function createTapAnim(e) {
+    let t = document.createElement('div'); t.innerText = "+"+s.tap;
+    t.style.cssText = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; color:var(--p); font-weight:bold; animation: tapup 0.8s forwards; z-index:9999;`;
+    document.body.appendChild(t); setTimeout(()=>t.remove(),800);
+}
+
+init();
+</script>
+<style> @keyframes tapup { to { transform: translateY(-100px); opacity:0; } } </style>
+</body>
+        </html>
+        
     
     
     
