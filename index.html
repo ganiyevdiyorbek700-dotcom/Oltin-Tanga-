@@ -3,305 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tanha Empire: AI Evolution</title>
+    <title>Tanha Empire | Official AI Game</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="//libtl.com/sdk.js" data-zone="10558007" data-sdk="show_10558007"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Outfit:wght@300;500;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Outfit:wght@300;600;900&display=swap');
         
         :root {
             --p: #fbc531; --s: #4cd137; --err: #ff4757; --bg: #010409;
             --neon: #00f2ff; --glass: rgba(255, 255, 255, 0.05);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { 
-            background: var(--bg); color: white; height: 100vh; overflow: hidden; 
-            font-family: 'Outfit', sans-serif;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; outline: none; }
+        body { background: var(--bg); color: white; font-family: 'Outfit', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* 1. KREATIV LOADING */
-        #loader {
-            position: fixed; inset: 0; background: #000; z-index: 10000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .load-anim {
-            width: 120px; height: 120px; border: 4px solid #111; border-top: 4px solid var(--neon);
-            border-radius: 50%; animation: spin 1s infinite linear; box-shadow: 0 0 20px var(--neon);
-        }
+        /* KREATIV LOADER */
+        #loader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .ring { width: 120px; height: 120px; border: 3px solid #111; border-top: 3px solid var(--neon); border-radius: 50%; animation: spin 1s infinite linear; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 2. HEADER & STATUS */
-        .header {
-            padding: 15px; display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center;
-            background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--glass);
-        }
-        .status-top { text-align: center; font-family: 'Orbitron'; font-size: 14px; }
+        /* HEADER */
+        .header { padding: 15px; display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--glass); position: relative; z-index: 100; }
+        .bal-val { text-align: center; font-family: 'Orbitron'; font-weight: 900; color: var(--p); font-size: 22px; text-shadow: 0 0 15px rgba(251, 197, 49, 0.4); }
+
+        /* ASOSIY MAYDON */
+        .main { height: 65vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .tap-power-label { font-family: 'Orbitron'; color: var(--neon); font-size: 13px; margin-bottom: 12px; letter-spacing: 2px; }
         
-        /* 3. ASOSIY MAYDON (MAIN CORE) */
-        .main-core { height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .tap-power { font-size: 20px; font-weight: 800; color: var(--neon); margin-bottom: 10px; text-shadow: 0 0 10px var(--neon); }
-        
-        .coin-box { position: relative; }
-        .tap-circle {
-            width: 240px; height: 240px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 80px; cursor: pointer; transition: 0.1s; border: 10px solid rgba(255,255,255,0.05);
-        }
-        .tap-circle:active { transform: scale(0.9); }
+        .coin-box { position: relative; transition: 0.1s; cursor: pointer; }
+        .coin-box:active { transform: scale(0.92); }
+        .circle { width: 260px; height: 260px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 90px; border: 8px solid rgba(255,255,255,0.03); box-shadow: 0 0 40px rgba(0, 242, 255, 0.15); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* EVOLUTIONS (20 TA) */
-        .evo-1 { background: radial-gradient(circle, #00a8ff, #001233); box-shadow: 0 0 50px #00a8ff; }
-        .evo-20 { background: radial-gradient(circle, #fff, #fbc531); box-shadow: 0 0 100px #fff; animation: shine 2s infinite; }
+        /* EVOLUTION THEMES */
+        .evo-1 { background: radial-gradient(circle, #00a8ff, #001233); }
+        .evo-5 { background: radial-gradient(circle, #9c88ff, #2f3640); border-color: #9c88ff; }
+        .evo-10 { background: radial-gradient(circle, #ff4757, #2f3542); border-color: #ff4757; }
+        .evo-20 { background: linear-gradient(45deg, #fbc531, #fff, #fbc531); border-color: #fff; animation: shine 3s infinite; }
+
+        @keyframes shine { 0% { filter: brightness(1); } 50% { filter: brightness(1.4); } 100% { filter: brightness(1); } }
 
         /* LVL PROGRESS */
-        .lvl-box { width: 85%; margin-top: 30px; }
-        .lvl-bar { width: 100%; height: 10px; background: #111; border-radius: 20px; overflow: hidden; border: 1px solid #333; }
-        #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon), var(--p)); transition: 0.5s; }
+        .progress-area { width: 85%; margin-top: 30px; }
+        .bar-bg { width: 100%; height: 12px; background: #0a0a0a; border-radius: 20px; border: 1px solid #222; overflow: hidden; }
+        #bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon), var(--p)); transition: 0.4s; }
 
-        /* 4. NAV BAR (ASOSIY 5 TA) */
-        .nav {
-            position: fixed; bottom: 0; width: 100%; display: flex; 
-            background: #000; padding: 15px 0; border-top: 1px solid #222;
-        }
-        .nav-item { flex: 1; text-align: center; color: #555; font-size: 10px; cursor: pointer; transition: 0.3s; }
-        .nav-item i { font-size: 24px; display: block; margin-bottom: 4px; font-style: normal; }
-        .nav-item.active { color: var(--p); transform: translateY(-5px); }
+        /* PAGES */
+        .page { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; padding: 25px; overflow-y: auto; padding-bottom: 120px; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: var(--glass); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.07); backdrop-filter: blur(15px); }
+        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 900; cursor: pointer; font-family: 'Orbitron'; transition: 0.2s; }
+        .btn-buy { background: var(--p); color: #000; }
+        .btn-buy:disabled { background: #333; color: #666; }
 
-        /* 5. PAGES */
-        .page { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; padding: 25px; overflow-y: auto; padding-bottom: 120px; }
-        .glass-card { background: var(--glass); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px); }
-        .btn-buy { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; margin-top: 10px; }
+        /* NAV */
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.95); padding: 18px 0; border-top: 1px solid #111; z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--p); text-shadow: 0 0 10px var(--p); }
+        .nav-item i { font-size: 26px; display: block; font-style: normal; margin-bottom: 6px; }
 
-        /* 6. MINI GAMES OVERLAY */
-        #game-screen { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        #game-timer { font-size: 40px; font-family: 'Orbitron'; color: var(--err); margin-bottom: 20px; }
+        /* NOTIF */
+        #notif { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); padding: 15px 35px; border-radius: 50px; z-index: 10001; font-weight: 900; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes shine { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
+        /* GAME OVERLAY */
+        #game-box { position: fixed; inset: 0; background: #000; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #timer-ui { font-size: 50px; color: var(--err); font-family: 'Orbitron'; margin-bottom: 30px; }
     </style>
 </head>
 <body>
 
 <div id="loader">
-    <div class="load-anim"></div>
-    <h2 style="margin-top:20px; font-family:'Orbitron'; color:var(--neon)">INITIALIZING AI...</h2>
+    <div class="ring"></div>
+    <h2 style="margin-top:25px; font-family:'Orbitron'; color:var(--neon); letter-spacing:4px;">TANHA AI CONNECTING</h2>
 </div>
+
+<div id="notif"></div>
 
 <div class="header">
-    <button class="nav-item" style="background:none; border:none;" onclick="toggleLang()" id="lang-btn">🇺🇿 UZ</button>
-    <div class="status-top">
-        <div style="color:var(--p)">📀 <span id="bal-top">0</span></div>
-        <div style="font-size:10px; color:#aaa">Mining: <span id="rob-power">0</span>/h</div>
+    <div style="display:flex; gap:8px;">
+        <button onclick="toggleLang()" id="lang-node" style="background:var(--glass); border:1px solid #333; color:white; padding:6px 10px; border-radius:10px; font-weight:900; font-size:11px;">🇺🇿 UZ</button>
+        <button onclick="openP('p-faq')" style="background:var(--glass); border:1px solid #333; color:white; padding:6px 10px; border-radius:10px; font-weight:900;">?</button>
     </div>
-    <div onclick="openP('p-faq')" style="font-size:22px; text-align:right; cursor:pointer">❓</div>
+    <div class="bal-val">📀 <span id="top-bal">0</span></div>
+    <div style="text-align:right; color:var(--neon); font-family:'Orbitron'; font-size:12px;">💎 <span id="top-diam">0</span></div>
 </div>
 
-<div class="main-core">
-    <div class="tap-power" id="tap-val">TAP POWER: 1</div>
+<div class="main">
+    <div class="tap-power-label" id="tap-power-ui">TAP POWER: 2</div>
     <div class="coin-box" onclick="handleTap(event)">
-        <div class="tap-circle evo-1" id="coin-main">📀</div>
+        <div id="coin-ui" class="circle evo-1">📀</div>
     </div>
-    <div class="lvl-box">
-        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-            <span id="lvl-txt">LEVEL 1</span>
-            <span id="lvl-percent">0%</span>
+    <div class="progress-area">
+        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px; font-weight:600;">
+            <span id="lvl-label">DARAXA: 1</span>
+            <span id="en-label">5000 / 5000</span>
         </div>
-        <div class="lvl-bar"><div id="lvl-fill"></div></div>
+        <div class="bar-bg"><div id="bar-fill"></div></div>
     </div>
-    <div style="margin-top:20px; font-weight:900">⚡ <span id="st-en">5000</span> / 5000</div>
 </div>
 
 <div class="nav">
-    <div class="nav-item" onclick="openP('p-shop', true)"><i>🛒</i>Do'kon</div>
-    <div class="nav-item" onclick="openP('p-bonus', true)"><i>🎁</i>Bonus</div>
-    <div class="nav-item active" onclick="closeAll()"><i>🏠</i>Asosiy</div>
-    <div class="nav-item" onclick="openP('p-games')"><i>🕹️</i>O'yinlar</div>
-    <div class="nav-item" onclick="openP('p-prof')"><i>👤</i>Profil</div>
+    <div class="nav-item" onclick="openP('p-shop', true)"><i>🛒</i><span data-key="n-shop">Do'kon</span></div>
+    <div class="nav-item" onclick="openP('p-bonus', true)"><i>🎁</i><span data-key="n-bonus">Bonus</span></div>
+    <div class="nav-item active" onclick="closeAll()"><i>🏠</i><span data-key="n-main">Asosiy</span></div>
+    <div class="nav-item" onclick="openP('p-games')"><i>🕹️</i><span data-key="n-games">O'yinlar</span></div>
+    <div class="nav-item" onclick="openP('p-prof')"><i>👤</i><span data-key="n-prof">Profil</span></div>
 </div>
 
 <div id="p-shop" class="page">
-    <div style="display:flex; justify-content:space-between"><h2>Imperiya Do'koni</h2> <h2 onclick="closeP('p-shop')">✕</h2></div>
-    <div id="shop-container" style="margin-top:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 data-key="n-shop">Do'kon</h2>
+        <div style="display:flex; gap:10px;">
+            <button onclick="renderShop('evos')" class="btn" style="padding:8px 15px; font-size:10px; background:var(--neon); color:#000;">KARTALAR</button>
+            <button onclick="renderShop('robots')" class="btn" style="padding:8px 15px; font-size:10px; background:var(--s); color:#000;">ROBOTLAR</button>
         </div>
+    </div>
+    <div id="shop-list"></div>
+</div>
+
+<div id="p-bonus" class="page">
+    <h2 data-key="n-bonus">Bonuslar</h2><br>
+    <div class="card" onclick="runAd('super_tap')">
+        <h3>⚡ Super Tap (2X)</h3>
+        <p style="font-size:12px; color:#aaa; margin-top:5px;">5 daqiqa davomida barcha taplar ikki barobar hisoblanadi!</p>
+    </div>
+    <div class="card" onclick="claimDaily()">
+        <h3>📅 Kunlik Kombo</h3>
+        <p style="font-size:12px; color:#aaa; margin-top:5px;">Har kuni 50,000 tanga bepul oling.</p>
+    </div>
 </div>
 
 <div id="p-games" class="page">
-    <h2>Mini O'yinlar 🎮</h2>
-    <div class="glass-card" onclick="checkGameLimit('2048')">
-        <h3>🔢 Tanga 2048</h3>
-        <p>Yutuq: 25,000 📀 + 25 💎</p>
-        <button class="btn-buy" style="background:var(--neon); color:#000">O'YNASH (1/1)</button>
+    <h2 data-key="n-games">Mini O'yinlar</h2><br>
+    <div class="card" onclick="initGame('2048')">
+        <h3 style="color:var(--p)">🔢 Tanga 2048</h3>
+        <p style="font-size:12px; margin-top:5px;">Yutuq: 25,000 📀 + 25 💎</p>
     </div>
-    <div class="glass-card" onclick="checkGameLimit('memory')">
-        <h3>🧠 Memory Match</h3>
-        <button class="btn-buy" style="background:var(--s); color:#000">O'YNASH (1/1)</button>
+    <div class="card" onclick="initGame('memory')">
+        <h3 style="color:var(--s)">🧠 Xotira Mashqi</h3>
+        <p style="font-size:12px; margin-top:5px;">Barcha kartalarni toping va yuting.</p>
     </div>
-    <div class="glass-card" onclick="checkGameLimit('sort')">
-        <h3>🧪 Ball Sort</h3>
-        <button class="btn-buy" style="background:var(--p); color:#000">O'YNASH (1/1)</button>
+    <div class="card" onclick="initGame('sort')">
+        <h3 style="color:var(--neon)">🧪 Rangli Suyuqlik</h3>
+        <p style="font-size:12px; margin-top:5px;">Idishlarni to'ldiring va bonus oling.</p>
     </div>
 </div>
 
 <div id="p-prof" class="page">
-    <div style="display:flex; justify-content:space-between"><h2>Profil</h2> <h2 onclick="closeP('p-prof')">✕</h2></div>
-    <div class="glass-card" style="text-align:center;">
-        <div style="width:80px; height:80px; background:var(--p); border-radius:50%; margin:0 auto 10px; font-size:40px; display:flex; align-items:center; justify-content:center;">👤</div>
-        <h2 id="u-name">O'yinchi</h2>
-        <p>Daraja: <span id="u-lvl">1</span></p>
+    <h2 data-key="n-prof">Profil</h2><br>
+    <div id="ton-connect-btn" style="margin-bottom:20px; display:flex; justify-content:center;"></div>
+    <div class="card">
+        <p style="font-size:12px; color:#aaa;">Hamyon manzili:</p>
+        <p id="wallet-ui" style="font-family:monospace; color:var(--neon); margin-top:5px;">Ulanmagan</p>
     </div>
-    <div class="glass-card">
-        <h3>Hamyon: <span style="font-size:12px; color:var(--p)">Bog'lanmagan</span></h3>
-        <button class="btn-buy" style="background:#0088cc; color:#fff" onclick="connectWallet()">TON WALLET ULASH</button>
-    </div>
-    <div class="glass-card" style="border-left:5px solid var(--p);">
-        <h3>Airdrop Shartlari</h3>
-        <p style="font-size:12px; opacity:0.7;">- 5-daraja robotga ega bo'lish<br>- Kunlik o'yinlarni o'ynash<br>- Hamyonni bog'lash</p>
+    <div class="card" style="border-left:4px solid var(--p)">
+        <h3 style="color:var(--p)">Airdrop Info</h3>
+        <p style="font-size:12px; line-height:1.6; margin-top:10px;">Tokenlar 2026-yilda chiqariladi. Shartlar: 15-darajaga yetish, 5 ta robot va hamyon ulanishi.</p>
     </div>
 </div>
 
-<div id="game-screen">
-    <h2 id="game-title">O'yin Nomlanishi</h2>
-    <div id="game-timer">60</div>
-    <div id="game-arena" style="width:100%; height:300px; background:var(--glass); border-radius:20px;"></div>
-    <p style="margin-top:20px;">Yutish uchun barcha amallarni bajaring!</p>
+<div id="p-faq" class="page">
+    <h2>F.A.Q</h2><br>
+    <div class="card">
+        <h4>O'yin qanday ishlaydi?</h4>
+        <p style="font-size:13px; opacity:0.7; margin-top:5px;">Tanga bosing, robotlar sotib oling va darajangizni oshiring. Har bir daraja sizni airdropga yaqinlashtiradi.</p>
+    </div>
 </div>
 
-<audio id="snd-tap" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
-<audio id="snd-win" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+<div id="game-box">
+    <h1 id="game-title-ui" style="font-family:'Orbitron'; color:var(--p);">O'YIN</h1>
+    <div id="timer-ui">60</div>
+    <div style="padding:20px; text-align:center; opacity:0.6;">O'yin jarayoni... Taymer tugaguncha kutishingiz va harakat qilishingiz kerak!</div>
+    <button class="btn" style="width:200px; background:var(--err); color:white;" onclick="quitGame()">CHIQIY</button>
+</div>
 
 <script>
-// --- FIREBASE & STATE ---
-const firebaseConfig = { databaseURL: "https://Sizning-Baza-URL.firebaseio.com" };
+// --- FIREBASE ULASH ---
+const firebaseConfig = {
+    apiKey: "AIzaSyDbttlr-oGJeDbjMbrubcuspgg9gk-7Gxs",
+    authDomain: "oltin-tanga-d2c80.firebaseapp.com",
+    databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
+    projectId: "oltin-tanga-d2c80",
+    storageBucket: "oltin-tanga-d2c80.firebasestorage.app",
+    messagingSenderId: "954210050924",
+    appId: "1:954210050924:web:f57b75568c66216c49c949"
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// --- TON CONNECT ---
+const tonConnectUI = new TONConnectUI.TonConnectUI({
+    manifestUrl: 'https://Sizning-Saytingiz-Manzili.com/tonconnect-manifest.json', // BU YERGA O'ZINGIZNING JSON MANZILINGIZNI QO'YING
+    buttonRootId: 'ton-connect-btn'
+});
+
+// --- O'YIN MA'LUMOTLARI ---
 let s = {
-    id: window.Telegram.WebApp.initDataUnsafe?.user?.id || "local_dev",
-    name: window.Telegram.WebApp.initDataUnsafe?.user?.first_name || "O'yinchi",
-    c: 0, d: 0, e: 5000, lvl: 1, robPower: 0, lang: 'uz',
-    lastExit: Date.now(),
-    gamesDone: { '2048': false, 'memory': false, 'sort': false }
+    id: window.Telegram.WebApp.initDataUnsafe?.user?.id || "local_user",
+    name: window.Telegram.WebApp.initDataUnsafe?.user?.first_name || "Guest",
+    c: 0, d: 0, e: 5000, lvl: 1, robPower: 0, lang: 'uz', lastExit: Date.now(),
+    dailyClaimed: '', gamesDone: {}
 };
 
-// --- CORE LOGIC ---
+const LANG = {
+    uz: {"n-shop":"Do'kon", "n-bonus":"Bonus", "n-main":"Asosiy", "n-games":"O'yinlar", "n-prof":"Profil"},
+    en: {"n-shop":"Shop", "n-bonus":"Bonus", "n-main":"Home", "n-games":"Games", "n-prof":"Profile"}
+};
+
+// --- FUNKSIYALAR ---
 window.onload = () => {
-    loadData();
-    tg.expand();
+    loadUser();
+    window.Telegram.WebApp.expand();
+    renderShop('evos');
 };
 
 function handleTap(e) {
     if(s.e > 0) {
-        let p = s.lvl * 1;
+        let p = s.lvl * 2;
         s.c += p; s.e -= 1;
-        document.getElementById('snd-tap').play();
         createTapAnim(e, p);
         updateUI();
     } else {
+        showNotif("Energiya tugadi! Reklama ko'ring.", "red");
         runAd('energy');
     }
 }
 
-// OFFLINE MINING (O'yindan chiqqanda ishlash)
-function calculateOfflineMining() {
-    let now = Date.now();
-    let diffInHours = (now - s.lastExit) / 3600000;
-    let earned = diffInHours * s.robPower;
-    if(earned > 0) {
-        s.c += earned;
-        alert(`Siz yo'qligingizda robotlar ${Math.floor(earned)} 📀 yig'ishdi!`);
-    }
-}
-
-// MINI GAMES SYSTEM
-function checkGameLimit(type) {
-    if(s.gamesDone[type]) {
-        alert("Bu o'yinni bugun o'ynab bo'ldingiz! Ertaga qaytib keling.");
-    } else {
-        runAd('start_game').then(() => startGame(type));
-    }
-}
-
-function startGame(type) {
-    document.getElementById('game-screen').style.display = 'flex';
-    let timer = 60;
-    const interval = setInterval(() => {
-        timer--;
-        document.getElementById('game-timer').innerText = timer;
-        if(timer <= 0) {
-            clearInterval(interval);
-            finishGame(type);
-        }
-    }, 1000);
-}
-
-function finishGame(type) {
-    s.c += 25000; s.d += 25;
-    s.gamesDone[type] = true;
-    document.getElementById('snd-win').play();
-    document.getElementById('game-screen').style.display = 'none';
-    alert("TABRIKLAYMIZ! 25,000 📀 va 25 💎 yutdingiz!");
-    updateUI();
-    saveData();
-}
-
-// --- UTILS ---
 function updateUI() {
-    document.getElementById('bal-top').innerText = Math.floor(s.c).toLocaleString();
-    document.getElementById('tap-val').innerText = `TAP POWER: ${s.lvl}`;
-    document.getElementById('st-en').innerText = s.e;
-    document.getElementById('rob-power').innerText = s.robPower;
-    document.getElementById('lvl-fill').style.width = (s.c % 10000) / 100 + "%";
+    document.getElementById('top-bal').innerText = Math.floor(s.c).toLocaleString();
+    document.getElementById('top-diam').innerText = s.d;
+    document.getElementById('en-label').innerText = `${s.en} / 5000`;
+    document.getElementById('lvl-label').innerText = s.lang == 'uz' ? `DARAXA: ${s.lvl}` : `LEVEL: ${s.lvl}`;
+    document.getElementById('tap-power-ui').innerText = `TAP POWER: ${s.lvl * 2}`;
+    document.getElementById('bar-fill').style.width = (s.c % 10000) / 100 + "%";
+    document.getElementById('coin-ui').className = `circle evo-${Math.min(s.lvl, 20)}`;
 }
 
-function createTapAnim(e, p) {
-    let d = document.createElement('div');
-    d.innerText = `+${p}`;
-    d.style.cssText = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; font-weight:900; color:var(--neon); animation: flyUp 0.8s forwards; pointer-events:none; z-index:9999;`;
-    document.body.appendChild(d);
-    setTimeout(() => d.remove(), 800);
-}
-
-function openP(id, ad = false) {
-    if(ad) runAd('page_transition');
-    document.getElementById(id).style.display = 'block';
-}
-
-function closeP(id) { document.getElementById(id).style.display = 'none'; }
-function closeAll() { document.querySelectorAll('.page').forEach(p => p.style.display = 'none'); }
-
-function runAd(type) {
-    if(typeof show_10558007 === 'function') return show_10558007();
-    return Promise.resolve();
-}
-
-// --- PERSISTENCE ---
-function saveData() {
-    s.lastExit = Date.now();
-    db.ref('users/' + s.id).set(s);
-}
-
-function loadData() {
-    db.ref('users/' + s.id).once('value').then((snap) => {
+// FIREBASE SAVING/LOADING
+function loadUser() {
+    db.ref('players/' + s.id).once('value').then((snap) => {
         if(snap.exists()) {
             s = snap.val();
-            calculateOfflineMining();
+            // Offline mining
+            let sec = (Date.now() - s.lastExit) / 1000;
+            if(s.robPower > 0) {
+                let earned = (s.robPower / 3600) * sec;
+                s.c += earned;
+                showNotif(`Offline: +${Math.floor(earned)} 📀`, "green");
+            }
         }
         document.getElementById('loader').style.display = 'none';
         updateUI();
     });
 }
 
-setInterval(saveData, 10000); // Har 10 soniyada saqlash
-setInterval(() => { if(s.e < 5000) s.e += 5; updateUI(); }, 2000);
+function save() {
+    s.lastExit = Date.now();
+    db.ref('players/' + s.id).set(s);
+}
+
+// AD ENGINE
+function runAd(context) {
+    if(typeof show_10558007 === 'function') {
+        show_10558007().then(() => {
+            if(context === 'energy') { s.e = 5000; updateUI(); showNotif("Energiya to'ldi!", "green"); }
+            if(context === 'super_tap') showNotif("Super Tap Faollashdi (2x)!", "green");
+        });
+    } else {
+        showNotif("Reklama yuklanmadi", "red");
+    }
+}
+
+// MINI GAMES
+function initGame(type) {
+    let today = new Date().toDateString();
+    if(s.gamesDone[type] === today) {
+        showNotif("Bugun o'ynab bo'ldingiz!", "red");
+        return;
+    }
+    
+    runAd('game_start');
+    document.getElementById('game-box').style.display = 'flex';
+    document.getElementById('game-title-ui').innerText = type.toUpperCase();
+    
+    let time = 60;
+    const timer = setInterval(() => {
+        time--;
+        document.getElementById('timer-ui').innerText = time;
+        if(time <= 0) {
+            clearInterval(timer);
+            s.c += 25000; s.d += 25;
+            s.gamesDone[type] = today;
+            document.getElementById('game-box').style.display = 'none';
+            showNotif("MUKOFOT: 25,000 📀 va 25 💎", "green");
+            updateUI(); save();
+        }
+    }, 1000);
+}
+
+// SHOP RENDERING
+function renderShop(type) {
+    let list = document.getElementById('shop-list');
+    list.innerHTML = "";
+    if(type === 'evos') {
+        for(let i=1; i<=20; i++) {
+            let cost = Math.floor(2000 * Math.pow(2.1, i));
+            list.innerHTML += `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><h4>Evo Level ${i}</h4><p style="font-size:11px;">Narxi: ${cost.toLocaleString()} 📀</p></div>
+                    <button class="btn btn-buy" style="width:100px; padding:10px;" onclick="buyEvo(${i}, ${cost})" ${s.lvl >= i ? 'disabled' : ''}>SOTIB OLISH</button>
+                </div>`;
+        }
+    } else {
+        for(let i=1; i<=10; i++) {
+            let cost = Math.floor(15000 * Math.pow(3, i));
+            let power = i * 400;
+            list.innerHTML += `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><h4>Robot MK-${i}</h4><p style="font-size:11px;">Mining: ${power}/soat</p></div>
+                    <button class="btn btn-buy" style="width:100px; padding:10px; background:var(--s);" onclick="buyRob(${power}, ${cost})">SOTIB OLISH</button>
+                </div>`;
+        }
+    }
+}
+
+function buyEvo(l, c) {
+    if(s.c >= c) { s.c -= c; s.lvl = l; updateUI(); renderShop('evos'); save(); showNotif("Tabriklaymiz!", "green"); }
+    else showNotif("Mablag' yetarli emas!", "red");
+}
+
+function buyRob(p, c) {
+    if(s.c >= c) { s.c -= c; s.robPower += p; updateUI(); save(); showNotif("Robot ishga tushdi!", "green"); }
+    else showNotif("Mablag' yetarli emas!", "red");
+}
+
+// UI UTILS
+function showNotif(txt, col) {
+    let n = document.getElementById('notif');
+    n.innerText = txt;
+    n.style.background = col === 'green' ? 'var(--s)' : 'var(--err)';
+    n.style.display = 'block';
+    setTimeout(() => n.style.display = 'none', 3000);
+}
+
+function toggleLang() {
+    s.lang = s.lang === 'uz' ? 'en' : 'uz';
+    document.getElementById('lang-node').innerText = s.lang === 'uz' ? '🇺🇿 UZ' : '🇺🇸 EN';
+    Object.keys(LANG[s.lang]).forEach(key => {
+        document.querySelectorAll(`[data-key="${key}"]`).forEach(el => el.innerText = LANG[s.lang][key]);
+    });
+}
+
+function createTapAnim(e, p) {
+    let d = document.createElement('div');
+    d.innerText = `+${p}`;
+    d.style.cssText = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; font-weight:900; color:var(--p); pointer-events:none; z-index:9999; animation: fly 0.7s forwards;`;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 700);
+}
+
+function openP(id, ad=false) {
+    if(ad) runAd('page');
+    closeAll();
+    document.getElementById(id).style.display = 'block';
+}
+function closeAll() { document.querySelectorAll('.page').forEach(p => p.style.display = 'none'); }
+function quitGame() { location.reload(); }
+
+// Hamyon holati
+tonConnectUI.onStatusChange(wallet => {
+    if (wallet) {
+        document.getElementById('wallet-ui').innerText = wallet.account.address.substring(0,8) + "...";
+        s.wallet = wallet.account.address;
+        save();
+    }
+});
+
+setInterval(save, 20000);
+setInterval(() => { if(s.e < 5000) { s.e += 5; updateUI(); } }, 2000);
 </script>
 
-<style> @keyframes flyUp { to { transform: translateY(-120px); opacity: 0; } } </style>
+<style> @keyframes fly { to { transform: translateY(-120px); opacity: 0; } } </style>
 </body>
-                                                    </html>
-    
+                                                          </html>
         
     
     
