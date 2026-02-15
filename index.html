@@ -3,241 +3,569 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Space Adventure Miner - Raketa Kon Qazish</title>
+    <title>Oltin Tanga - Pro Max Clicker</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
-    <!-- Monetag reklama SDK (sizning zone ID) -->
+    <!-- Monetag reklama SDK (sizning zone ID'ingiz) -->
     <script src="//libtl.com/sdk.js" data-zone="10558007" data-sdk="show_10558007"></script>
     
-    <!-- TON Connect SDK (hamyon ulash) -->
+    <!-- TON Connect SDK (hamyon ulash uchun) -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
     <style>
-        :root { --space-dark: #0a0e1f; --gold: #ffd700; --card: #1a2338; --green: #2ecc71; --red: #e74c3c; --blue: #4a90e2; --purple: #8b5cf6; --star-glow: #ffe066; }
+        :root { --gold: #ffd700; --bg: #0b0d17; --card: #1c222d; --green: #2ecc71; --red: #e74c3c; --blue: #0088cc; --orange: #ffa500; --purple: #8b5cf6; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { margin: 0; background: var(--space-dark); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; position: relative; }
-        
-        /* Space fon animatsiyasi */
-        .stars-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(ellipse at bottom, #1b2735 0%, transparent 50%), linear-gradient(to top, #090a0f 0%, #1b2735 50%, #4a90e2 100%); overflow: hidden; }
-        .stars-bg::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://www.transparenttextures.com/patterns/stardust.png'); opacity: 0.3; animation: twinkle 3s infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-        .top-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); }
-        .stat-box { background: var(--card); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,215,0,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        /* Loading animatsiyasi */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; transition: opacity 0.5s; }
+        .loading-spinner { width: 50px; height: 50px; border: 5px solid rgba(255,215,0,0.3); border-top: 5px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { margin-top: 20px; font-size: 18px; color: var(--gold); }
+
+        .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; background: radial-gradient(circle at center, var(--gold), transparent 70%); transition: all 0.5s; }
+        .card-effect { animation: card-appear 0.5s ease-out; }
+        @keyframes card-appear { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .tap-effect { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; color: var(--green); pointer-events: none; animation: tap-float 0.5s ease-out forwards; z-index: 10; }
+        @keyframes tap-float { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) translateY(-20px); } }
+
+        .top-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px; background: rgba(0,0,0,0.6); }
+        .stat-box { background: var(--card); padding: 6px; border-radius: 8px; text-align: center; border: 1px solid #333; }
         .stat-box small { font-size: 10px; color: #aaa; display: block; }
-        .stat-box b { font-size: 14px; color: var(--gold); text-shadow: 0 0 5px rgba(255,215,0,0.5); }
+        .stat-box b { font-size: 13px; color: var(--gold); }
 
-        .game-area { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 62vh; padding-bottom: 30px; position: relative; }
-        #mining-progress { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 90%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-        #progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); width: 0%; transition: width 0.1s; }
-        #balance-main { color: var(--gold); font-size: 42px; margin-bottom: 15px; font-weight: bold; text-shadow: 0 0 15px rgba(255,215,0,0.5); }
-        .rocket-wrapper { width: 240px; height: 240px; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; position: relative; }
-        .rocket-main { width: 100%; height: 100%; background: linear-gradient(180deg, #4a90e2 0%, #357abd 50%, #2c5aa0 100%); border-radius: 50% 50% 30% 30%; display: flex; align-items: flex-end; justify-content: center; box-shadow: 0 10px 40px rgba(74,144,226,0.6), inset 0 -10px 20px rgba(0,0,0,0.3); position: relative; }
-        .rocket-main::before { content: '🚀'; font-size: 70px; z-index: 2; }
-        .rocket-main::after { content: ''; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 30px solid var(--star-glow); opacity: 0.7; animation: flame 1s infinite alternate; }
-        @keyframes flame { 0% { opacity: 0.7; transform: translateX(-50%) scale(1); } 100% { opacity: 1; transform: translateX(-50%) scale(1.2); } }
-        .rocket-wrapper:active { transform: scale(0.95); box-shadow: 0 15px 50px rgba(74,144,226,0.8); }
+        .game-area { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 50vh; padding-bottom: 30px; position: relative; }
+        #balance-main { color: var(--gold); font-size: 38px; margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .coin-wrapper { width: 230px; height: 230px; cursor: pointer; transition: transform 0.05s; position: relative; }
+        .coin-main { width: 100%; height: 100%; background: radial-gradient(circle, var(--gold), #ffb300); border-radius: 50%; border: 10px solid #cc8e00; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 40px; color: #4d3300; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
+        #tap-power-val { font-size: 14px; margin-top: 5px; color: var(--green); }
+        .coin-wrapper:active { transform: scale(0.92); }
 
-        .fuel-container { width: 85%; text-align: center; margin-top: 20px; }
-        .fuel-bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; margin-top: 5px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
-        #fuel-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--star-glow)); width: 100%; transition: width 0.3s; box-shadow: 0 0 10px var(--purple); }
+        .energy-container { width: 80%; text-align: center; margin-top: 15px; }
+        .energy-bar-bg { width: 100%; height: 10px; background: #222; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        #energy-fill { height: 100%; background: var(--gold); width: 100%; transition: width 0.2s; }
 
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(7,9,12,0.95); backdrop-filter: blur(20px); display: flex; justify-content: space-around; padding: 15px 10px; border-top: 1px solid rgba(255,215,0,0.2); z-index: 100; }
-        .nav-btn { color: #888; text-align: center; font-size: 12px; flex: 1; cursor: pointer; padding: 5px; border-radius: 8px; transition: all 0.2s; }
-        .nav-btn.active, .nav-btn:hover { color: var(--gold); background: rgba(255,215,0,0.1); }
+        /* Bonus chap tomonda */
+        .bonus-section { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 120px; }
+        .bonus-card { background: var(--card); padding: 10px; border-radius: 10px; margin-bottom: 10px; text-align: center; border: 1px solid #333; }
+        .bonus-timer { font-size: 10px; color: #aaa; }
 
-        .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--space-dark); z-index: 200; padding: 20px; display: none; overflow-y: auto; padding-bottom: 120px; backdrop-filter: blur(10px); }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,215,0,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.4); position: relative; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; background: linear-gradient(45deg, var(--gold), var(--star-glow)); color: #000; cursor: pointer; margin-top: 10px; font-size: 16px; box-shadow: 0 4px 15px rgba(255,215,0,0.3); transition: transform 0.1s; }
-        .btn:active { transform: scale(0.98); }
-        .lock-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); border-radius:20px; display:flex; align-items:center; justify-content:center; color: var(--red); font-weight:bold; z-index: 5; text-align: center; backdrop-filter: blur(5px); }
+        /* Omadli quti o'ng tomonda */
+        .lucky-section { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 120px; }
+        .lucky-card { background: var(--card); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #333; }
+        .lucky-timer { font-size: 10px; color: #aaa; }
 
-        #notify { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 30px; z-index: 3000; display: none; font-weight: bold; text-align: center; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #ton-connect-button-root { margin: 15px 0; width: 100%; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #07090c; display: flex; justify-content: space-around; padding: 15px 5px; border-top: 1px solid #222; z-index: 100; }
+        .nav-btn { color: #666; text-align: center; font-size: 11px; flex: 1; cursor: pointer; }
+        .nav-btn.active { color: var(--gold); }
+
+        .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 200; padding: 20px; display: none; overflow-y: auto; padding-bottom: 110px; }
+        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; position: relative; transition: all 0.3s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,215,0,0.2); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; background: var(--gold); color: #000; cursor: pointer; margin-top: 8px; font-size: 15px; transition: all 0.2s; }
+        .btn:hover { background: #ffb300; transform: scale(1.02); }
+        .lock-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); border-radius:15px; display:flex; align-items:center; justify-content:center; color: #ff4d4d; font-weight:bold; z-index: 5; text-align: center;}
+
+        /* Bildirishnomalar */
+        .notification { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; z-index: 4000; display: none; font-weight: bold; text-align: center; min-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .notify-green { background: var(--green); color: white; }
+        .notify-red { background: var(--red); color: white; }
+
+        #notify-main { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 30px; z-index: 3000; display: none; font-weight: bold; text-align: center; color: white; }
     </style>
 </head>
 <body>
-    <div class="stars-bg"></div>
-    <div id="notify"></div>
 
-    <div class="top-stats">
-        <div class="stat-box"><small>🌌 Mining/soat</small><b id="coin-pph-val">0</b></div>
-        <div class="stat-box"><small>⛽ Fuel/soat</small><b id="fuel-pph-val">0</b></div>
-        <div class="stat-box"><small>💎 Premium</small><b id="diam-total-val">0</b></div>
-        <div class="stat-box"><small>⭐ Level</small><b id="lvl-val">1</b></div>
-    </div>
+<!-- Loading screen -->
+<div id="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">O'yin yuklanmoqda... 🚀</div>
+</div>
 
-    <div id="mining-progress"><div id="progress-fill"></div></div>
+<div id="notify-main"></div>
+<div class="notification notify-green" id="notify-green"></div>
+<div class="notification notify-red" id="notify-red"></div>
 
-    <div class="game-area">
-        <div id="balance-main">0</div>
-        <div class="rocket-wrapper" onclick="handleMining(event)">
-            <div class="rocket-main" id="mining-power-val">🚀 Launch</div>
+<div id="bg-fx" class="bg-overlay"></div>
+
+<div class="top-stats">
+    <div class="stat-box"><small>📀 Tanga/soat</small><b id="coin-pph-val">0</b></div>
+    <div class="stat-box"><small>💎 Olmos/soat</small><b id="diam-pph-val">0</b></div>
+    <div class="stat-box"><small>⭐ Daraja</small><b id="lvl-val">1</b></div>
+</div>
+
+<div class="game-area">
+    <div id="balance-main">0</div>
+    <div class="coin-wrapper" onclick="handleTap(event)">
+        <div class="coin-main">
+            <div id="tap-power-val">+1</div>
         </div>
-        <div class="fuel-container">
-            <span>⛽ <span id="f-text">100/100</span></span>
-            <div class="fuel-bar-bg"><div id="fuel-fill"></div></div>
+    </div>
+    <div class="energy-container">
+        <span>⚡ <span id="e-text">500/500</span></span>
+        <div class="energy-bar-bg"><div id="energy-fill"></div></div>
+    </div>
+</div>
+
+<!-- 7-kunlik bonus chap tomonda -->
+<div class="bonus-section">
+    <div class="bonus-card">
+        <h4>7-kunlik Bonus</h4>
+        <div id="bonus-list"></div>
+    </div>
+</div>
+
+<!-- Omadli quti o'ng tomonda -->
+<div class="lucky-section">
+    <div class="lucky-card">
+        <h4>Omadli Quti</h4>
+        <p id="lucky-timer">Kuniga 1 marta</p>
+        <button class="btn" onclick="openLuckyBox()" id="lucky-btn" style="font-size:12px; padding:8px;">O'ynash</button>
+        <div id="lucky-boxes" style="display:none;">
+            <button class="btn" onclick="chooseBox(1)">Quti 1</button>
+            <button class="btn" onclick="chooseBox(2)">Quti 2</button>
+            <button class="btn" onclick="chooseBox(3)">Quti 3</button>
         </div>
     </div>
+</div>
 
-    <div class="nav-bar">
-        <div class="nav-btn active" onclick="openPage('p-mine')">Mine</div>
-        <div class="nav-btn" onclick="openPage('p-upgrade')">Upgrade</div>
-        <div class="nav-btn" onclick="openPage('p-tasks')">Tasks</div>
-        <div class="nav-btn" onclick="openPage('p-rank')">Rank</div>
-        <div class="nav-btn" onclick="openPage('p-wallet')">Wallet</div>
+<div class="nav-bar">
+    <div class="nav-btn" onclick="openPage('p-market')">Bozor</div>
+    <div class="nav-btn" onclick="openPage('p-referral')">Referral</div>
+    <div class="nav-btn" onclick="openPage('p-rank')">Reyting</div>
+    <div class="nav-btn" onclick="openPage('p-boost')">Booster</div>
+    <div class="nav-btn" onclick="openPage('p-home')">Profil</div>
+</div>
+
+<!-- Bozor sahifasi (10 ta karta + minerlar) -->
+<div id="p-market" class="page">
+    <span style="float:right; font-size:30px;" onclick="closePage('p-market')">✖</span>
+    <h2>Bozor 🛒</h2>
+    <div id="cards-list"></div>
+    <h3>Minerlar</h3>
+    <div id="miners-list"></div>
+</div>
+
+<!-- Referral sahifasi -->
+<div id="p-referral" class="page">
+    <span style="float:right; font-size:30px;" onclick="closePage('p-referral')">✖</span>
+    <h2>Referral 👥</h2>
+    <div class="card">
+        <p>Do'stlaringizni chaqiring va 50,000 tanga oling!</p>
+        <button class="btn" onclick="copyReferral()">Havola nusxalash</button>
+        <p>Havola: t.me/OltinTanga1_bot?start=ref_<span id="ref-id"></span></p>
     </div>
+</div>
 
-    <!-- Upgrade sahifasi (Space Adventure kabi raketa qismlari) -->
-    <div id="p-upgrade" class="page">
-        <span style="float:right; font-size:32px; cursor:pointer;" onclick="closePage('p-upgrade')">✖</span>
-        <h2>🚀 Raketa Upgrade</h2>
-        <div class="card"><b>🔧 Basic Engine</b><p>+10 Mining/soat</p><button class="btn" onclick="buyUpgrade('engine1', 50)">Sotib (50 💎)</button></div>
-        <div class="card"><b>⛽ Fuel Tank Lv1</b><p>Fuel +20%</p><button class="btn" onclick="buyUpgrade('tank1', 100)">Sotib (100 💎)</button></div>
-        <div class="card"><div id="lock-engine2" class="lock-overlay">Lv3 kerak</div><b>⚡ Turbo Engine</b><p>+30 Mining/soat</p><button class="btn" onclick="buyUpgrade('engine2', 300)">Sotib (300 💎)</button></div>
-        <div class="card"><div id="lock-tank2" class="lock-overlay">Lv5 kerak</div><b>🌌 Cosmic Tank</b><p>Fuel +50%</p><button class="btn" onclick="buyUpgrade('tank2', 800)">Sotib (800 💎)</button></div>
+<!-- Reyting sahifasi -->
+<div id="p-rank" class="page">
+    <span style="float:right; font-size:30px;" onclick="closePage('p-rank')">✖</span>
+    <h2>Reyting 🏆</h2>
+    <div id="rank-list"></div>
+</div>
+
+<!-- Booster sahifasi -->
+<div id="p-boost" class="page">
+    <span style="float:right; font-size:30px;" onclick="closePage('p-boost')">✖</span>
+    <h2>Booster ⚡</h2>
+    <div class="card"><b>Tap Kuchini +1</b><button class="btn" onclick="buyBoost('tap')">Narxi: <span id="c-tap">100</span> tanga</button></div>
+    <div class="card"><b>Energiya Sig'imi +100</b><button class="btn" onclick="buyBoost('energy')">Narxi: <span id="c-energy">200</span> tanga</button></div>
+    <div class="card"><b>Super Tap (3/3)</b><button class="btn" onclick="activateSuperTap()">Ishga tushir (Reklama)</button></div>
+</div>
+
+<!-- Profil sahifasi -->
+<div id="p-home" class="page">
+    <span style="float:right; font-size:30px;" onclick="closePage('p-home')">✖</span>
+    <h2>Profil 👤</h2>
+    <div class="card">Ism: <b id="u-name">...</b><br>ID: <b id="u-id">...</b><br>Tangalar: <b id="p-coins">0</b><br>Olmoslar: <b id="p-diams">0</b><br>Daraja: <b id="p-lvl">1</b></div>
+    <button class="btn" onclick="tonConnectUI.openModal()" style="background:var(--blue); color:white;">Hamyon ulash</button>
+    <div id="ton-connect-button-root"></div>
+    <button class="btn" style="background:var(--orange); color:white;" onclick="withdrawTON()">TON Chiqarish</button>
+    <div class="card">
+        <h3>O'yin haqida</h3>
+        <p>Tanga bosib to'plang, minerlar offline mining qiladi. TON wallet ulab, minimal 5 TON yig'ilgach chiqaring (Binance orqali).</p>
     </div>
-
-    <!-- Tasks sahifasi -->
-    <div id="p-tasks" class="page">
-        <span style="float:right; font-size:32px;" onclick="closePage('p-tasks')">✖</span>
-        <h2>📋 Tasks & Bonus</h2>
-        <div class="card"><h3>Daily Launch</h3><button class="btn" onclick="claimDaily()">+10K Coins</button></div>
-        <div class="card"><h3>Channel Join</h3><button class="btn" onclick="goTask()">Obuna bo'lish</button><button class="btn" style="background:var(--green);" onclick="checkTask()">Bonus olish</button></div>
-        <div class="card"><h3>Lucky Mining</h3><p id="lucky-count">3/3</p><button class="btn" onclick="claimLucky()">Spin!</button></div>
-    </div>
-
-    <div id="p-rank" class="page"><span style="float:right; font-size:32px;" onclick="closePage('p-rank')">✖</span><h2>🏆 Global Rank</h2><div id="rank-list"></div></div>
-
-    <!-- Wallet sahifasi (hamyon ulash + chiqarish) -->
-    <div id="p-wallet" class="page">
-        <span style="float:right; font-size:32px;" onclick="closePage('p-wallet')">✖</span>
-        <h2>💰 TON Wallet</h2>
-        <div class="card">Wallet: <b id="wallet-addr">Ulanmagan</b></div>
-        <button class="btn" onclick="tonConnectUI.openModal()" style="background:var(--blue);">Hamyon ulash</button>
-        <div id="ton-connect-button-root"></div>
-        <button class="btn" style="background:var(--purple); color:white;" onclick="withdrawTON()">TON Chiqarish (Min 5 TON)</button>
-    </div>
-
-    <!-- Mine sahifasi (default, bo'sh) -->
-    <div id="p-mine" class="page" style="display:none;"></div>
+</div>
 
 <script>
-// Firebase (sizning DB)
+// Firebase sozlamalari (sizning loyihangiz)
 const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const tg = window.Telegram.WebApp;
-const user = tg.initDataUnsafe?.user || { id: "12345", first_name: "Kosmonavt" };
+const user = tg.initDataUnsafe?.user || { id: "12345", first_name: "Mehmon" };
 
-let s = { coins: 0, premium: 0, level: 1, miningRate: 0, fuelRate: 0, fuel: 100, maxFuel: 100, launchPower: 1, lastDaily: 0, lucky: 3, taskDone: false, lastSave: Date.now(), wallet: null, progress: 0 };
+let s = { coins: 0, diamonds: 0, lvl: 1, pphCoin: 0, pphDiam: 0, energy: 500, maxE: 500, tap: 1, tapLvl: 1, pphLvl: 1, eLvl: 1, lastD: 0, luckyC: 3, skin: 'default', taskDone: false, lastTime: Date.now(), walletAddress: null, superTapCount: 3, superTapActive: false, superTapEnd: 0, miners: Array(10).fill(0), cards: Array(10).fill(false), referrals: 0, bonusDays: 0, luckyTime: 0 };
+
+// Kartalar ma'lumotlari (10 ta, har biri xususiyatli)
+const cardsData = [
+    { name: 'Suvli Karta', effect: 'Suv effekti', price: 100, property: 'water' },
+    { name: 'Olmosli Karta', effect: 'Olmos yorqinligi', price: 150, property: 'diamond' },
+    { name: 'Ol ovli Karta', effect: 'Ol ov alangasi', price: 200, property: 'fire' },
+    { name: 'Yer Karti', effect: 'Yer titrashi', price: 250, property: 'earth' },
+    { name: 'Havo Karti', effect: 'Shamol effekti', price: 300, property: 'air' },
+    { name: 'Energiya Karti', effect: 'Energiya to\'lqin', price: 350, property: 'energy' },
+    { name: 'Tezlik Karti', effect: 'Tezlik chizig\'i', price: 400, property: 'speed' },
+    { name: 'Kuchli Karta', effect: 'Kuch portlashi', price: 450, property: 'strength' },
+    { name: 'Sirli Karta', effect: 'Sirli bulut', price: 500, property: 'mystery' },
+    { name: 'Oltin Karta', effect: 'Oltin yomg\'ir', price: 600, property: 'gold' }
+];
+
+// Minerlar (5 tanga, 5 olmos)
+const minersData = [
+    { name: 'Tanga Miner 1', type: 'coin', level: 1, price: 100 },
+    { name: 'Tanga Miner 2', type: 'coin', level: 1, price: 200 },
+    { name: 'Tanga Miner 3', type: 'coin', level: 1, price: 300 },
+    { name: 'Tanga Miner 4', type: 'coin', level: 1, price: 400 },
+    { name: 'Tanga Miner 5', type: 'coin', level: 1, price: 500 },
+    { name: 'Olmos Miner 1', type: 'diam', level: 1, price: 150 },
+    { name: 'Olmos Miner 2', type: 'diam', level: 1, price: 300 },
+    { name: 'Olmos Miner 3', type: 'diam', level: 1, price: 450 },
+    { name: 'Olmos Miner 4', type: 'diam', level: 1, price: 600 },
+    { name: 'Olmos Miner 5', type: 'diam', level: 1, price: 750 }
+];
 
 // TON Connect
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-  manifestUrl: 'https://sizning-app.vercel.app/tonconnect-manifest.json',  // O'zgartiring
-  buttonRootId: 'ton-connect-button-root',
-  uiPreferences: { theme: 'DARK' }
+    manifestUrl: 'https://sizning-vercel-url.vercel.app/tonconnect-manifest.json', // O'zgartiring
+    buttonRootId: 'ton-connect-button-root',
+    uiPreferences: { theme: 'DARK' },
+    actionsConfiguration: { twaReturnUrl: 'https://t.me/OltinTanga1_bot/app' }
 });
-tonConnectUI.onStatusChange(info => {
-  if (info?.connected) {
-    s.wallet = info.account.address;
-    document.getElementById('wallet-addr').innerText = s.wallet.slice(0,8) + '...' + s.wallet.slice(-6);
-    save();
-    showNotify('TON Wallet ulandi! ✅', 'green');
-  }
+tonConnectUI.onStatusChange(walletInfo => {
+    if (walletInfo?.connected) {
+        s.walletAddress = walletInfo.account?.address;
+        showNotify('Hamyon ulandi! ✅', 'green');
+        save();
+    } else {
+        s.walletAddress = null;
+        showNotify('Hamyon uzildi', 'red');
+        save();
+    }
 });
 
-// Reklama
+// Reklama funksiyasi
 function runAd(callback) {
-  if (typeof show_10558007 === 'function') show_10558007().then(callback);
-  else callback?.();
+    if (typeof show_10558007 === 'function') {
+        show_10558007().then(() => { if(callback) callback(); });
+    } else { if(callback) callback(); }
 }
 
-// Yuklash va saqlash (Firebase)
-db.ref('space_users/' + user.id).on('value', snap => {
-  if (snap.exists()) Object.assign(s, snap.val());
-  updateUI();
+// Ma'lumotlarni yuklash
+db.ref('users/' + user.id).on('value', snap => {
+    if(snap.exists()) {
+        let data = snap.val();
+        let now = Date.now();
+        // Offline mining (minerlar)
+        if(data.lastTime) {
+            let diff = Math.floor((now - data.lastTime)/1000);
+            let minedCoins = 0, minedDiams = 0;
+            data.miners.forEach((m, i) => {
+                if (minersData[i].type === 'coin') minedCoins += m * diff / 3600;
+                else minedDiams += m * diff / 3600;
+            });
+            s.coins = (data.coins || 0) + minedCoins;
+            s.diamonds = (data.diamonds || 0) + minedDiams;
+            s.energy = Math.min(data.maxE || 500, (data.energy || 0) + diff * 0.1);
+        } else { Object.assign(s, data); }
+    }
+    updateUI();
+    loadMiners();
+    loadCards();
+    loadBonus();
+    loadLucky();
+    loadRank();
+    // Kirish bildirishnomasi
+    showNotify(`Offline mining: +${Math.floor(s.coins)} tanga yig'ildi!`, 'green');
 });
-function save() { s.lastSave = Date.now(); db.ref('space_users/' + user.id).set(s); }
 
 // UI yangilash
 function updateUI() {
-  document.getElementById('balance-main').innerText = s.coins.toLocaleString();
-  document.getElementById('coin-pph-val').innerText = s.miningRate;
-  document.getElementById('fuel-pph-val').innerText = s.fuelRate;
-  document.getElementById('diam-total-val').innerText = s.premium;
-  document.getElementById('lvl-val').innerText = s.level;
-  document.getElementById('f-text').innerText = Math.floor(s.fuel) + '/' + s.maxFuel;
-  document.getElementById('fuel-fill').style.width = (s.fuel / s.maxFuel * 100) + '%';
-  document.getElementById('progress-fill').style.width = s.progress + '%';
-  document.getElementById('wallet-addr').innerText = s.wallet ? (s.wallet.slice(0,8)+'...'+s.wallet.slice(-6)) : 'Ulanmagan';
-  document.getElementById('lucky-count').innerText = `${s.lucky}/3`;
+    const levels = [0, 10000, 50000, 100000, 500000, 1000000];
+    let clvl = 1; levels.forEach((v, i) => { if(s.coins >= v) clvl = i+1; });
+    s.lvl = clvl;
+
+    document.getElementById('balance-main').innerText = Math.floor(s.coins).toLocaleString();
+    document.getElementById('coin-pph-val').innerText = s.pphCoin;
+    document.getElementById('diam-pph-val').innerText = s.pphDiam;
+    document.getElementById('diam-total-val').innerText = Math.floor(s.diamonds).toLocaleString();
+    document.getElementById('lvl-val').innerText = s.lvl;
+    document.getElementById('tap-power-val').innerText = "+" + (s.superTapActive ? 1000 : s.tap);
+    document.getElementById('e-text').innerText = Math.floor(s.energy) + "/" + s.maxE;
+    document.getElementById('energy-fill').style.width = (s.energy/s.maxE*100) + "%";
+    
+    document.getElementById('u-name').innerText = user.first_name;
+    document.getElementById('u-id').innerText = user.id;
+    document.getElementById('p-coins').innerText = Math.floor(s.coins).toLocaleString();
+    document.getElementById('p-diams').innerText = Math.floor(s.diamonds).toLocaleString();
+    document.getElementById('p-lvl').innerText = s.lvl;
+    document.getElementById('ref-id').innerText = user.id;
 }
 
-// Mining (raketa bosish)
-function handleMining(e) {
-  if (s.fuel >= 1) {
-    s.coins += s.launchPower * 10;
-    s.fuel -= 1;
-    s.progress = (s.progress + 5) % 100;
+// Tap funksiyasi
+function handleTap(e) {
+    if(s.energy >= (s.superTapActive ? 1000 : s.tap)) {
+        let power = s.superTapActive ? 1000 : s.tap;
+        s.coins += power;
+        s.energy -= power;
+        // Tap effekti
+        let effect = document.createElement('div');
+        effect.className = 'tap-effect';
+        effect.innerText = `+${power}`;
+        e.target.appendChild(effect);
+        setTimeout(() => effect.remove(), 500);
+        // Karta effekti (agar sotib olingan bo'lsa)
+        if (s.cards.some(c => c)) document.getElementById('bg-fx').style.opacity = 0.8;
+        updateUI();
+        save();
+        showNotify(`+${power} tanga!`, 'green');
+    } else {
+        showNotify("Energiya tugadi! Reklama ko'ring", "red");
+        runAd(() => { s.energy = s.maxE; updateUI(); showNotify("Energiya to'ldirildi! ⚡", "green"); });
+    }
+}
+
+// Super Tap
+let superTapInterval;
+function activateSuperTap() {
+    if (s.superTapCount > 0 && !s.superTapActive) {
+        runAd(() => {
+            s.superTapActive = true;
+            s.superTapCount--;
+            s.superTapEnd = Date.now() + 30000;
+            superTapInterval = setInterval(() => {
+                if (Date.now() > s.superTapEnd) {
+                    s.superTapActive = false;
+                    clearInterval(superTapInterval);
+                    updateUI();
+                }
+            }, 1000);
+            updateUI();
+            showNotify("Super Tap faol! 30 soniya +1000 tap", "green");
+            save();
+        });
+    } else {
+        showNotify("Kuniga 3 marta! Yoki tugagan", "red");
+    }
+}
+
+// Bozor yuklash (kartalar)
+function loadCards() {
+    let html = '';
+    cardsData.forEach((card, i) => {
+        let bought = s.cards[i] ? 'Sotib olingan' : `Sotib olish (${card.price} olmos)`;
+        html += `<div class="card \( {s.cards[i] ? 'card-effect' : ''}"><b> \){card.name}</b><p>\( {card.effect} ( \){card.property})</p><button class="btn" onclick="\( {s.cards[i] ? '' : `buyCard( \){i})`}" \( {s.cards[i] ? 'disabled' : ''}> \){bought}</button></div>`;
+    });
+    document.getElementById('cards-list').innerHTML = html;
+}
+
+// Karta sotib olish
+function buyCard(i) {
+    let card = cardsData[i];
+    if (s.diamonds >= card.price) {
+        s.diamonds -= card.price;
+        s.cards[i] = true;
+        // Effekt: fon o'zgarishi
+        document.getElementById('bg-fx').style.background = card.property === 'fire' ? 'radial-gradient(circle, red, orange)' : card.property === 'water' ? 'radial-gradient(circle, blue, cyan)' : 'radial-gradient(circle, var(--gold), transparent)';
+        loadCards();
+        updateUI();
+        save();
+        showNotify(`${card.name} sotib olindi! Effekt faol`, "green");
+    } else {
+        showNotify("Olmos yetarli emas!", "red");
+    }
+}
+
+// Minerlar yuklash
+function loadMiners() {
+    let html = '';
+    minersData.forEach((miner, i) => {
+        let level = s.miners[i] || 1;
+        let nextPrice = miner.price * level;
+        html += `<div class="card"><b>\( {miner.name} (Lv \){level})</b><p>\( {miner.type === 'coin' ? 'Tanga' : 'Olmos'} mining + \){level * 10}/soat</p><button class="btn" onclick="upgradeMiner(\( {i})">Kuchaytir ( \){nextPrice} tanga)</button></div>`;
+    });
+    document.getElementById('miners-list').innerHTML = html;
+}
+
+// Miner kuchaytirish
+function upgradeMiner(i) {
+    let miner = minersData[i];
+    let level = s.miners[i] || 1;
+    let nextPrice = miner.price * level;
+    if (s.coins >= nextPrice) {
+        s.coins -= nextPrice;
+        s.miners[i] = level + 1;
+        loadMiners();
+        updateUI();
+        save();
+        showNotify(`\( {miner.name} kuchaytirildi! + \){s.miners[i] * 10} mining`, "green");
+    } else {
+        showNotify("Tanga yetarli emas!", "red");
+    }
+}
+
+// Referral
+function copyReferral() {
+    tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/OltinTanga1_bot?start=ref_${user.id}&text=Do'stim, Oltin Tanga o'ynaylik! 50k bonus ol!`);
+    // Simulyatsiya: har referral uchun +50k (realda backend kerak)
+    s.coins += 50000;
+    s.referrals++;
     updateUI();
     save();
-  } else {
-    showNotify('Fuel tugadi! Reklama ko\'ring ⛽', 'red');
-    runAd(() => { s.fuel = s.maxFuel; updateUI(); showNotify('Fuel to\'ldirildi! 🚀', 'green'); });
-  }
+    showNotify("+50,000 tanga referral bonus!", "green");
 }
 
-// Upgrade sotib olish
-function buyUpgrade(item, price) {
-  if (s.premium < price) return showNotify('Premium yetarli emas! 💎', 'red');
-  s.premium -= price;
-  if (item === 'engine1') s.miningRate += 10;
-  // Boshqa itemlar...
-  save(); updateUI(); showNotify('Upgrade sotib olindi! ⚡', 'green');
+// Reyting yuklash
+function loadRank() {
+    db.ref('users').orderByChild('coins').limitToLast(10).once('value', snap => {
+        let list = []; snap.forEach(c => {
+            let d = c.val();
+            list.push({name: d.first_name || "User", id: c.key, coins: d.coins || 0, diamonds: d.diamonds || 0, lvl: d.lvl || 1});
+        });
+        list.sort((a,b) => b.coins - a.coins);
+        let html = '';
+        list.forEach((u, i) => {
+            let medal = i === 0 ? '🥇 Oltin' : i === 1 ? '🥈 Kumush' : i === 2 ? '🥉 Bronza' : `#${i+1}`;
+            let color = i < 3 ? (i === 0 ? 'gold' : i === 1 ? 'silver' : 'orange') : 'white';
+            html += `<div class="card" style="color:\( {color}; border-color: \){color};"><b>${medal} \( {u.name}</b><br><small>ID: \){u.id} | Lvl:\( {u.lvl} | Tanga: \){u.coins.toLocaleString()} | Olmos:${u.diamonds}</small></div>`;
+        });
+        document.getElementById('rank-list').innerHTML = html;
+    });
 }
 
-// Boshqa funksiyalar (daily, task, rank, withdraw) - oldingi koddan o'xshash
-function claimDaily() { /* ... */ }
-function goTask() { tg.openTelegramLink('https://t.me/sizning_kanal'); }
-function checkTask() { /* ... */ }
-function claimLucky() { /* ... */ }
-function loadRank() { /* Firebase rank yuklash */ }
+// Booster sotib olish
+function buyBoost(type) {
+    let cost = type === 'tap' ? 100 * s.tapLvl : 200 * s.eLvl;
+    if (s.coins >= cost) {
+        s.coins -= cost;
+        if (type === 'tap') { s.tapLvl++; s.tap++; }
+        if (type === 'energy') { s.eLvl++; s.maxE += 100; s.energy = s.maxE; }
+        updateUI();
+        save();
+        showNotify(`${type} kuchaytirildi!`, "green");
+    } else {
+        showNotify("Tanga yetarli emas!", "red");
+    }
+}
+
+// TON chiqarish
 function withdrawTON() {
-  if (!s.wallet) return showNotify('Hamyon ulang!', 'red');
-  showNotify('TON yuborilmoqda... (Demo)', 'orange');
-  // Real: tonConnectUI.sendTransaction(...)
+    if (!s.walletAddress) {
+        showNotify("Avval hamyon ulang!", "red");
+        tonConnectUI.openModal();
+        return;
+    }
+    if (s.coins < 5000) { // Minimal
+        showNotify("Minimal 5000 tanga yig'ing!", "red");
+        return;
+    }
+    showNotify("TON chiqarilmoqda... (Binance orqali konvert + transfer)", "orange");
+    // Real transaction: tonConnectUI.sendTransaction({ to: s.walletAddress, value: '5000000000' }); // 5 TON
 }
-function openPage(id) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-  document.getElementById(id).style.display = 'block';
-  if (['p-upgrade', 'p-tasks'].includes(id)) runAd();  // Reklama bo'limlarda
+
+// 7-kunlik bonus
+function loadBonus() {
+    let html = '';
+    for (let day = 1; day <= 7; day++) {
+        let claimed = s.bonusDays >= day;
+        let timer = claimed ? '' : `Qolgan: ${Math.floor((s.lastD + 86400000 * day - Date.now()) / 1000)}s`;
+        html += `<div class="bonus-card"><b>Kun \( {day}</b><p>+ \){day * 1000} tanga</p><button class="btn" \( {claimed ? 'disabled' : `onclick="claimBonus( \){day})"`}>${claimed ? 'Olingan' : 'Olish (Reklama)'} ${timer}</button></div>`;
+    }
+    document.getElementById('bonus-list').innerHTML = html;
 }
-function closePage(id) { document.getElementById(id).style.display = 'none'; document.querySelector('.nav-btn').classList.add('active'); }
-function showNotify(msg, color) {
-  const n = document.getElementById('notify');
-  n.textContent = msg;
-  n.style.background = color === 'green' ? var(--green) : color === 'orange' ? var(--orange) : var(--red);
-  n.style.display = 'block';
-  setTimeout(() => n.style.display = 'none', 3000);
+function claimBonus(day) {
+    if (s.bonusDays < day) {
+        runAd(() => {
+            s.coins += day * 1000;
+            s.bonusDays = day;
+            loadBonus();
+            updateUI();
+            save();
+            showNotify(`+${day * 1000} tanga bonus!`, "green");
+        });
+    }
 }
+
+// Omadli quti
+let luckyOpen = false;
+function openLuckyBox() {
+    let now = Date.now();
+    if (now - s.luckyTime < 86400000) {
+        showNotify("Kuniga 1 marta! Timer tugamagan", "red");
+        return;
+    }
+    runAd(() => {
+        document.getElementById('lucky-boxes').style.display = 'block';
+        document.getElementById('lucky-btn').style.display = 'none';
+        luckyOpen = true;
+    });
+}
+function chooseBox(num) {
+    if (!luckyOpen) return;
+    let win = Math.random() > 0.5 ? Math.floor(Math.random() * 10000) : Math.floor(Math.random() * 100);
+    let type = Math.random() > 0.5 ? 'tanga' : 'olmos';
+    if (type === 'tanga') s.coins += win;
+    else s.diamonds += win;
+    s.luckyTime = Date.now();
+    document.getElementById('lucky-boxes').style.display = 'none';
+    document.getElementById('lucky-btn').style.display = 'block';
+    loadLucky();
+    updateUI();
+    save();
+    showNotify(`${type === 'tanga' ? '+' + win + ' tanga' : '+' + win + ' olmos'} yutdingiz!`, "green");
+}
+function loadLucky() {
+    let now = Date.now();
+    let remaining = Math.max(0, (s.luckyTime + 86400000 - now) / 1000);
+    document.getElementById('lucky-timer').innerText = remaining > 0 ? `Qolgan: ${Math.floor(remaining)}s` : 'O\'ynash mumkin';
+    document.getElementById('lucky-btn').disabled = remaining > 0;
+}
+
+// Sahifalar
+function openPage(id) { 
+    runAd(); // Reklama chiqishi
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+    if (id === 'p-rank') loadRank();
+    if (id === 'p-market') { loadCards(); loadMiners(); }
+}
+function closePage(id) { document.getElementById(id).style.display = 'none'; }
+
+// Bildirishnomalar
+function showNotify(m, type = 'green') {
+    let el = type === 'green' ? document.getElementById('notify-green') : document.getElementById('notify-red');
+    el.innerText = m;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 3000);
+}
+
+// Save
+function save() { s.lastTime = Date.now(); db.ref('users/' + user.id).update(s); }
 
 // Interval'lar
 setInterval(() => {
-  s.fuel = Math.min(s.maxFuel, s.fuel + 0.5);
-  s.coins += s.miningRate / 3600;
-  updateUI();
+    if(s.energy < s.maxE) s.energy = Math.min(s.maxE, s.energy + 1);
+    if(s.pphCoin > 0) s.coins += (s.pphCoin / 3600);
+    if(s.pphDiam > 0) s.diamonds += (s.pphDiam / 3600);
+    if (s.superTapActive && Date.now() > s.superTapEnd) s.superTapActive = false;
+    updateUI();
 }, 1000);
-setInterval(save, 20000);
+
+setInterval(save, 30000);
+
+// Loading tugatish
+setTimeout(() => {
+    document.getElementById('loading-screen').style.opacity = '0';
+    setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+}, 5000);
+
 tg.expand();
 </script>
 </body>
-    </html>
+</html>
         
     
     
