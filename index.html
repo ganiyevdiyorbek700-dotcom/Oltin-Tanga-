@@ -3,93 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga - To'liq Versiya</title>
+    <title>Tanha Empire | Full AI Edition</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-    
-    <!-- TON Connect (hamyon ulash uchun) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="//libtl.com/sdk.js" data-zone="10558007" data-sdk="show_10558007"></script>
 
     <style>
-        body { margin: 0; background: #0b0d17; color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #loading { text-align: center; font-size: 30px; color: gold; }
-        #game { display: none; text-align: center; padding: 20px; }
-        #coin { font-size: 100px; cursor: pointer; }
-        #balance { font-size: 40px; color: gold; margin: 20px; }
-        #wallet { margin-top: 20px; font-size: 18px; }
-        button { padding: 10px 20px; font-size: 18px; margin: 10px; background: gold; border: none; border-radius: 10px; cursor: pointer; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Outfit:wght@300;600;900&display=swap');
+        :root { --p: #fbc531; --s: #4cd137; --bg: #010409; --neon: #00f2ff; --glass: rgba(255, 255, 255, 0.05); --err: #ff4757; }
+        body { background: var(--bg); color: white; font-family: 'Outfit', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
+
+        /* LOADER */
+        #loader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
+        .spin { width: 60px; height: 60px; border: 4px solid #111; border-top-color: var(--neon); border-radius: 50%; animation: spin 1s infinite linear; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* UI STRUCTURE */
+        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--glass); z-index: 100; position: relative; }
+        .bal-val { font-family: 'Orbitron'; font-weight: 900; color: var(--p); font-size: 20px; }
+        
+        .content { height: 78vh; overflow-y: auto; padding-bottom: 100px; }
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
+        .active-page { display: block; }
+
+        /* EVOLUTION COIN */
+        .coin-wrap { height: 45vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .circle { width: 220px; height: 220px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px; transition: 0.1s; cursor: pointer; position: relative; }
+        
+        /* Physics Effects */
+        .evo-1 { background: radial-gradient(circle, #00f2ff, #0057ff); box-shadow: 0 0 30px var(--neon); animation: float 3s infinite ease-in-out; }
+        .evo-10 { background: radial-gradient(circle, #ff4757, #000); box-shadow: 0 0 40px #ff4757; animation: pulse 0.5s infinite alternate; }
+        .evo-20 { background: linear-gradient(45deg, #fbc531, #fff); box-shadow: 0 0 60px #fff; animation: glow 2s infinite alternate; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+        @keyframes glow { from { filter: brightness(1); } to { filter: brightness(1.5); } }
+
+        /* NAVIGATION */
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #000; padding: 15px 0; border-top: 1px solid #222; z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; color: #555; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--p); transform: translateY(-3px); }
+        .nav-item i { display: block; font-size: 24px; font-style: normal; margin-bottom: 5px; }
+
+        /* ELEMENTS */
+        .card { background: var(--glass); padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px); }
+        .btn-buy { background: var(--p); color: #000; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-family: 'Orbitron'; cursor: pointer; }
+        .btn-ad { background: var(--err); color: white; border: none; padding: 15px; width: 100%; border-radius: 15px; font-weight: 900; cursor: pointer; margin: 10px 0; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div id="loading">
-    O'yin yuklanmoqda... (Internetni tekshiring yoki Telegram keshini tozalang)
+<div id="loader">
+    <div class="spin"></div>
+    <h3 style="color:var(--neon); margin-top:20px; font-family:'Orbitron';">SYNCING EMPIRE...</h3>
 </div>
 
-<div id="game">
-    <div id="balance">0 Tanga</div>
-    <div id="coin" onclick="tap()">💰</div>
-    <div style="margin-top: 20px;">Bosib tanga to'plang!</div>
-    <div id="wallet">Hamyon: Ulanmagan</div>
-    <button onclick="connectWallet()">TON Hamyon ulash</button>
-    <button onclick="withdraw()">Chiqarish (test)</button>
+<div class="header">
+    <div onclick="toggleLang()" id="lang-btn" style="background:var(--glass); padding:5px 10px; border-radius:8px;">🇺🇿 UZ</div>
+    <div class="bal-val">📀 <span id="u-bal">0</span></div>
+    <div style="color:var(--neon)">💎 <span id="u-diam">0</span></div>
+</div>
+
+<div class="content">
+    <div id="tab-home" class="page active-page">
+        <div class="coin-wrap">
+            <div id="coin-ui" class="circle evo-1" onclick="handleTap(event)">📀</div>
+            <p id="tap-info" style="margin-top:25px; color:var(--neon); font-family:'Orbitron';">LVL 1 | TAP: +2</p>
+        </div>
+        <div class="card" style="text-align:center;">
+            <p style="margin:0; font-size:12px; opacity:0.6;">$TANHA LIVE PRICE</p>
+            <h2 id="price-ui" style="margin:5px 0; color:var(--s)">$1.00</h2>
+        </div>
+    </div>
+
+    <div id="tab-shop" class="page">
+        <h2 style="font-family:'Orbitron';">BOZOR</h2>
+        <div id="evo-container"></div>
+        <hr style="opacity:0.1; margin:20px 0;">
+        <div id="rob-container"></div>
+    </div>
+
+    <div id="tab-games" class="page">
+        <h2 style="font-family:'Orbitron';">MINI GAMES</h2>
+        <div class="card" onclick="startMiniGame('2048')">
+            <h3>🔢 2048 Evolution</h3>
+            <p>Mukofot: 25,000 📀</p>
+        </div>
+        <div class="card" onclick="startMiniGame('memory')">
+            <h3>🧠 Xotira Mashqi</h3>
+            <p>Mukofot: 25 💎</p>
+        </div>
+    </div>
+
+    <div id="tab-bonus" class="page">
+        <h2 style="font-family:'Orbitron';">BONUSLAR</h2>
+        <button class="btn-ad" onclick="runAd('reward')">📺 REKLAMA KO'RISH (+5,000 📀)</button>
+        <div class="card" onclick="claimDaily()">
+            <h3>📅 Kunlik Bonus</h3>
+            <p id="daily-status">Hozir olish mumkin!</p>
+        </div>
+    </div>
+
+    <div id="tab-prof" class="page">
+        <h2 style="font-family:'Orbitron';">PROFILE</h2>
+        <div id="ton-connect" style="margin-bottom:20px; display:flex; justify-content:center;"></div>
+        <div class="card">
+            <p>Foydalanuvchi: <span id="p-name">Guest</span></p>
+            <p>Hamyon: <span id="p-wallet" style="font-size:10px; color:var(--neon)">Ulanmagan</span></p>
+        </div>
+        <div class="card" style="border-left: 5px solid var(--p);">
+            <h3>AIRDROP INFO</h3>
+            <p style="font-size:12px;">Tokenlar 2026-yilda tarqatiladi. Shart: 10-darajali evolyutsiya va TON hamyon ulanishi.</p>
+        </div>
+    </div>
+</div>
+
+<div class="nav">
+    <div class="nav-item" onclick="changeTab('tab-shop', this)"><i>🛒</i>Do'kon</div>
+    <div class="nav-item" onclick="changeTab('tab-bonus', this)"><i>🎁</i>Bonus</div>
+    <div class="nav-item active" onclick="changeTab('tab-home', this)"><i>🏠</i>Asosiy</div>
+    <div class="nav-item" onclick="changeTab('tab-games', this)"><i>🕹️</i>O'yinlar</div>
+    <div class="nav-item" onclick="changeTab('tab-prof', this)"><i>👤</i>Profil</div>
 </div>
 
 <script>
-// Firebase (sizning loyihangiz)
-const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
-let db;
-try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-} catch (e) {
-    document.getElementById('loading').innerHTML += '<br><span style="color:red;">Firebase xatosi: ' + e.message + '</span>';
+// --- CONFIG & FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyDbttlr-oGJeDbjMbrubcuspgg9gk-7Gxs",
+    authDomain: "oltin-tanga-d2c80.firebaseapp.com",
+    databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com",
+    projectId: "oltin-tanga-d2c80",
+    storageBucket: "oltin-tanga-d2c80.firebasestorage.app",
+    messagingSenderId: "954210050924",
+    appId: "1:954210050924:web:f57b75568c66216c49c949"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const tonConnectUI = new TONConnectUI.TonConnectUI({
+    manifestUrl: 'https://sizning-saytingiz.uz/tonconnect-manifest.json',
+    buttonRootId: 'ton-connect'
+});
+
+let s = {
+    id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "local_dev",
+    name: window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "O'yinchi",
+    c: 0, d: 0, lvl: 1, robP: 0, lastExit: Date.now()
+};
+
+// --- CORE LOGIC ---
+function init() {
+    db.ref('players/' + s.id).once('value').then((snap) => {
+        if(snap.exists()) {
+            s = snap.val();
+            let sec = (Date.now() - s.lastExit) / 1000;
+            if(s.robP > 0) {
+                let earned = (s.robP / 3600) * sec;
+                s.c += earned;
+                alert("Robotlaringiz siz yo'qligingizda " + Math.floor(earned) + " tanga ishladi!");
+            }
+        }
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('p-name').innerText = s.name;
+        updateUI();
+        renderShop();
+    });
 }
 
-// TON Connect
-const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: 'https://sizning-vercel-url.vercel.app/tonconnect-manifest.json', // O'zingizning URL
-    uiPreferences: { theme: 'DARK' }
-});
-tonConnectUI.onStatusChange(walletInfo => {
-    if (walletInfo?.connected) {
-        document.getElementById('wallet').innerText = 'Hamyon ulandi: ' + walletInfo.account.address.slice(0,6) + '...';
-    } else {
-        document.getElementById('wallet').innerText = 'Hamyon ulanmagan';
+function handleTap(e) {
+    let power = s.lvl * 2;
+    s.c += power;
+    // Tanga effekti
+    e.target.style.transform = "scale(0.9) translateY(5px)";
+    setTimeout(() => { e.target.style.transform = "scale(1) translateY(0)"; }, 80);
+    updateUI();
+}
+
+function updateUI() {
+    document.getElementById('u-bal').innerText = Math.floor(s.c).toLocaleString();
+    document.getElementById('u-diam').innerText = s.d;
+    document.getElementById('tap-info').innerText = `LVL ${s.lvl} | TAP: +${s.lvl * 2}`;
+    
+    // Evolyutsiya ko'rinishi
+    let coin = document.getElementById('coin-ui');
+    if(s.lvl >= 20) coin.className = "circle evo-20";
+    else if(s.lvl >= 10) coin.className = "circle evo-10";
+    else coin.className = "circle evo-1";
+}
+
+// --- SHOP RENDERING ---
+function renderShop() {
+    let evoCont = document.getElementById('evo-container');
+    evoCont.innerHTML = "<h3>Evolyutsiya (20 Daraja)</h3>";
+    for(let i=1; i<=20; i++) {
+        let cost = Math.floor(2000 * Math.pow(2, i));
+        evoCont.innerHTML += `
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Evo Karta Lvl ${i}</span>
+                <button class="btn-buy" onclick="buyEvo(${i}, ${cost})">${cost.toLocaleString()}</button>
+            </div>`;
+    }
+
+    let robCont = document.getElementById('rob-container');
+    robCont.innerHTML = "<h3>Robotlar (10 Model)</h3>";
+    for(let i=1; i<=10; i++) {
+        let cost = Math.floor(15000 * Math.pow(2.5, i));
+        let power = i * 500;
+        robCont.innerHTML += `
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div><b>MK-${i} Robot</b><br><small>${power}/soat</small></div>
+                <button class="btn-buy" style="background:var(--s)" onclick="buyRob(${power}, ${cost})">${cost.toLocaleString()}</button>
+            </div>`;
+    }
+}
+
+function buyEvo(l, c) {
+    if(s.c >= c) { s.c -= c; s.lvl = l; updateUI(); save(); alert("Evolyutsiya yangilandi!"); }
+    else alert("Tanga yetarli emas!");
+}
+
+function buyRob(p, c) {
+    if(s.c >= c) { s.c -= c; s.robP += p; updateUI(); save(); alert("Robot sotib olindi!"); }
+    else alert("Tanga yetarli emas!");
+}
+
+// --- MINI GAMES MANTIQI ---
+function startMiniGame(type) {
+    runAd('game_start');
+    document.getElementById('loader').style.display = 'flex';
+    document.querySelector('#loader h3').innerText = "O'YIN BOSHLANMOQDA...";
+    
+    setTimeout(() => {
+        document.getElementById('loader').style.display = 'none';
+        if(type === '2048') { s.c += 25000; alert("2048: 25,000 tanga yutdingiz!"); }
+        if(type === 'memory') { s.d += 25; alert("Memory: 25 olmos yutdingiz!"); }
+        updateUI(); save();
+    }, 4000);
+}
+
+// --- REKLAMA ---
+function runAd(type) {
+    if(typeof show_10558007 === 'function') {
+        show_10558007().then(() => {
+            if(type === 'reward') { s.c += 5000; updateUI(); save(); alert("Bonus: 5,000 📀"); }
+        });
+    } else { alert("Reklama yuklanmadi"); }
+}
+
+// --- UTILS ---
+function changeTab(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('active-page');
+    el.classList.add('active');
+}
+
+function save() {
+    s.lastExit = Date.now();
+    db.ref('players/' + s.id).set(s);
+}
+
+// TON Wallet Listener
+tonConnectUI.onStatusChange(wallet => {
+    if (wallet) {
+        document.getElementById('p-wallet').innerText = wallet.account.address.substring(0,10) + "...";
+        s.wallet = wallet.account.address;
+        save();
     }
 });
 
-let coins = 0;
-const balance = document.getElementById('balance');
+// Real-time market logic
+setInterval(() => {
+    let p = (Math.random() * (2.0 - 0.5) + 0.5).toFixed(2);
+    document.getElementById('price-ui').innerText = "$" + p;
+    document.getElementById('price-ui').style.color = p > 1 ? "var(--s)" : "var(--err)";
+}, 7000);
 
-// Tap funksiyasi
-function tap() {
-    coins += 1;
-    balance.innerText = coins + " Tanga";
-}
-
-// Hamyon ulash
-function connectWallet() {
-    tonConnectUI.openModal();
-}
-
-// Chiqarish (test)
-function withdraw() {
-    alert("TON chiqarish test: Wallet ulangan bo'lsa, 5 TON yuboriladi!");
-}
-
-// Loading tugatish
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('game').style.display = 'block';
-    }, 3000);
-});
+setInterval(save, 15000);
+window.onload = init;
 </script>
 </body>
-</html>
+    </html>
+    
         
     
     
