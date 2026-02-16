@@ -1,6 +1,8 @@
 {
-  "url": "https://ganiyevdiyorbek700-dotcom.github.io/Oltin-Tanga-/",
-  "name": "Oltin Tanga Airdrop",
-  "iconUrl": "https://ganiyevdiyorbek700-dotcom.github.io/Oltin-Tanga-/icon.png"
+  "url": "https://sizning-app.vercel.app",  // Bu sizning Vercel URL'ingiz bo'lishi SHART (masalan, https://oltin-tanga-pro.vercel.app)
+  "name": "Oltin Tanga - Pro Max",
+  "iconUrl": "https://sizning-app.vercel.app/icon.png",  // Ikona faylini yuklang (PNG, 512x512 yoki 192x192, oltin tanga rasmi)
+  "termsOfUseUrl": "https://sizning-app.vercel.app/terms.html",  // Ixtiyoriy, bo'sh sahifa yaratsangiz ham bo'ladi
+  "privacyPolicyUrl": "https://sizning-app.vercel.app/privacy.html"  // Ixtiyoriy
 }
 
