@@ -3,68 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oltin Tanga - Toza Versiya</title>
+    <title>Oltin Tanga - To'liq Versiya</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     
+    <!-- TON Connect (hamyon ulash uchun) -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
     <style>
-        body { margin: 0; background: #0b0d17; color: white; font-family: sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        #loading { text-align: center; }
+        body { margin: 0; background: #0b0d17; color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loading { text-align: center; font-size: 30px; color: gold; }
         #game { display: none; text-align: center; padding: 20px; }
         #coin { font-size: 100px; cursor: pointer; }
         #balance { font-size: 40px; color: gold; margin: 20px; }
+        #wallet { margin-top: 20px; font-size: 18px; }
+        button { padding: 10px 20px; font-size: 18px; margin: 10px; background: gold; border: none; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <div style="font-size: 50px; color: gold;">O'yin yuklanmoqda...</div>
-    <div style="margin-top: 20px;">Internet tezligini tekshiring yoki Telegram keshini tozalang.</div>
+    O'yin yuklanmoqda... (Internetni tekshiring yoki Telegram keshini tozalang)
 </div>
 
 <div id="game">
     <div id="balance">0 Tanga</div>
     <div id="coin" onclick="tap()">💰</div>
-    <div style="margin-top: 20px;">Bosib tanga to'plang! (Test versiya)</div>
+    <div style="margin-top: 20px;">Bosib tanga to'plang!</div>
+    <div id="wallet">Hamyon: Ulanmagan</div>
+    <button onclick="connectWallet()">TON Hamyon ulash</button>
+    <button onclick="withdraw()">Chiqarish (test)</button>
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+// Firebase (sizning loyihangiz)
+const firebaseConfig = { databaseURL: "https://oltin-tanga-d2c80-default-rtdb.firebaseio.com" };
+let db;
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+} catch (e) {
+    document.getElementById('loading').innerHTML += '<br><span style="color:red;">Firebase xatosi: ' + e.message + '</span>';
+}
 
-    let coins = 0;
-    const balance = document.getElementById('balance');
-
-    function tap() {
-        coins += 1;
-        balance.innerText = coins + " Tanga";
-        // Oddiy effekt
-        let effect = document.createElement('div');
-        effect.innerText = '+1';
-        effect.style.position = 'absolute';
-        effect.style.top = '40%';
-        effect.style.left = '50%';
-        effect.style.transform = 'translate(-50%, -50%)';
-        effect.style.color = 'lime';
-        effect.style.fontSize = '30px';
-        effect.style.pointerEvents = 'none';
-        document.body.appendChild(effect);
-        setTimeout(() => effect.remove(), 800);
+// TON Connect
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: 'https://sizning-vercel-url.vercel.app/tonconnect-manifest.json', // O'zingizning URL
+    uiPreferences: { theme: 'DARK' }
+});
+tonConnectUI.onStatusChange(walletInfo => {
+    if (walletInfo?.connected) {
+        document.getElementById('wallet').innerText = 'Hamyon ulandi: ' + walletInfo.account.address.slice(0,6) + '...';
+    } else {
+        document.getElementById('wallet').innerText = 'Hamyon ulanmagan';
     }
+});
 
-    // Loadingni 8 soniyada tugatish va xato ko'rsatish
+let coins = 0;
+const balance = document.getElementById('balance');
+
+// Tap funksiyasi
+function tap() {
+    coins += 1;
+    balance.innerText = coins + " Tanga";
+}
+
+// Hamyon ulash
+function connectWallet() {
+    tonConnectUI.openModal();
+}
+
+// Chiqarish (test)
+function withdraw() {
+    alert("TON chiqarish test: Wallet ulangan bo'lsa, 5 TON yuboriladi!");
+}
+
+// Loading tugatish
+window.addEventListener('load', () => {
     setTimeout(() => {
-        document.getElementById('loading').innerHTML = '<div style="color:red; font-size:30px;">Yuklanishda xato!<br>Telegram keshini tozalang yoki internetni o\'zgartiring.</div>';
-    }, 8000);
-
-    // Agar hamma script yuklansa, o'yinni ko'rsatish
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('game').style.display = 'block';
-        }, 3000);
-    });
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('game').style.display = 'block';
+    }, 3000);
+});
 </script>
 </body>
 </html>
