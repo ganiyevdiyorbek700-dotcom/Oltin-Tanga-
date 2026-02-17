@@ -1,2 +1,2 @@
-# Oltin-Tanga-
-"Oltin Tanga Telegram Mini App" 
+# kalkulyator
+"kalkulyator Telegram Mini App" 
